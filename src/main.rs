@@ -1,13 +1,11 @@
 extern crate rust_htslib;
-extern crate libc;
 extern crate bitpacking;
 use crate::rust_htslib::bcf::{Reader, Read};
 use crate::rust_htslib::bcf::record::{Record, Buffer};
 use std::borrow::{Borrow, BorrowMut};
 use std::io::Write;
 use bitpacking::{BitPacker8x, BitPacker};
-use c2rust_bitfields::BitfieldStruct;
-
+use echtvar_lib;
 
 //fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> f32 {
 fn get_float_field<'a, B: BorrowMut<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> f32 {
@@ -23,29 +21,13 @@ fn get_int_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, f
 	};
 }
 
-#[repr(C, align(1))]
-#[derive(BitfieldStruct, Clone, Copy)]
-pub struct Var32 {
-    /* enc: 4
-     * alen: 2
-     * rlen: 2
-     * position: 20 */
-    #[bitfield(name = "enc", ty = "libc::uint32_t", bits = "0..=4")]
-    #[bitfield(name = "alen", ty = "libc::uint32_t", bits = "4..=8")]
-    #[bitfield(name = "rlen", ty = "libc::uint32_t", bits = "8..=12")]
-    #[bitfield(name = "position", ty = "libc::uint32_t", bits = "12..=32")]
-    data: [u8; 4]
-}
-
-
-
 fn main() {
     let mut stderr = std::io::stderr();
 
     if std::env::args().len() < 2 {
         println!("expecting arguments: <vcf>")
     }
-	writeln!(stderr, "{}", std::mem::size_of::<Var32>()).expect("error writing to stderr");
+	//writeln!(stderr, "{}", std::mem::size_of::<Var32>()).expect("error writing to stderr");
     let args: Vec<String> = std::env::args().collect();
     let path = &*args[1];
 	writeln!(stderr, "{}", path).expect("error writing to stderr");

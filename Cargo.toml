@@ -5,6 +5,14 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "echtvar_lib"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "echtvar"
+path = "src/main.rs"
+
 [dependencies]
 rust-htslib = { version = "*", features = ["libdeflate"] }
 bitpacking = "0.8.4"
