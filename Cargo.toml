@@ -1,0 +1,12 @@
+[package]
+name = "echtvar"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rust-htslib = { version = "*", features = ["libdeflate"] }
+bitpacking = "0.8.4"
+c2rust-bitfields = "0.3.0"
+libc = "*"
