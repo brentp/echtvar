@@ -4,7 +4,7 @@ use crate::rust_htslib::bcf::{Reader, Read};
 use crate::rust_htslib::bcf::record::{Record, Buffer};
 use std::borrow::{Borrow, BorrowMut};
 use std::io::Write;
-use bitpacking::{BitPacker8x, BitPacker};
+use bitpacking::{BitPacker4x, BitPacker};
 use echtvar_lib;
 
 //fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> f32 {
@@ -36,7 +36,7 @@ fn main() {
 	let mut buffer = Buffer::new();
 
 	let mut acs:Vec<u32> = Vec::new();
-    let bitpacker = BitPacker8x::new();
+    let bitpacker = BitPacker4x::new();
 
 
 	for r in vcf.records() {
@@ -47,14 +47,14 @@ fn main() {
 		let af = get_float_field(&rec, b"AF", & mut buffer);
 		//rec.push_info_integer(b"AC", &nac).ok();
 		let ac = get_int_field(&rec, b"AC", & mut buffer);
-        if ac > 3 { continue; }
+        //if ac > 3 { continue; }
 		acs.push(ac as u32);
 
 
         //if acs.len() * std::mem::size_of::<u32>() == 128 {
-        if acs.len() == 256 {
+        if acs.len() == 128 {
             let num_bits = bitpacker.num_bits(&acs[..]);
-            let mut compressed = vec![0u8; 4 * BitPacker8x::BLOCK_LEN];
+            let mut compressed = vec![0u8; 4 * BitPacker4x::BLOCK_LEN];
             let compressed_len = bitpacker.compress(&acs[..], &mut compressed[..], num_bits);
             writeln!(stderr, "uncompressed bits: {}, compressed bits: {}", acs.len() * std::mem::size_of::<u32>(), compressed_len).expect("error writing to stderr");
             acs.clear()

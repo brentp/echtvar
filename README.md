@@ -1,3 +1,7 @@
+# TODO
+make a bitpacking crate that chunks the data for Bitpacker4x
+
+
 4 bits * 3 billion == 1.5GB
 
 https://immunant.com/blog/2020/01/bitfields/
