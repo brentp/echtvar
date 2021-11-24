@@ -81,7 +81,7 @@ fn main() {
             let num_bits = bitpacker.num_bits(&acs[..]);
             let compressed_len = bitpacker.compress(&acs[..], &mut compressed[..], num_bits);
             writeln!(stderr, "uncompressed bits: {}, compressed bits: {}", acs.len() * std::mem::size_of::<u32>(), compressed_len * std::mem::size_of::<u8>()).expect("error writing to stderr");
-			for _ in 0..10000 {
+			for _ in 0..2000000 {
 			    zip.write_all(&compressed[..compressed_len]).expect("OK");
 			}
             acs.clear()

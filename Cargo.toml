@@ -18,5 +18,6 @@ rust-htslib = { version = "*", features = ["libdeflate"] }
 bitpacking = "0.8.4"
 c2rust-bitfields = "0.3.0"
 libc = "*"
+# TODO: try deflate-miniz, deflate-zlib
 zip = { version = "0.5", default-features = false, features=["deflate"] }
 
