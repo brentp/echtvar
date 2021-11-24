@@ -17,6 +17,10 @@ pub struct Var32 {
     data: [u8; 4]
 }
 
+// TODO: since ref[0] == alt[0], we can get one more base.
+// and since we know the ref is defined by the len, we can store only
+// rlen and use enc for alt only.
+
 #[derive(Clone, Copy, Default, Debug, PartialEq)]
 pub struct PRA {
 	position: u32,
@@ -44,7 +48,6 @@ impl From<Var32> for u32 {
 }
 
 
-// TODO: this function should return a tuple of ([position bin, which is mod 2>>20], encoded)
 #[inline]
 pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
 	let mut v: Var32 = Var32::default();
@@ -124,7 +127,6 @@ mod tests {
 		assert_eq!(d.alternate, ['A', 'C', 'A']);
 
 	}
-
 
 
     #[test]
