@@ -13,10 +13,13 @@ make a new afenc file
 ```
 echtvar \
    encode \
-   # set a multiplier as internally, everything is stored as int
+   # set a multiplier because internally, everything is stored as int.
+   # multiplier must be small enough that value does not exceed maximum uint32 value
    --field AF:gnomad_af:1000000 \ 
    # integers will have a multiplier of 1.
-   --field AC:gnomac_ac \
+   # decode will find fields that end with '_ac' and '_an' and use these to make an _af (allele frequency field)
+   --field AC:gnomad_ac \
+   --field AN:gnomad_an \
    -o gnomad.afenc \ # output file name
    $input_vcf
 
