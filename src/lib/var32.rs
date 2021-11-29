@@ -1,7 +1,10 @@
 extern crate libc;
+extern crate serde;
 use std::convert::From;
 use std::io::Write;
 use c2rust_bitfields::BitfieldStruct;
+use serde::{Deserialize, Serialize};
+
 
 #[repr(C, align(1))]
 #[derive(BitfieldStruct, Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
@@ -27,7 +30,16 @@ pub struct PRA {
 	alternate: [char; 3],
 }
 
-const MAX_COMBINED_LEN:usize = 4;
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
+pub struct LongVariant {
+	pub position: u32,
+	pub reference: std::string::String,
+	pub alternate: std::string::String,
+	pub idx: u32,
+}
+
+pub const MAX_COMBINED_LEN:usize = 4;
 
 const LOOKUP: [u32; 128] = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 1, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
 
