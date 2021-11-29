@@ -3,10 +3,10 @@ extern crate bitpacking;
 use crate::rust_htslib::bcf::{Reader, Read};
 use crate::rust_htslib::bcf::record::{Record, Buffer};
 use std::borrow::{Borrow, BorrowMut};
+use std::io::Write;
 use std::str;
 use echtvar_lib::zigzag;
 use echtvar_lib::var32;
-use std::io::Write;
 use bitpacking::{BitPacker4x, BitPacker};
 use echtvar_lib;
 
@@ -37,18 +37,16 @@ fn get_int_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, f
 }
 
 fn main() {
-    let mut stderr = std::io::stderr();
 
     if std::env::args().len() < 3 {
         println!("expecting arguments: <vcf> <zip>")
     }
-	//writeln!(stderr, "{}", std::mem::size_of::<Var32>()).expect("error writing to stderr");
     let args: Vec<String> = std::env::args().collect();
     let path = &*args[1];
 	let zpath = std::path::Path::new(&*args[2]);
 
 
-	writeln!(stderr, "{}", path).expect("error writing to stderr");
+	eprintln!("{}", path);
     let mut vcf = Reader::from_path(path).ok().expect("Error opening vcf.");
 	vcf.set_threads(2).ok();
 	let header = vcf.header().clone();
@@ -100,7 +98,7 @@ fn main() {
             let num_bits = bitpacker.num_bits(&acs[..]);
             let compressed_len = bitpacker.compress(&acs[..], &mut compressed[..], num_bits);
 			//let compressed_len = (num_bits * 16) as usize;
-            writeln!(stderr, "uncompressed bits: {}, compressed bits: {}, num_bits: {}", acs.len() * std::mem::size_of::<u32>(), compressed_len * std::mem::size_of::<u8>(), num_bits).expect("error writing to stderr");
+            eprintln!("uncompressed bits: {}, compressed bits: {}, num_bits: {}", acs.len() * std::mem::size_of::<u32>(), compressed_len * std::mem::size_of::<u8>(), num_bits);
 			//zip.write_all(&compressed[..compressed_len]).expect("OK");
 
 			/*
@@ -116,7 +114,7 @@ fn main() {
             acs.clear();
         }
 
-		//writeln!(stderr, "{}:{} AF: {} AC: {}", std::str::from_utf8(n).unwrap(), rec.pos(), af, ac).expect("error writing to stderr");
+		//eprintln!("{}:{} AF: {} AC: {}", std::str::from_utf8(n).unwrap(), rec.pos(), af, ac).expect("error writing to stderr");
 
 	}
 
@@ -132,7 +130,7 @@ fn main() {
 	// https://docs.rs/bitpacking/0.8.4/bitpacking/trait.BitPacker.html
 
 
-	writeln!(stderr, "len: {}", acs.len()).expect("error writing to stderr");
+	eprintln!("len: {}", acs.len());
 	eprintln!("{:?}", acs);
 	zip.finish().expect("error closing zip file");
 

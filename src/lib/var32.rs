@@ -18,9 +18,8 @@ pub struct Var32 {
 }
 
 // TODO: since ref[0] == alt[0], we can get one more base.
-// and since we know the ref is defined by the len, we can store only
-// rlen and use enc for alt only.
 
+#[repr(C, align(1))]
 #[derive(Clone, Copy, Default, Debug, PartialEq)]
 pub struct PRA {
 	position: u32,
@@ -81,7 +80,7 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
 #[inline]
 pub fn decode(enc: u32) -> PRA {
 
-	let v:Var32 = Var32::from(enc);
+	let v:Var32 = unsafe { std::mem::transmute::<u32, Var32>(enc) };
 
 	let mut result = PRA { 
 		position: v.position(),
@@ -159,8 +158,6 @@ mod tests {
 
 		b.set_enc(a.enc() - 1);
 		assert_eq!(true, a > b);
-
-
 
 	}
 
