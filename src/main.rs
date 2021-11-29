@@ -12,22 +12,6 @@ use echtvar_lib;
 
 use zip::write::FileOptions;
 
-#[cfg(not(target_env = "msvc"))]
-use jemallocator::Jemalloc;
-
-#[cfg(not(target_env = "msvc"))]
-#[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
-
-
-//fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> f32 {
-fn get_float_field<'a, B: BorrowMut<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> f32 {
-	return match rec.info_shared_buffer(field, buffer).float().expect("error reading info") {
-		Some(v) => v[0],
-		None => -1.0,
-	};
-}
-
 #[inline]
 fn get_int_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(rec: &Record, field: &[u8], buffer: B) -> i32 {
 	return match rec.info_shared_buffer(field, buffer).integer().expect("error reading info") {

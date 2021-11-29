@@ -21,10 +21,6 @@ libc = "*"
 # TODO: try deflate-miniz, deflate-zlib
 zip = { version = "0.5", default-features = false, features=["deflate-miniz"] }
 
-[target.'cfg(not(target_env = "msvc"))'.dependencies]
-jemallocator = "0.3.2"
-
-
 [profile.release]
 lto = "fat"
 codegen-units = 1

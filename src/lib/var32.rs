@@ -20,7 +20,7 @@ pub struct Var32 {
 // TODO: since ref[0] == alt[0], we can get one more base.
 
 #[repr(C, align(1))]
-#[derive(Clone, Copy, Default, Debug, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
 pub struct PRA {
 	position: u32,
 	reference: [char; 3],
