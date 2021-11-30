@@ -9,54 +9,28 @@ https://immunant.com/blog/2020/01/bitfields/
 usage
 =====
 
-make a new afenc file 
+make a new echtvar file 
 ```
 echtvar \
    encode \
-   # set a multiplier because internally, everything is stored as int.
-   # multiplier must be small enough that value does not exceed maximum uint32 value
-   --field AF:gnomad_af:1000000 \ 
-   # integers will have a multiplier of 1.
-   # decode will find fields that end with '_ac' and '_an' and use these to make an _af (allele frequency field)
-   --field AC:gnomad_ac \
-   --field AN:gnomad_an \
-   -o gnomad.afenc \ # output file name
-   $input_vcf
+   $input_vcf \
+   echtvar-gnomad-v3.zip \
+   conf.json
 
 ```
 
-annotate a VCF with an afen file
+annotate a VCF with an echtvar file
 
 ```
 echtvar annotate \
-   -o $cohort.afenc.bcf \
-   -a gnomad.afenc \
-   -a ukbiobank.afenc \
+   -o $cohort.echtvar.bcf \
+   -a gnomad.echtvar \
+   -a ukbiobank.echtvar \
    -f 'gnomad_af < 0.01' \
    $cohort.bcf
 ```
 
 # rust
-
-```rust
-fn annotate(&self, pos:uint64, ref:string, alt:string) -> Result<Vec<int32>, Error> 
-
-extern crate libc;
-
-#[repr(C), align(1)]
-#[derive(BitfieldStruct, Clone, Copy)]
-pub struct Var32 {
-    #[bitfield(name = "enc", ty = "libc::c_uint32", bits = "0..4")]
-    #[bitfield(name = "alen", ty = "libc::c_uint32", bits = "4..8")]
-    #[bitfield(name = "rlen", ty = "libc::c_uint32", bits = "8..12")]
-    #[bitfield(name = "position", ty = "libc::c_uint32", bits = "12..32")]
-    datata: [u8, 4]
-}
-```
-
-type Var64 = struct {
-  
-
 
 
 bits
