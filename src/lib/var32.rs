@@ -130,8 +130,7 @@ mod tests {
 		let d = decode(1734379268);
 		assert_eq!(d.position, 423432);
 
-		let mut stderr = std::io::stderr();
-		writeln!(stderr, "{:?}", d);
+		eprintln!("{:?}", d);
 
 		assert_eq!(d.reference, ['A', '\0', '\0']);
 		assert_eq!(d.alternate, ['A', 'C', 'A']);
