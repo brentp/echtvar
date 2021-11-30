@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize}; // 1.0.101
+use serde::{Deserialize, Serialize}; // 1.0.101
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub enum FieldType {
@@ -11,23 +11,26 @@ pub enum FieldType {
 pub struct Field {
     pub field: String,
     pub alias: String,
-    #[serde(default="default_missing_value")]
+    #[serde(default = "default_missing_value")]
     pub missing_value: i32,
     #[serde(default)]
     pub zigzag: bool,
-    #[serde(default="default_multiplier")]
+    #[serde(default = "default_multiplier")]
     pub multiplier: u32,
     #[serde(default)]
     pub ftype: FieldType,
-
 }
 
-fn default_missing_value() -> i32 { -1 }
-fn default_multiplier() -> u32 { 1 }
+fn default_missing_value() -> i32 {
+    -1
+}
+fn default_multiplier() -> u32 {
+    1
+}
 
 impl Default for Field {
     fn default() -> Field {
-        Field { 
+        Field {
             field: "field".to_string(),
             alias: "name".to_string(),
             missing_value: -1,
@@ -44,13 +47,11 @@ impl Default for FieldType {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-	use super::*;
-	#[test]
-	fn test_read() {
-
+    use super::*;
+    #[test]
+    fn test_read() {
         let fields: Vec<Field> = json5::from_str(r#"
         [
          {"field": "AC", "alias": "gnomad_AC"},
@@ -73,5 +74,5 @@ mod tests {
         assert_eq!(fields[1].ftype, FieldType::Integer);
 
         eprintln!("{}", json5::to_string(&fields[0]).unwrap());
-	}
+    }
 }

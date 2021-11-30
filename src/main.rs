@@ -3,12 +3,12 @@ pub mod commands;
 
 #[macro_use]
 extern crate clap;
-use commands::{encoder_cmd, annotate_cmd};
+use commands::{annotate_cmd, encoder_cmd};
 
 const VERSION: &str = "0.0.1";
 
 fn main() {
-    let matches = clap_app!(echtvar => 
+    let matches = clap_app!(echtvar =>
         (version: VERSION)
         (author: "Brent Pedersen <bpederse@gmail.com")
         (about:"variant encoding and annotation")
@@ -27,13 +27,23 @@ fn main() {
     ).get_matches();
 
     if let Some(matches) = matches.subcommand_matches("encode") {
-        encoder_cmd::encoder_main(matches.value_of("VCF").unwrap(), matches.value_of("OUTPUT").unwrap(), matches.value_of("JSON").unwrap());
+        encoder_cmd::encoder_main(
+            matches.value_of("VCF").unwrap(),
+            matches.value_of("OUTPUT").unwrap(),
+            matches.value_of("JSON").unwrap(),
+        );
     } else if let Some(matches) = matches.subcommand_matches("anno") {
         let files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
-        eprintln!("{} {} {:?}", matches.value_of("INPUT_VCF").unwrap(), matches.value_of("OUTPUT_VCF").unwrap(), files);
-        annotate_cmd::annotate_main( matches.value_of("INPUT_VCF").unwrap(), matches.value_of("OUTPUT_VCF").unwrap(), files);
+        eprintln!(
+            "{} {} {:?}",
+            matches.value_of("INPUT_VCF").unwrap(),
+            matches.value_of("OUTPUT_VCF").unwrap(),
+            files
+        );
+        annotate_cmd::annotate_main(
+            matches.value_of("INPUT_VCF").unwrap(),
+            matches.value_of("OUTPUT_VCF").unwrap(),
+            files,
+        );
     }
-
-
-
 }

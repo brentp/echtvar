@@ -1,9 +1,9 @@
-use rust_htslib::bcf::record::{Buffer, Record};
-use rust_htslib::bcf::{Read as BCFRead, Reader};
 use bitpacking::{BitPacker, BitPacker4x as BitPackerImpl};
 use echtvar_lib::fields;
 use echtvar_lib::var32;
 use echtvar_lib::zigzag;
+use rust_htslib::bcf::record::{Buffer, Record};
+use rust_htslib::bcf::{Read as BCFRead, Reader};
 
 use std::borrow::{Borrow, BorrowMut};
 use std::fs::File;
@@ -101,7 +101,7 @@ fn write_bits(
     }
 }
 
-pub fn encoder_main(vpath:&str, opath:&str, jpath:&str) {
+pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     let zpath = std::path::Path::new(opath);
     let jpath = std::path::Path::new(jpath);
 
