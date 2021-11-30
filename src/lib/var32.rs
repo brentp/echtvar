@@ -1,7 +1,6 @@
 extern crate libc;
 extern crate serde;
 use std::convert::From;
-use std::io::Write;
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
 

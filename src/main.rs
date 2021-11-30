@@ -1,17 +1,20 @@
 extern crate bitpacking;
 extern crate byteorder;
+#[macro_use]
+extern crate clap;
 extern crate rust_htslib;
+
 use crate::rust_htslib::bcf::record::{Buffer, Record};
 use crate::rust_htslib::bcf::{Read as BCFRead, Reader};
 use bitpacking::{BitPacker, BitPacker4x as BitPackerImpl};
-use std::io::Read;
-use std::fs::File;
 use echtvar_lib;
-use echtvar_lib::var32;
 use echtvar_lib::fields;
+use echtvar_lib::var32;
 use echtvar_lib::zigzag;
 use std::borrow::{Borrow, BorrowMut};
-use std::io::{Write};
+use std::fs::File;
+use std::io::Read;
+use std::io::Write;
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::str;
@@ -51,8 +54,6 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
         None => default,
     };
 }
-
-
 
 fn write_long(zipf: &mut zip::ZipWriter<std::fs::File>, long_vars: &Vec<var32::LongVariant>) {
     eprintln!("writing {} longs", long_vars.len());
@@ -106,24 +107,44 @@ fn write_bits(
     }
 }
 
+const VERSION: &str = "0.0.1";
+
 fn main() {
-    if std::env::args().len() < 4 {
-        println!("expecting arguments: <vcf> <zip> <conf_json>")
+    let matches = clap_app!(echtvar => 
+        (version: VERSION)
+        (author: "Brent Pedersen <bpederse@gmail.com")
+        (about:"variant encoding and annotation")
+        (@subcommand encode =>
+            (about: "encode an echtvar file from a population VCF/BCF")
+            (@arg VCF: +required "population vcf")
+            (@arg OUTPUT: +required "output zip file")
+            (@arg JSON: +required "(human)-json conf file")
+        )
+    ).get_matches();
+
+    if let Some(matches) = matches.subcommand_matches("encode") {
+        eprintln!("{} {} {}", matches.value_of("VCF").unwrap(), matches.value_of("OUTPUT").unwrap(), matches.value_of("JSON").unwrap());
+        old_main(matches.value_of("VCF").unwrap(), matches.value_of("OUTPUT").unwrap(), matches.value_of("JSON").unwrap());
     }
-    let args: Vec<String> = std::env::args().collect();
-    let path = &*args[1];
-    let zpath = std::path::Path::new(&*args[2]);
-    let jpath = std::path::Path::new(&*args[3]);
+
+
+
+}
+
+fn old_main(vpath:&str, opath:&str, jpath:&str) {
+    let zpath = std::path::Path::new(opath);
+    let jpath = std::path::Path::new(jpath);
 
     let mut json = String::new();
     File::open(jpath)
         .expect("error opening json file")
         .read_to_string(&mut json)
         .expect("error parsing json file");
-    let fields:Vec<fields::Field> = json5::from_str(&json).expect("error reading json into fields");
+    let fields: Vec<fields::Field> =
+        json5::from_str(&json).expect("error reading json into fields");
 
-    eprintln!("{} {} {:#?}", path, BitPackerImpl::BLOCK_LEN, fields);
-    let mut vcf = Reader::from_path(path).ok().expect("Error opening vcf.");
+    eprintln!("{} {} {:#?}", vpath, BitPackerImpl::BLOCK_LEN, fields);
+    let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
@@ -160,7 +181,8 @@ fn main() {
                     let chrom = str::from_utf8(n).unwrap();
 
                     for (i, values) in values_vv.iter_mut().enumerate() {
-                        let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
+                        let fname =
+                            format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
                         write_bits(values, false, &mut zipf, &bitpacker, &mut compressed);
@@ -185,21 +207,43 @@ fn main() {
         }
 
         for (i, fld) in fields.iter().enumerate() {
-            let v = match fld.ftype  {
+            // NOTE that internally, we always use u32::MAX as missing and then replace this with `missing_value` when annotating.
+            let v = match fld.ftype {
                 fields::FieldType::Integer => {
-                    let mut val = get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
-                    if val != fld.missing_value {
-                      
+                    let val =
+                        get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
+                    if val == fld.missing_value {
+                        u32::MAX
+                    } else {
+                        if fld.zigzag {
+                            zigzag::encode(val)
+                        } else {
+                            val as u32
+                        }
                     }
-                    val
-                },
+                }
                 fields::FieldType::Float => {
-                    let val = get_float_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value as f32);
-                    (val * fld.multiplier as f32) as i32
-                },
-                fields::FieldType::Categorical => panic!("not implemented")
+                    let val = get_float_field(
+                        &rec,
+                        fld.field.as_bytes(),
+                        &mut buffer,
+                        fld.missing_value as f32,
+                    );
+                    if (val - fld.missing_value as f32).abs() <= f32::EPSILON {
+                        u32::MAX
+                    } else {
+                        let v = (val * fld.multiplier as f32) as i32;
+                        if fld.zigzag {
+                            zigzag::encode(v)
+                        } else {
+                            v as u32
+                        }
+                    }
+                }
+                fields::FieldType::Categorical => panic!("not implemented"),
             };
-            values_vv[i].push(if fld.zigzag { zigzag::encode(v) } else { v as u32 });
+
+            values_vv[i].push(v);
         }
 
         let alleles = rec.alleles();

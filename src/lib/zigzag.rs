@@ -15,11 +15,12 @@ mod tests {
 	use super::*;
 	#[test]
 	fn test_roundtrip() {
-        let values : [i32; 5] = [0, -10, 33, -123, -123213];
+        let values : [i32; 6] = [0, -10, 33, -123, -123213, i32::MAX];
 
         for v in values {
             let e = encode(v);
             let d = decode(e);
+            //eprintln!("{}, {}, {}", e, e == u32::MAX, u32::MAX);
             assert_eq!(d, v);
         }
 

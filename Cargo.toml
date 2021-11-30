@@ -17,6 +17,7 @@ path = "src/main.rs"
 [dependencies]
 rust-htslib = { version = "*", features = ["libdeflate"] }
 bitpacking = "0.8.4"
+clap = "2"
 c2rust-bitfields = "0.3.0"
 libc = "*"
 # TODO: try deflate-miniz, deflate-zlib
@@ -26,6 +27,7 @@ byteorder = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 json5 = "*"
+
 
 [profile.release]
 lto = "fat"
