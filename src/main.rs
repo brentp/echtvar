@@ -2,11 +2,14 @@ extern crate bitpacking;
 extern crate byteorder;
 extern crate rust_htslib;
 use crate::rust_htslib::bcf::record::{Buffer, Record};
-use crate::rust_htslib::bcf::{Read, Reader};
+use crate::rust_htslib::bcf::{Read as BCFRead, Reader};
 use bitpacking::{BitPacker, BitPacker4x as BitPackerImpl};
+use std::io::Read;
+use std::fs::File;
 use echtvar_lib;
 use echtvar_lib::var32;
-//use echtvar_lib::zigzag;
+use echtvar_lib::fields;
+use echtvar_lib::zigzag;
 use std::borrow::{Borrow, BorrowMut};
 use std::io::{Write};
 
@@ -20,16 +23,19 @@ fn get_int_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     rec: &Record,
     field: &[u8],
     buffer: B,
+    default: i32,
 ) -> i32 {
     return match rec
         .info_shared_buffer(field, buffer)
         .integer()
-        .expect("error reading info")
+        .unwrap_or(None) // this becomes default below.
     {
         Some(v) => v[0],
-        None => -1,
+        None => default,
     };
 }
+
+
 
 fn write_long(zipf: &mut zip::ZipWriter<std::fs::File>, long_vars: &Vec<var32::LongVariant>) {
     eprintln!("writing {} longs", long_vars.len());
@@ -84,14 +90,22 @@ fn write_bits(
 }
 
 fn main() {
-    if std::env::args().len() < 3 {
-        println!("expecting arguments: <vcf> <zip>")
+    if std::env::args().len() < 4 {
+        println!("expecting arguments: <vcf> <zip> <conf_json>")
     }
     let args: Vec<String> = std::env::args().collect();
     let path = &*args[1];
     let zpath = std::path::Path::new(&*args[2]);
+    let jpath = std::path::Path::new(&*args[3]);
 
-    eprintln!("{} {}", path, BitPackerImpl::BLOCK_LEN);
+    let mut json = String::new();
+    File::open(jpath)
+        .expect("error opening json file")
+        .read_to_string(&mut json)
+        .expect("error parsing json file");
+    let fields:Vec<fields::Field> = json5::from_str(&json).expect("error reading json into fields");
+
+    eprintln!("{} {} {:#?}", path, BitPackerImpl::BLOCK_LEN, fields);
     let mut vcf = Reader::from_path(path).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
@@ -117,7 +131,6 @@ fn main() {
     let mut long_vars: Vec<var32::LongVariant> = Vec::new();
     let mut var32s: Vec<u32> = Vec::new();
 
-    let fields: Vec<&[u8]> = vec![b"AC", b"AN"];
     let mut values_vv: Vec<Vec<u32>> = fields.iter().map(|_| Vec::new()).collect();
 
     for r in vcf.records() {
@@ -130,7 +143,7 @@ fn main() {
                     let chrom = str::from_utf8(n).unwrap();
 
                     for (i, values) in values_vv.iter_mut().enumerate() {
-                        let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, std::str::from_utf8(fields[i]).unwrap());
+                        let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
                         write_bits(values, false, &mut zipf, &bitpacker, &mut compressed);
@@ -155,8 +168,8 @@ fn main() {
         }
 
         for (i, fld) in fields.iter().enumerate() {
-            let v = get_int_field(&rec, fld, &mut buffer);
-            values_vv[i].push(v as u32);
+            let v = get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
+            values_vv[i].push(if fld.zigzag { zigzag::encode(v) } else { v  as u32 });
         }
 
         let alleles = rec.alleles();
@@ -176,7 +189,7 @@ fn main() {
         let chrom = str::from_utf8(n).unwrap();
 
         for (i, values) in values_vv.iter_mut().enumerate() {
-            let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, std::str::from_utf8(fields[i]).unwrap());
+            let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
             zipf.start_file(fname, options)
                 .expect("error starting file");
             write_bits(values, false, &mut zipf, &bitpacker, &mut compressed);

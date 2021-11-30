@@ -1,15 +1,13 @@
-use serde::Deserialize; // 1.0.101
-use json5;
+use serde::{Serialize, Deserialize}; // 1.0.101
 
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub enum FieldType {
     Integer,
     Float,
     Categorical,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Field {
     pub field: String,
     pub alias: String,
@@ -56,8 +54,14 @@ mod tests {
         let fields: Vec<Field> = json5::from_str(r#"
         [
          {"field": "AC", "alias": "gnomad_AC"},
-         {field: "AN", "alias": "gnomad_AN",
-          missing_value: -9}
+         {
+             field: "AN",
+             alias: "gnomad_AN",
+             missing_value: -2147483648,
+             multiplier: 1, // this is useful for float fields as internally, everythign is stored as integer.
+             zigzag: false, // set this to true if the field can contain negative numbers.
+             ftype: "Integer", // this is discovered by echtvar and should not be set.
+        }
          ]
         "#).unwrap();
 
@@ -65,6 +69,9 @@ mod tests {
         assert_eq!(fields[0].alias, "gnomad_AC");
         assert_eq!(fields[1].alias, "gnomad_AN");
         assert_eq!(fields[0].missing_value, -1);
-        assert_eq!(fields[1].missing_value, -9);
+        assert_eq!(fields[1].missing_value, -2147483648);
+        assert_eq!(fields[1].ftype, FieldType::Integer);
+
+        eprintln!("{}", json5::to_string(&fields[0]).unwrap());
 	}
 }
