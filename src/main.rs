@@ -35,6 +35,23 @@ fn get_int_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     };
 }
 
+#[inline]
+fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
+    rec: &Record,
+    field: &[u8],
+    buffer: B,
+    default: f32,
+) -> f32 {
+    return match rec
+        .info_shared_buffer(field, buffer)
+        .float()
+        .unwrap_or(None) // this becomes default below.
+    {
+        Some(v) => v[0],
+        None => default,
+    };
+}
+
 
 
 fn write_long(zipf: &mut zip::ZipWriter<std::fs::File>, long_vars: &Vec<var32::LongVariant>) {
@@ -168,8 +185,21 @@ fn main() {
         }
 
         for (i, fld) in fields.iter().enumerate() {
-            let v = get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
-            values_vv[i].push(if fld.zigzag { zigzag::encode(v) } else { v  as u32 });
+            let v = match fld.ftype  {
+                fields::FieldType::Integer => {
+                    let mut val = get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
+                    if val != fld.missing_value {
+                      
+                    }
+                    val
+                },
+                fields::FieldType::Float => {
+                    let val = get_float_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value as f32);
+                    (val * fld.multiplier as f32) as i32
+                },
+                fields::FieldType::Categorical => panic!("not implemented")
+            };
+            values_vv[i].push(if fld.zigzag { zigzag::encode(v) } else { v as u32 });
         }
 
         let alleles = rec.alleles();
