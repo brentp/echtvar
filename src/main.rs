@@ -6,9 +6,9 @@ use crate::rust_htslib::bcf::{Read, Reader};
 use bitpacking::{BitPacker, BitPacker4x as BitPackerImpl};
 use echtvar_lib;
 use echtvar_lib::var32;
-use echtvar_lib::zigzag;
+//use echtvar_lib::zigzag;
 use std::borrow::{Borrow, BorrowMut};
-use std::io::{self, Write};
+use std::io::{Write};
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::str;

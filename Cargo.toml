@@ -24,6 +24,7 @@ byteorder = "1"
 # TODO: serde_msgpack or bincode
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+json5 = "*"
 
 [profile.release]
 lto = "fat"
