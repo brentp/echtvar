@@ -33,17 +33,11 @@ fn main() {
             matches.value_of("JSON").unwrap(),
         );
     } else if let Some(matches) = matches.subcommand_matches("anno") {
-        let files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
-        eprintln!(
-            "{} {} {:?}",
-            matches.value_of("INPUT_VCF").unwrap(),
-            matches.value_of("OUTPUT_VCF").unwrap(),
-            files
-        );
+        let echt_files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
         annotate_cmd::annotate_main(
             matches.value_of("INPUT_VCF").unwrap(),
             matches.value_of("OUTPUT_VCF").unwrap(),
-            files,
+            echt_files,
         );
     }
 }

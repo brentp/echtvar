@@ -1,5 +1,5 @@
-use bitpacking::{BitPacker, BitPacker4x as BitPackerImpl};
 use echtvar_lib::fields;
+use stream_vbyte::encode::encode;
 use echtvar_lib::var32;
 use echtvar_lib::zigzag;
 use rust_htslib::bcf::record::{Buffer, Record};

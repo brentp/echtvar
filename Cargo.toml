@@ -1,7 +1,6 @@
 [package]
 name = "echtvar"
 version = "0.1.0"
-#edition = "2021"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,9 +13,12 @@ path = "src/lib/mod.rs"
 name = "echtvar"
 path = "src/main.rs"
 
+
+
 [dependencies]
 rust-htslib = { version = "*", features = ["libdeflate"] }
-bitpacking = "0.8.4"
+#bitpacking = "0.8.4"
+stream-vbyte = {version = "0.4.0", features=["x86_ssse3", "x86_sse41"]}
 clap = "~2.27.0"
 c2rust-bitfields = "0.3.0"
 libc = "*"
