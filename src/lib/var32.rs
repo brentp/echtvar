@@ -29,7 +29,7 @@ pub struct PRA {
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
 pub struct LongVariant {
     pub position: u32,
     pub reference: std::string::String,

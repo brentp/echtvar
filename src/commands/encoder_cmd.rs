@@ -67,8 +67,13 @@ fn write_bits(
     zipf.write_u32::<LittleEndian>(values.len() as u32).ok();
 
     if sorted {
+        values.sort(); // we sort because sometimes the alphabetical order differs from encoded order
+        // when the positoin is the same, but we have e.g A/AT vs A/C.
         let mut last = values[0];
         for i in 1..values.len() {
+            if values[i] < last {
+                panic!("variants out of order at index: {}", i);
+            }
             let tmp = values[i];
             values[i] -= last;
             last = tmp;
@@ -107,6 +112,10 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
+    
+
+    zipf.start_file("echtvar/config.json", options).expect("error starting json file");
+    zipf.write_all(serde_json::to_string_pretty(&fields).expect("error serializing json config").as_bytes()).ok();
 
     let mut compressed = vec![0u8; 50_000_000]; // TODO: set this based on values.len
     let mut last_rid: i32 = -1;
