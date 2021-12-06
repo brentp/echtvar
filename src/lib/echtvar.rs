@@ -51,6 +51,7 @@ impl EchtVars {
             let mut contents = String::new();
             f.read_to_string(&mut contents).expect("eror reading config.json");
             let flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
+            eprintln!("fields: {:?}", flds);
             for fld in flds {
                 result.ints.push(EchtVar::<u32>{
                     missing: fld.missing_value as i32, 
@@ -69,17 +70,32 @@ impl EchtVars {
             return Ok(())
         }
         self.start = position >> 20 << 20; // round to 20 bits.
+        self.chrom = chromosome;
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
+        eprintln!("base-path:{}", base_path);
 
         for fi in &mut self.ints {
             let path = format!("{}/{}.bin", base_path, fi.name);
-            let mut iz = self.zip.by_name("echtvar/chr21/4/gnomad_AC.bin")?;
+            //eprintln!("path:{}", path);
+            let mut iz = self.zip.by_name(&path)?;
             let n = iz.read_u32::<LittleEndian>()? as usize;
-            self.buffer.resize(n * std::mem::size_of::<u32>(), 0x0);
+            //eprintln!("n:{}", n);
+            self.buffer.resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
             iz.read_exact(&mut self.buffer)?;
             fi.values.resize(n, 0x0);
-            let n_d = decode::<Ssse3>(&self.buffer, n, &mut fi.values);
+            // TODO: use skip to first position.
+            let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut fi.values);
+            
+            if bytes_decoded != self.buffer.len() {
+                return Err(std::io::Error::new(std::io::ErrorKind::Other, "didn't read expected number of values from zip"))
+            }
         }
+
+        let long_path = format!("{}/too-long-for-var32.txt", base_path);
+        let mut iz = self.zip.by_name(&long_path)?;
+        self.buffer.clear();
+        iz.read_to_end(&mut self.buffer)?;
+        self.longs = serde_json::from_slice(&self.buffer)?;
 
         Ok(())
 
@@ -87,4 +103,20 @@ impl EchtVars {
     }
 
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_read() {
+        let mut e = EchtVars::open("ec.zip");
+        e.set_position("chr21".to_string(), 5030088).ok();
+
+        assert_eq!(e.ints.len(), 2);
+        assert_eq!(e.ints[0].values.len(), 46881);
+
+        assert_eq!(e.longs[0].position, 5030185);
+
+    }
 }
