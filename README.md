@@ -1,6 +1,4 @@
 # TODO
-make a bitpacking crate that chunks the data for Bitpacker4x
-
 
 4 bits * 3 billion == 1.5GB
 

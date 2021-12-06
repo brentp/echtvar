@@ -8,12 +8,12 @@ use commands::{annotate_cmd, encoder_cmd};
 const VERSION: &str = "0.0.1";
 
 fn main() {
-    let matches = clap_app!(echtvar =>
+    let mut app = clap_app!(echtvar =>
         (version: VERSION)
         (author: "Brent Pedersen <bpederse@gmail.com")
         (about:"variant encoding and annotation")
         (@subcommand encode =>
-            (about: "encode an echtvar file from a population VCF/BCF")
+            (about: "create an echtvar file from a population VCF/BCF")
             (@arg VCF: +required "population vcf")
             (@arg OUTPUT: +required "output zip file")
             (@arg JSON: +required "(human)-json conf file")
@@ -24,7 +24,8 @@ fn main() {
             (@arg INPUT_VCF: +required "vcf")
             (@arg OUTPUT_VCF: +required "path to bcf output file")
         )
-    ).get_matches();
+    );
+    let matches = app.clone().get_matches();
 
     if let Some(matches) = matches.subcommand_matches("encode") {
         encoder_cmd::encoder_main(
@@ -39,5 +40,9 @@ fn main() {
             matches.value_of("OUTPUT_VCF").unwrap(),
             echt_files,
         );
+    } else {
+        app.print_help().ok();
+        print!("\n");
     }
+
 }
