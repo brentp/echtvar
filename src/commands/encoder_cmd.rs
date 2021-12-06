@@ -1,5 +1,8 @@
 use echtvar_lib::fields;
-use stream_vbyte::encode::encode;
+use stream_vbyte::{
+    encode::encode,
+    x86::Sse41
+};
 use echtvar_lib::var32;
 use echtvar_lib::zigzag;
 use rust_htslib::bcf::record::{Buffer, Record};
@@ -55,50 +58,26 @@ fn write_long(zipf: &mut zip::ZipWriter<std::fs::File>, long_vars: &Vec<var32::L
 }
 
 fn write_bits(
-    values: &Vec<u32>,
+    values: &mut Vec<u32>,
     sorted: bool,
     zipf: &mut zip::ZipWriter<std::fs::File>,
-    bitpacker: &BitPackerImpl,
     compressed: &mut [u8],
 ) {
-    // TODO: errors
+
     zipf.write_u32::<LittleEndian>(values.len() as u32).ok();
-    let mut last_value: u32 = 0;
-    for i in (0..values.len() - BitPackerImpl::BLOCK_LEN).step_by(BitPackerImpl::BLOCK_LEN) {
-        let num_bits;
-        let compressed_len;
-        if sorted {
-            num_bits =
-                bitpacker.num_bits_sorted(last_value, &values[i..i + BitPackerImpl::BLOCK_LEN]);
-            compressed_len = bitpacker.compress_sorted(
-                last_value,
-                &values[i..i + BitPackerImpl::BLOCK_LEN],
-                &mut compressed[..],
-                num_bits,
-            );
-            last_value = values[i + BitPackerImpl::BLOCK_LEN - 1];
-        } else {
-            num_bits = bitpacker.num_bits(&values[i..i + BitPackerImpl::BLOCK_LEN]);
-            compressed_len = bitpacker.compress(
-                &values[i..i + BitPackerImpl::BLOCK_LEN],
-                &mut compressed[..],
-                num_bits,
-            );
+
+    if sorted {
+        let mut last = values[0];
+        for i in 1..values.len() {
+            let tmp = values[i];
+            values[i] -= last;
+            last = tmp;
         }
-        zipf.write_all(&compressed[..compressed_len]).ok();
     }
-    // bitpacker writes blocks of BitPackerImpl::BLOCK_LEN u32's.
-    // we write any leftovers as-is.
-    let remaining = values.len() % BitPackerImpl::BLOCK_LEN;
-    eprintln!(
-        "total: {}, remaining: {} start: {}",
-        values.len(),
-        remaining,
-        values.len() - remaining
-    );
-    for i in (values.len() - remaining)..values.len() {
-        zipf.write_u32::<LittleEndian>(values[i]).ok();
-    }
+
+    let encoded_len = encode::<Sse41>(&values, compressed);
+    eprintln!("encoded {} u32s into {} bytes", values.len(), encoded_len);
+    zipf.write_all(&compressed[..encoded_len]).ok();
 }
 
 pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
@@ -113,13 +92,10 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     let fields: Vec<fields::Field> =
         json5::from_str(&json).expect("error reading json into fields");
 
-    eprintln!("{} {} {:#?}", vpath, BitPackerImpl::BLOCK_LEN, fields);
     let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
-
-    let bitpacker = BitPackerImpl::new();
 
     let zfile = std::fs::File::create(&zpath).unwrap();
 
@@ -132,7 +108,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
 
-    let mut compressed = vec![0u8; 4 * BitPackerImpl::BLOCK_LEN];
+    let mut compressed = vec![0u8; 50_000_000]; // TODO: set this based on values.len
     let mut last_rid: i32 = -1;
     let mut last_mod: i64 = 0;
 
@@ -155,14 +131,14 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                             format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
-                        write_bits(values, false, &mut zipf, &bitpacker, &mut compressed);
+                        write_bits(values, false, &mut zipf, &mut compressed);
                         values.clear();
                     }
 
                     let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
                     zipf.start_file(fname, options)
                         .expect("error starting file");
-                    write_bits(&mut var32s, true, &mut zipf, &bitpacker, &mut compressed);
+                    write_bits(&mut var32s, true, &mut zipf, &mut compressed);
                     var32s.clear();
 
                     let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
@@ -236,14 +212,14 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
             let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
             zipf.start_file(fname, options)
                 .expect("error starting file");
-            write_bits(values, false, &mut zipf, &bitpacker, &mut compressed);
+            write_bits(values, false, &mut zipf, &mut compressed);
             values.clear();
         }
 
         let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
         zipf.start_file(fname, options)
             .expect("error starting file");
-        write_bits(&mut var32s, true, &mut zipf, &bitpacker, &mut compressed);
+        write_bits(&mut var32s, true, &mut zipf, &mut compressed);
 
         let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
         zipf.start_file(fname, options)
