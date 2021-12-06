@@ -8,6 +8,10 @@ use rust_htslib::bcf::{Format, Writer, header::Header};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
+use stream_vbyte::{
+    decode::decode,
+    x86::Ssse3
+};
 
 pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<()> {
 
@@ -25,14 +29,21 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
     let mut archive = zip::ZipArchive::new(&file).expect("error opening zip file");
 
     
-    let mut iz = archive.by_name("echtvar/chr21/7/var32.bin").expect("unable to open file");
+    // encoded 46881 u32s into 60515 bytes
+    let mut iz = archive.by_name("echtvar/chr21/4/gnomad_AC.bin").expect("unable to open file");
 
-
-    let n = iz.read_u32::<LittleEndian>().ok().expect("error reading number of values from zip file");
+    let n = iz.read_u32::<LittleEndian>().ok().expect("error reading number of values from zip file") as usize;
     let mut comr = vec![0 as u8; iz.size() as usize - 4];
-    iz.read_to_end(&mut comr)?;
+    iz.read_exact(&mut comr)?;
 
-    eprintln!("{} {}", n, iz.size());
+    eprintln!("number of values: {} bytes:{}", n, iz.size());
+
+    let mut nums: Vec<u32> = Vec::new();
+    nums.resize(n, 0);
+
+    let n_d = decode::<Ssse3>(&comr, n, &mut nums);
+    eprintln!("{} {} {:?}", n_d, iz.size(), &nums[..1000]);
+    
 
 
     Ok(())

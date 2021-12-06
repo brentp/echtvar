@@ -76,7 +76,7 @@ fn write_bits(
     }
 
     let encoded_len = encode::<Sse41>(&values, compressed);
-    eprintln!("encoded {} u32s into {} bytes", values.len(), encoded_len);
+    eprintln!("encoded {} u32s into {} bytes. looks like: {:?}", values.len(), encoded_len, &compressed[..100]);
     zipf.write_all(&compressed[..encoded_len]).ok();
 }
 
