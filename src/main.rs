@@ -4,10 +4,11 @@ pub mod commands;
 #[macro_use]
 extern crate clap;
 use commands::{annotate_cmd, encoder_cmd};
+use std::io;
 
 const VERSION: &str = "0.0.1";
 
-fn main() {
+fn main() -> io::Result<()> {
     let mut app = clap_app!(echtvar =>
         (version: VERSION)
         (author: "Brent Pedersen <bpederse@gmail.com")
@@ -35,14 +36,15 @@ fn main() {
         );
     } else if let Some(matches) = matches.subcommand_matches("anno") {
         let echt_files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
+        eprintln!("calling annotate");
         annotate_cmd::annotate_main(
             matches.value_of("INPUT_VCF").unwrap(),
             matches.value_of("OUTPUT_VCF").unwrap(),
             echt_files,
-        );
+        )?;
     } else {
         app.print_help().ok();
         print!("\n");
     }
-
+    Ok(())
 }
