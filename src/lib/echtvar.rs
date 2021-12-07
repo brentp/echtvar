@@ -140,7 +140,6 @@ impl EchtVars {
                     "didn't read expected number of values from zip",
                 ));
             }
-
         }
 
         let long_path = format!("{}/too-long-for-var32.txt", base_path);
@@ -152,30 +151,46 @@ impl EchtVars {
         Ok(())
     }
 
-    pub fn values(self: &mut EchtVars, chromosome: &[u8], position: u32, reference: &[u8], alternate: &[u8], values: &mut Vec<i32>) -> io::Result<()> {
-        self.set_position(unsafe { std::str::from_utf8_unchecked(chromosome).to_string() }, position)?;
+    pub fn values(
+        self: &mut EchtVars,
+        chromosome: &[u8],
+        position: u32,
+        reference: &[u8],
+        alternate: &[u8],
+        values: &mut Vec<i32>,
+    ) -> io::Result<()> {
+        self.set_position(
+            unsafe { std::str::from_utf8_unchecked(chromosome).to_string() },
+            position,
+        )?;
 
         let e = var32::encode(position, reference, alternate);
         values.clear();
 
-        let idx = self.var32s.binary_search(&e);
-        match idx {
-            Ok(i) => {
-                // TODO: loop and handle missing
+        let eidx = self.var32s.binary_search(&e);
+        match eidx {
+            Ok(idx) => {
+                // TODO: handle missing
                 for e in &self.ints {
-                    values.push(e.values[i] as i32);
-
+                    let v: u32 = e.values[idx];
+                    values.push(if v == u32::MAX {
+                        e.missing as i32
+                    } else {
+                        v as i32
+                    });
                 }
-            },
-            Err(e) => { return Err(std::io::Error::new( std::io::ErrorKind::Other, "not found")); }
-
+            }
+            Err(e) => {
+                // variant not found. fill with missing values.
+                for e in &self.ints {
+                    values.push(e.missing as i32);
+                }
+            }
         };
 
-
-        eprintln!("r:{:?}, {}, {:?}", idx, e, &self.var32s[..10]);
+        eprintln!("r:{:?}, {}, {:?}", eidx, e, &self.var32s[..10]);
 
         Ok(())
-
     }
 }
 
@@ -194,7 +209,6 @@ mod tests {
         assert_eq!(e.longs[0].position, 5030185);
     }
 
-
     #[test]
     fn test_search() {
         let mut e = EchtVars::open("ec.zip");
@@ -204,6 +218,5 @@ mod tests {
 
         let idx = e.values(b"chr21", 5030087, b"C", b"T", &mut vals).ok();
         eprintln!("{:?}", vals);
-
     }
 }
