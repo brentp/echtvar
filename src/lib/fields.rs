@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize}; // 1.0.101
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub enum FieldType {
     Integer,
     Float,

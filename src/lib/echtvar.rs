@@ -8,11 +8,14 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
+
 #[derive(Clone, Default, Debug, PartialEq, PartialOrd)]
-pub struct EchtVar<T> {
+pub struct EchtVar {
     pub name: String,
     pub missing: i32,
-    pub values: Vec<T>,
+    pub values_i: usize,
+    // Integer, Float, or Category(notimplemented)
+    pub etype: fields::FieldType,
 }
 
 #[derive(Debug)]
@@ -22,8 +25,11 @@ pub struct EchtVars {
     pub start: u32,
     pub var32s: Vec<u32>,
     pub longs: Vec<var32::LongVariant>,
-    pub ints: Vec<EchtVar<u32>>,
-    pub floats: Vec<EchtVar<f32>>,
+    // the values for a chunk are stored in values.
+    pub values: Vec<Vec<u32>>,
+    // values.len() == echts.len() and echts[i] indicates how we
+    // handle values[i]
+    pub echts: Vec<EchtVar>,
     buffer: Vec<u8>,
 }
 
@@ -37,8 +43,8 @@ impl EchtVars {
             start: u32::MAX,
             var32s: vec![],
             longs: vec![],
-            ints: vec![],
-            floats: vec![],
+            values: vec![],
+            echts: vec![],
             buffer: vec![],
         };
 
@@ -53,12 +59,14 @@ impl EchtVars {
             let flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
             eprintln!("fields: {:?}", flds);
             for fld in flds {
-                result.ints.push(EchtVar::<u32> {
+                result.echts.push(EchtVar {
                     missing: fld.missing_value as i32,
                     name: fld.alias,
-                    values: vec![],
+                    values_i: result.echts.len(),
+                    etype: fld.ftype,
                 });
             }
+            result.values.resize(result.echts.len(), vec![]);
         }
         result
     }
@@ -96,7 +104,8 @@ impl EchtVars {
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
         eprintln!("base-path:{}", base_path);
 
-        for fi in self.ints.iter_mut() {
+        for (i, fi) in self.echts.iter_mut().enumerate() {
+            // RUST-TODO: use .fill function. problems with double borrow.
             let path = format!("{}/{}.bin", base_path, fi.name);
             //self.fill(fi, path)?;
             let mut iz = self.zip.by_name(&path)?;
@@ -105,9 +114,9 @@ impl EchtVars {
             self.buffer
                 .resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
             iz.read_exact(&mut self.buffer)?;
-            fi.values.resize(n, 0x0);
+            self.values[fi.values_i].resize(n, 0x0);
             // TODO: use skip to first position.
-            let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut fi.values);
+            let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut self.values[fi.values_i]);
 
             if bytes_decoded != self.buffer.len() {
                 return Err(std::io::Error::new(
@@ -171,8 +180,8 @@ impl EchtVars {
         match eidx {
             Ok(idx) => {
                 // TODO: handle missing
-                for e in &self.ints {
-                    let v: u32 = e.values[idx];
+                for e in &self.echts {
+                    let v: u32 = self.values[e.values_i][idx];
                     values.push(if v == u32::MAX {
                         e.missing as i32
                     } else {
@@ -182,7 +191,7 @@ impl EchtVars {
             }
             Err(e) => {
                 // variant not found. fill with missing values.
-                for e in &self.ints {
+                for e in &self.echts {
                     values.push(e.missing as i32);
                 }
             }
@@ -202,9 +211,9 @@ mod tests {
         let mut e = EchtVars::open("ec.zip");
         e.set_position("chr21".to_string(), 5030088).ok();
 
-        assert_eq!(e.ints.len(), 2);
-        assert_eq!(e.ints[0].values.len(), 46881);
-        assert_eq!(e.ints[1].values.len(), e.var32s.len());
+        assert_eq!(e.echts.len(), 2);
+        assert_eq!(e.values[0].len(), 46881);
+        assert_eq!(e.values[1].len(), e.var32s.len());
 
         assert_eq!(e.longs[0].position, 5030185);
     }
