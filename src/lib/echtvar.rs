@@ -128,6 +128,11 @@ impl EchtVars {
 
             self.var32s.resize(n, 0x0);
             let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut self.var32s);
+            // cumsum https://users.rust-lang.org/t/inplace-cumulative-sum-using-iterator/56532/3
+            self.var32s.iter_mut().fold(0, |acc, x| {
+                *x += acc;
+                *x
+            });
 
             if bytes_decoded != self.buffer.len() {
                 return Err(std::io::Error::new(
@@ -135,6 +140,7 @@ impl EchtVars {
                     "didn't read expected number of values from zip",
                 ));
             }
+
         }
 
         let long_path = format!("{}/too-long-for-var32.txt", base_path);
@@ -144,6 +150,32 @@ impl EchtVars {
         self.longs = serde_json::from_slice(&self.buffer)?;
 
         Ok(())
+    }
+
+    pub fn values(self: &mut EchtVars, chromosome: &[u8], position: u32, reference: &[u8], alternate: &[u8], values: &mut Vec<i32>) -> io::Result<()> {
+        self.set_position(unsafe { std::str::from_utf8_unchecked(chromosome).to_string() }, position)?;
+
+        let e = var32::encode(position, reference, alternate);
+        values.clear();
+
+        let idx = self.var32s.binary_search(&e);
+        match idx {
+            Ok(i) => {
+                // TODO: loop and handle missing
+                for e in &self.ints {
+                    values.push(e.values[i] as i32);
+
+                }
+            },
+            Err(e) => { return Err(std::io::Error::new( std::io::ErrorKind::Other, "not found")); }
+
+        };
+
+
+        eprintln!("r:{:?}, {}, {:?}", idx, e, &self.var32s[..10]);
+
+        Ok(())
+
     }
 }
 
@@ -160,5 +192,18 @@ mod tests {
         assert_eq!(e.ints[1].values.len(), e.var32s.len());
 
         assert_eq!(e.longs[0].position, 5030185);
+    }
+
+
+    #[test]
+    fn test_search() {
+        let mut e = EchtVars::open("ec.zip");
+        e.set_position("chr21".to_string(), 5030088).ok();
+
+        let mut vals = vec![];
+
+        let idx = e.values(b"chr21", 5030087, b"C", b"T", &mut vals).ok();
+        eprintln!("{:?}", vals);
+
     }
 }
