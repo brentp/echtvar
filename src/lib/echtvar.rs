@@ -1,5 +1,6 @@
 use crate::fields;
 use crate::var32;
+use crate::zigzag;
 use std::fs;
 use std::io;
 use std::io::prelude::*;
@@ -8,14 +9,23 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
+#[repr(C)]
+union U {
+    f: f32,
+    i: i32,
+}
+
+#[repr(C)]
+struct Value {
+    etype: fields::FieldType,
+    u: U
+}
 
 #[derive(Clone, Default, Debug, PartialEq, PartialOrd)]
 pub struct EchtVar {
-    pub name: String,
-    pub missing: i32,
     pub values_i: usize,
     // Integer, Float, or Category(notimplemented)
-    pub etype: fields::FieldType,
+    pub field: fields::Field,
 }
 
 #[derive(Debug)]
@@ -60,10 +70,8 @@ impl EchtVars {
             eprintln!("fields: {:?}", flds);
             for fld in flds {
                 result.echts.push(EchtVar {
-                    missing: fld.missing_value as i32,
-                    name: fld.alias,
                     values_i: result.echts.len(),
-                    etype: fld.ftype,
+                    field: fld,
                 });
             }
             result.values.resize(result.echts.len(), vec![]);
@@ -104,9 +112,9 @@ impl EchtVars {
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
         eprintln!("base-path:{}", base_path);
 
-        for (i, fi) in self.echts.iter_mut().enumerate() {
+        for fi in self.echts.iter_mut() {
             // RUST-TODO: use .fill function. problems with double borrow.
-            let path = format!("{}/{}.bin", base_path, fi.name);
+            let path = format!("{}/{}.bin", base_path, fi.field.alias);
             //self.fill(fi, path)?;
             let mut iz = self.zip.by_name(&path)?;
             let n = iz.read_u32::<LittleEndian>()? as usize;
@@ -182,17 +190,21 @@ impl EchtVars {
                 // TODO: handle missing
                 for e in &self.echts {
                     let v: u32 = self.values[e.values_i][idx];
-                    values.push(if v == u32::MAX {
-                        e.missing as i32
+                    if v == u32::MAX {
+                        values.push(e.field.missing_value as i32);
                     } else {
-                        v as i32
-                    });
+                        if e.field.zigzag {
+                            values.push(zigzag::decode(v) as i32 / e.field.multiplier as i32);
+                        } else {
+                            values.push(v as i32 / e.field.multiplier as i32);
+                        }
+                    }
                 }
             }
-            Err(e) => {
+            Err(_) => {
                 // variant not found. fill with missing values.
                 for e in &self.echts {
-                    values.push(e.missing as i32);
+                    values.push(e.field.missing_value as i32);
                 }
             }
         };
@@ -226,6 +238,6 @@ mod tests {
         let mut vals = vec![];
 
         let idx = e.values(b"chr21", 5030087, b"C", b"T", &mut vals).ok();
-        eprintln!("{:?}", vals);
+        eprintln!("{:?} {:?}", vals, idx);
     }
 }

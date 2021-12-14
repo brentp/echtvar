@@ -7,7 +7,7 @@ pub enum FieldType {
     Categorical,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct Field {
     pub field: String,
     pub alias: String,
