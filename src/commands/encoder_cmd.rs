@@ -52,23 +52,25 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     };
 }
 
-fn write_long(zipf: &mut zip::ZipWriter<std::fs::File>, long_vars: &Vec<var32::LongVariant>) {
+fn write_long(zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>, long_vars: &mut Vec<var32::LongVariant>, indexes: Vec<usize>) {
     eprintln!("writing {} longs", long_vars.len());
+    for l in long_vars.iter_mut() {
+        l.idx = indexes[l.idx as usize] as u32;
+    }
     serde_json::to_writer(zipf, &long_vars).expect("error writing long variables");
 }
 
 fn write_bits(
     values: &mut Vec<u32>,
     sorted: bool,
-    zipf: &mut zip::ZipWriter<std::fs::File>,
+    zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>,
     compressed: &mut [u8],
 ) {
 
     zipf.write_u32::<LittleEndian>(values.len() as u32).ok();
 
     if sorted {
-        values.sort(); // we sort because sometimes the alphabetical order differs from encoded order
-        // when the positoin is the same, but we have e.g A/AT vs A/C.
+        // delta coding
         let mut last = values[0];
         for i in 1..values.len() {
             if values[i] < last {
@@ -83,6 +85,41 @@ fn write_bits(
     let encoded_len = encode::<Sse41>(&values, compressed);
     eprintln!("encoded {} u32s into {} bytes. looks like: {:?}", values.len(), encoded_len, &compressed[..100]);
     zipf.write_all(&compressed[..encoded_len]).ok();
+}
+
+
+// https://stackoverflow.com/a/69764256
+pub fn argsort<T: Ord>(data: &[T]) -> Vec<usize> {
+    let mut indices = (0..data.len()).collect::<Vec<_>>();
+    indices.sort_by_key(|&i| &data[i]);
+    indices
+}
+
+// https://stackoverflow.com/questions/69764803/how-to-sort-a-vector-by-indices-in-rust/69774341#69774341
+pub fn sort_by_indices<T>(data: &mut [T], mut indices: Vec<usize>) {
+    for idx in 0..data.len() {
+        if indices[idx] != idx {
+            let mut current_idx = idx;
+            loop {
+                let target_idx = indices[current_idx];
+                indices[current_idx] = current_idx;
+                if indices[target_idx] == target_idx {
+                    break;
+                }
+                data.swap(current_idx, target_idx);
+                current_idx = target_idx;
+            }
+        }
+    }
+}
+
+fn is_sorted<T: std::cmp::PartialOrd>(data: &Vec<T>) -> bool {
+    for i in 1..data.len() {
+        if data[i] < data[i-1] {
+            return false
+        }
+    }
+    return true
 }
 
 pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
@@ -103,8 +140,8 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     let mut buffer = Buffer::new();
 
     let zfile = std::fs::File::create(&zpath).unwrap();
-
-    let mut zipf = zip::ZipWriter::new(zfile);
+    let fbuffer = std::io::BufWriter::with_capacity(65536, zfile);
+    let mut zipf = zip::ZipWriter::new(fbuffer);
 
     zipf.add_directory("echtvar/", FileOptions::default().large_file(true))
         .expect("error writing zip");
@@ -135,11 +172,16 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                     let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
                     let chrom = str::from_utf8(n).unwrap();
 
+                    // we just assume it's unsorted and apply the permutation
+                    let indexes = argsort(&var32s);
+
                     for (i, values) in values_vv.iter_mut().enumerate() {
+
                         let fname =
                             format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
+                        sort_by_indices(values, indexes.clone());
                         write_bits(values, false, &mut zipf, &mut compressed);
                         values.clear();
                     }
@@ -147,13 +189,17 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                     let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
                     zipf.start_file(fname, options)
                         .expect("error starting file");
+                    sort_by_indices(&mut var32s, indexes.clone());
+                    if !is_sorted(&var32s) {
+                        eprintln!("BAD\nBAD\nBAD\nBAD");
+                    }
                     write_bits(&mut var32s, true, &mut zipf, &mut compressed);
                     var32s.clear();
 
                     let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
                     zipf.start_file(fname, options)
                         .expect("error starting file");
-                    write_long(&mut zipf, &long_vars);
+                    write_long(&mut zipf, &mut long_vars, indexes);
                     long_vars.clear()
                 }
             }
@@ -214,6 +260,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         }
     }
     if values_vv[0].len() != 0 {
+        let indexes = argsort(&var32s);
         let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
         let chrom = str::from_utf8(n).unwrap();
 
@@ -221,6 +268,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
             let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
             zipf.start_file(fname, options)
                 .expect("error starting file");
+            sort_by_indices(values, indexes.clone());
             write_bits(values, false, &mut zipf, &mut compressed);
             values.clear();
         }
@@ -228,12 +276,13 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
         zipf.start_file(fname, options)
             .expect("error starting file");
+        sort_by_indices(&mut var32s, indexes.clone());
         write_bits(&mut var32s, true, &mut zipf, &mut compressed);
 
         let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
         zipf.start_file(fname, options)
             .expect("error starting file");
-        write_long(&mut zipf, &long_vars);
+        write_long(&mut zipf, &mut long_vars, indexes);
     }
     zipf.finish().expect("error closing zip file");
 }
