@@ -19,6 +19,8 @@ pub struct Field {
     pub multiplier: u32,
     #[serde(default)]
     pub ftype: FieldType,
+    #[serde(default = "default_values_i")]
+    pub(crate) values_i: usize,
 }
 
 fn default_missing_value() -> i32 {
@@ -26,6 +28,9 @@ fn default_missing_value() -> i32 {
 }
 fn default_multiplier() -> u32 {
     1
+}
+fn default_values_i() -> usize {
+    usize::MAX
 }
 
 impl Default for Field {
@@ -37,6 +42,7 @@ impl Default for Field {
             zigzag: false,
             multiplier: 1,
             ftype: FieldType::Integer,
+            values_i: usize::MAX,
         }
     }
 }

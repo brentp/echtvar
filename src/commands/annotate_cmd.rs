@@ -13,6 +13,7 @@ use stream_vbyte::{
     x86::Ssse3
 };
 
+
 pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<()> {
 
     let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
@@ -30,7 +31,7 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
 
     
     // encoded 46881 u32s into 60515 bytes
-    let mut iz = archive.by_name("echtvar/chr21/4/gnomad_AC.bin").expect("unable to open file");
+    let mut iz = archive.by_name("echtvar/chr21/4/gnomad_AN.bin").expect("unable to open file");
 
     let n = iz.read_u32::<LittleEndian>().ok().expect("error reading number of values from zip file") as usize;
     let mut comr = vec![0 as u8; iz.size() as usize - 4];

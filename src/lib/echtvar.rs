@@ -21,12 +21,6 @@ struct Value {
     u: U
 }
 
-#[derive(Clone, Default, Debug, PartialEq, PartialOrd)]
-pub struct EchtVar {
-    pub values_i: usize,
-    // Integer, Float, or Category(notimplemented)
-    pub field: fields::Field,
-}
 
 #[derive(Debug)]
 pub struct EchtVars {
@@ -37,9 +31,9 @@ pub struct EchtVars {
     pub longs: Vec<var32::LongVariant>,
     // the values for a chunk are stored in values.
     pub values: Vec<Vec<u32>>,
-    // values.len() == echts.len() and echts[i] indicates how we
+    // values.len() == fields.len() and fields[i] indicates how we
     // handle values[i]
-    pub echts: Vec<EchtVar>,
+    pub fields: Vec<fields::Field>,
     buffer: Vec<u8>,
 }
 
@@ -54,7 +48,7 @@ impl EchtVars {
             var32s: vec![],
             longs: vec![],
             values: vec![],
-            echts: vec![],
+            fields: vec![],
             buffer: vec![],
         };
 
@@ -69,12 +63,11 @@ impl EchtVars {
             let flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
             eprintln!("fields: {:?}", flds);
             for fld in flds {
-                result.echts.push(EchtVar {
-                    values_i: result.echts.len(),
-                    field: fld,
-                });
+                let mut f = fld.clone();
+                f.values_i = result.fields.len();
+                result.fields.push(f);
             }
-            result.values.resize(result.echts.len(), vec![]);
+            result.values.resize(result.fields.len(), vec![]);
         }
         result
     }
@@ -112,9 +105,9 @@ impl EchtVars {
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
         eprintln!("base-path:{}", base_path);
 
-        for fi in self.echts.iter_mut() {
+        for fi in self.fields.iter_mut() {
             // RUST-TODO: use .fill function. problems with double borrow.
-            let path = format!("{}/{}.bin", base_path, fi.field.alias);
+            let path = format!("{}/{}.bin", base_path, fi.alias);
             //self.fill(fi, path)?;
             let mut iz = self.zip.by_name(&path)?;
             let n = iz.read_u32::<LittleEndian>()? as usize;
@@ -187,24 +180,23 @@ impl EchtVars {
         let eidx = self.var32s.binary_search(&e);
         match eidx {
             Ok(idx) => {
-                // TODO: handle missing
-                for e in &self.echts {
+                for e in &self.fields {
                     let v: u32 = self.values[e.values_i][idx];
                     if v == u32::MAX {
-                        values.push(e.field.missing_value as i32);
+                        values.push(e.missing_value as i32);
                     } else {
-                        if e.field.zigzag {
-                            values.push(zigzag::decode(v) as i32 / e.field.multiplier as i32);
+                        if e.zigzag {
+                            values.push(zigzag::decode(v) as i32 / e.multiplier as i32);
                         } else {
-                            values.push(v as i32 / e.field.multiplier as i32);
+                            values.push(v as i32 / e.multiplier as i32);
                         }
                     }
                 }
             }
             Err(_) => {
                 // variant not found. fill with missing values.
-                for e in &self.echts {
-                    values.push(e.field.missing_value as i32);
+                for e in &self.fields {
+                    values.push(e.missing_value as i32);
                 }
             }
         };
@@ -223,7 +215,7 @@ mod tests {
         let mut e = EchtVars::open("ec.zip");
         e.set_position("chr21".to_string(), 5030088).ok();
 
-        assert_eq!(e.echts.len(), 2);
+        assert_eq!(e.fields.len(), 2);
         assert_eq!(e.values[0].len(), 46881);
         assert_eq!(e.values[1].len(), e.var32s.len());
 
