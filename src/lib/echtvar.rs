@@ -4,6 +4,8 @@ use crate::zigzag;
 use std::fs;
 use std::io;
 use std::io::prelude::*;
+use rust_htslib::bcf::header::Header;
+
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -38,6 +40,7 @@ pub struct EchtVars {
 }
 
 impl EchtVars {
+
     pub fn open(path: &str) -> Self {
         let ep = std::path::Path::new(&*path);
         let file = fs::File::open(ep).expect("error accessing zip file");
@@ -70,6 +73,18 @@ impl EchtVars {
             result.values.resize(result.fields.len(), vec![]);
         }
         result
+    }
+
+    pub fn update_header(self: &mut EchtVars, header: &mut Header) {
+
+        for e in &self.fields {
+
+            header.push_record( 
+                format!("##INFO=<ID={},Type={},Number=1,Description=\"{}\">", e.alias, if e.multiplier == 1 { "Integer" } else { "Float" }, "added by echtvar from ...").as_bytes()
+            );
+
+        }
+
     }
 
     /*
@@ -194,7 +209,7 @@ impl EchtVars {
                 }
             }
             Err(_) => {
-                // variant not found. fill with missing values.
+                // variant nDDDDDot found. fill with missing values.
                 for e in &self.fields {
                     values.push(e.missing_value as i32);
                 }

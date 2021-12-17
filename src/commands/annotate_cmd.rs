@@ -6,6 +6,8 @@ use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use rust_htslib::bcf::{Format, Writer, header::Header};
 
+use echtvar_lib::echtvar::EchtVars;
+
 use byteorder::{LittleEndian, ReadBytesExt};
 
 use stream_vbyte::{
@@ -20,12 +22,16 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
     vcf.set_threads(2).ok();
     let header_view = vcf.header().clone();
     let mut buffer = Buffer::new();
-    let header = Header::from_template(&header_view);
+    let mut header = Header::from_template(&header_view);
+
+    let mut e = EchtVars::open(&*epaths[0]);
+    e.update_header(&mut header);
 
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(opath, &header, false, Format::Bcf).ok().expect("error opening bcf for output");
 
-    let ep = std::path::Path::new(&*epaths[0]);
+    /*
+    //let ep = std::path::Path::new(&*epaths[0]);
     let file = fs::File::open(ep).expect("error accessing zip file");
     let mut archive = zip::ZipArchive::new(&file).expect("error opening zip file");
 
@@ -44,8 +50,8 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
 
     let n_d = decode::<Ssse3>(&comr, n, &mut nums);
     eprintln!("{} {} {:?}", n_d, iz.size(), &nums[..1000]);
+    */
     
-
 
     Ok(())
 }
