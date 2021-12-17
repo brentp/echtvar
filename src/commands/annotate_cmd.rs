@@ -30,6 +30,17 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(opath, &header, false, Format::Bcf).ok().expect("error opening bcf for output");
 
+    for r in vcf.records() {
+        let mut record = r.expect("failed to read record");
+        // TODO:
+        /*
+        if e.check_and_update_variant(&mut record) {
+            ovcf.write(&record).expect("failed to write record");
+        }
+        */
+        break;
+    }
+
     /*
     //let ep = std::path::Path::new(&*epaths[0]);
     let file = fs::File::open(ep).expect("error accessing zip file");

@@ -1,9 +1,3 @@
-# TODO
-
-4 bits * 3 billion == 1.5GB
-
-https://immunant.com/blog/2020/01/bitfields/
-
 usage
 =====
 
