@@ -1,33 +1,20 @@
 use crate::fields;
 use crate::var32;
 use crate::zigzag;
-use std::fs;
-use std::io;
+use std::{io,str,fs};
 use std::io::prelude::*;
-use rust_htslib::bcf::header::Header;
+use rust_htslib::bcf;
 
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
-#[repr(C)]
-union U {
-    f: f32,
-    i: i32,
-}
-
-#[repr(C)]
-struct Value {
-    etype: fields::FieldType,
-    u: U
-}
-
-
 #[derive(Debug)]
 pub struct EchtVars {
     pub zip: zip::ZipArchive<std::fs::File>,
     pub chrom: String,
+    last_rid: i32,
     pub start: u32,
     pub var32s: Vec<u32>,
     pub longs: Vec<var32::LongVariant>,
@@ -47,6 +34,7 @@ impl EchtVars {
         let mut result = EchtVars {
             zip: zip::ZipArchive::new(file).expect("error opening zip file"),
             chrom: "".to_string(),
+            last_rid: -1,
             start: u32::MAX,
             var32s: vec![],
             longs: vec![],
@@ -75,7 +63,7 @@ impl EchtVars {
         result
     }
 
-    pub fn update_header(self: &mut EchtVars, header: &mut Header) {
+    pub fn update_header(self: &mut EchtVars, header: &mut bcf::header::Header) {
 
         for e in &self.fields {
 
@@ -111,10 +99,11 @@ impl EchtVars {
     */
 
     #[inline(always)]
-    pub fn set_position(self: &mut EchtVars, chromosome: String, position: u32) -> io::Result<()> {
-        if chromosome == self.chrom && position >> 20 == self.start >> 20 {
+    pub fn set_position(self: &mut EchtVars, rid: i32, chromosome: String, position: u32) -> io::Result<()> {
+        if rid == self.last_rid && position >> 20 == self.start >> 20 {
             return Ok(());
         }
+        self.last_rid = rid;
         self.start = position >> 20 << 20; // round to 20 bits.
         self.chrom = chromosome;
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
@@ -176,8 +165,27 @@ impl EchtVars {
         Ok(())
     }
 
+    pub fn check_and_update_variant(self: &mut EchtVars, variant: &mut bcf::record::Record, header: &bcf::header::HeaderView) -> bool {
+
+        let pos = variant.pos() as u32;
+        let rid = variant.rid().unwrap() as i32;
+        if rid != self.last_rid || pos >> 20 != self.start >> 20 {
+            let n: &[u8] = header.rid2name(rid as u32).unwrap();
+            let chrom = str::from_utf8(n).unwrap().to_string();
+            self.set_position(rid, chrom, pos);
+        }
+        let alleles = variant.alleles();
+        let e = var32::encode(pos, alleles[0], alleles[1]);
+        let _eidx = self.var32s.binary_search(&e);
+
+
+
+        true
+    }
+
     pub fn values(
         self: &mut EchtVars,
+        rid: i32,
         chromosome: &[u8],
         position: u32,
         reference: &[u8],
@@ -185,6 +193,7 @@ impl EchtVars {
         values: &mut Vec<i32>,
     ) -> io::Result<()> {
         self.set_position(
+            rid,
             unsafe { std::str::from_utf8_unchecked(chromosome).to_string() },
             position,
         )?;
@@ -228,7 +237,7 @@ mod tests {
     #[test]
     fn test_read() {
         let mut e = EchtVars::open("ec.zip");
-        e.set_position("chr21".to_string(), 5030088).ok();
+        e.set_position(22, "chr21".to_string(), 5030088).ok();
 
         assert_eq!(e.fields.len(), 2);
         assert_eq!(e.values[0].len(), 46881);
@@ -240,7 +249,7 @@ mod tests {
     #[test]
     fn test_search() {
         let mut e = EchtVars::open("ec.zip");
-        e.set_position("chr21".to_string(), 5030088).ok();
+        e.set_position(22, "chr21".to_string(), 5030088).ok();
 
         let mut vals = vec![];
 
