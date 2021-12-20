@@ -1,7 +1,8 @@
 TODO
 ====
 
-handle missing blocks (just need to set all arrays as empty).
++ get float or int from header (not multiplier)
++ fasteval ( and see thincollections crate for storing values or AC/AN and perhaps for fasteval)
 
 usage
 =====

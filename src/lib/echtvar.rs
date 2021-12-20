@@ -121,25 +121,35 @@ impl EchtVars {
             // RUST-TODO: use .fill function. problems with double borrow.
             let path = format!("{}/{}.bin", base_path, fi.alias);
             //self.fill(fi, path)?;
-            let mut iz = self.zip.by_name(&path)?;
-            let n = iz.read_u32::<LittleEndian>()? as usize;
-            //eprintln!("n:{}", n);
-            self.buffer
-                .resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
-            iz.read_exact(&mut self.buffer)?;
-            self.values[fi.values_i].resize(n, 0x0);
-            // TODO: use skip to first position.
-            let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut self.values[fi.values_i]);
+            let mut rzip = self.zip.by_name(&path);
+            match rzip {
+                Ok(mut iz) => {
+                    let n = iz.read_u32::<LittleEndian>()? as usize;
+                    //eprintln!("n:{}", n);
+                    self.buffer
+                        .resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
+                    iz.read_exact(&mut self.buffer)?;
+                    self.values[fi.values_i].resize(n, 0x0);
+                    // TODO: use skip to first position.
+                    let bytes_decoded =
+                        decode::<Ssse3>(&self.buffer, n, &mut self.values[fi.values_i]);
 
-            if bytes_decoded != self.buffer.len() {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "didn't read expected number of values from zip",
-                ));
+                    if bytes_decoded != self.buffer.len() {
+                        return Err(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            "didn't read expected number of values from zip",
+                        ));
+                    }
+                }
+                _ => {
+                    // if we don't find this file we set everything to empty.
+                    self.values[fi.values_i].clear();
+                    self.var32s.clear();
+                }
             }
         }
 
-        {
+        if self.values[0].len() > 0 {
             let path = format!("{}/var32.bin", base_path);
             let mut iz = self.zip.by_name(&path)?;
             let n = iz.read_u32::<LittleEndian>()? as usize;
@@ -164,11 +174,15 @@ impl EchtVars {
             }
         }
 
-        let long_path = format!("{}/too-long-for-var32.txt", base_path);
-        let mut iz = self.zip.by_name(&long_path)?;
-        self.buffer.clear();
-        iz.read_to_end(&mut self.buffer)?;
-        self.longs = serde_json::from_slice(&self.buffer)?;
+        if self.var32s.len() > 0 {
+            let long_path = format!("{}/too-long-for-var32.txt", base_path);
+            let mut iz = self.zip.by_name(&long_path)?;
+            self.buffer.clear();
+            iz.read_to_end(&mut self.buffer)?;
+            self.longs = serde_json::from_slice(&self.buffer)?;
+        } else {
+            self.longs.clear();
+        }
 
         Ok(())
     }
@@ -211,12 +225,13 @@ impl EchtVars {
             let chrom = str::from_utf8(n).unwrap().to_string();
             self.set_position(rid, chrom, pos);
         }
+
+        // TODO prototype fasteval stuff here.
         let alleles = variant.alleles();
         let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {
             let enc = var32::encode(pos, alleles[0], alleles[1]);
             self.var32s.binary_search(&enc)
         } else {
-            //eprintln!("too big");
             let l = var32::LongVariant {
                 position: pos,
                 reference: unsafe { str::from_utf8_unchecked(alleles[0]) }.to_string(),
