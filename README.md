@@ -1,3 +1,8 @@
+TODO
+====
+
+handle missing blocks (just need to set all arrays as empty).
+
 usage
 =====
 
