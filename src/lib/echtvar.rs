@@ -187,6 +187,18 @@ impl EchtVars {
             }
         };
     }
+    fn get_float_value(self: &EchtVars, fld: &fields::Field, idx:usize) -> f32 {
+        let v: u32 = self.values[fld.values_i][idx];
+        return if v == u32::MAX {
+            fld.missing_value as f32
+        } else {
+            if fld.zigzag {
+                (zigzag::decode(v) as f32) / fld.multiplier as f32
+            } else {
+                v as f32 / fld.multiplier as f32
+            }
+        };
+    }
 
     pub fn check_and_update_variant(
         self: &mut EchtVars,
@@ -201,15 +213,40 @@ impl EchtVars {
             self.set_position(rid, chrom, pos);
         }
         let alleles = variant.alleles();
-        let enc = var32::encode(pos, alleles[0], alleles[1]);
-        let eidx = self.var32s.binary_search(&enc);
+        let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {
+                let enc = var32::encode(pos, alleles[0], alleles[1]);
+                self.var32s.binary_search(&enc)
+            } else {
+                //eprintln!("too big");
+                let l = var32::LongVariant{position:pos, 
+                             reference: unsafe { str::from_utf8_unchecked(alleles[0]) }.to_string(),
+                             alternate: unsafe { str::from_utf8_unchecked(alleles[1]) }.to_string(),
+                             idx: 0};
+                let r = self.longs.binary_search(&l);
+                match r {
+                    Ok(idx) => {
+                        Ok(self.longs[idx].idx as usize)
+                    },
+                    Err(idx) => {
+                        eprintln!("NOT FOUND!!!");
+                        Err(0)
+                    }
+
+                }
+                //Ok(0)
+                //Err(0)
+            };
         match eidx {
             Ok(idx) => {
                 for fld in &self.fields {
-                    let val = [self.get_int_value(fld, idx)];
-                    //eprintln!("found: {}={}", fld.alias, val[0]);
-                    //variant.push_info_integer(fld.alias.as_bytes(), &val[..]).expect(&format!("error adding {}", fld.alias).to_string());
-                    variant.push_info_integer(b"gnomad_AC", &val).expect(&format!("error adding {}", fld.alias).to_string());
+
+                    if fld.multiplier == 1 {
+                        let val = [self.get_int_value(fld, idx)];
+                        variant.push_info_integer(fld.alias.as_bytes(), &val).expect(&format!("error adding integer {}", fld.alias).to_string());
+                    } else {
+                        let val = [self.get_float_value(fld, idx)];
+                        variant.push_info_float(fld.alias.as_bytes(), &val).expect(&format!("error adding float {}", fld.alias).to_string());
+                    }
                 }
             }
             Err(_) => {
@@ -293,7 +330,7 @@ mod tests {
 
         let mut vals = vec![];
 
-        let idx = e.values(b"chr21", 5030087, b"C", b"T", &mut vals).ok();
+        let idx = e.values(1, b"chr21", 5030087, b"C", b"T", &mut vals).ok();
         eprintln!("{:?} {:?}", vals, idx);
     }
 }

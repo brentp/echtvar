@@ -54,9 +54,11 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
 
 fn write_long(zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>, long_vars: &mut Vec<var32::LongVariant>, indexes: Vec<usize>) {
     eprintln!("writing {} longs", long_vars.len());
+    let rev_index = argsort(&indexes);
     for l in long_vars.iter_mut() {
-        l.idx = indexes[l.idx as usize] as u32;
+        l.idx = rev_index[l.idx as usize] as u32;
     }
+    long_vars.sort();
     serde_json::to_writer(zipf, &long_vars).expect("error writing long variables");
 }
 
@@ -96,7 +98,8 @@ pub fn argsort<T: Ord>(data: &[T]) -> Vec<usize> {
 }
 
 // https://stackoverflow.com/questions/69764803/how-to-sort-a-vector-by-indices-in-rust/69774341#69774341
-pub fn sort_by_indices<T>(data: &mut [T], mut indices: Vec<usize>) {
+pub fn sort_by_indices<T: Ord>(data: & mut [T], mut indices: Vec<usize>) {
+
     for idx in 0..data.len() {
         if indices[idx] != idx {
             let mut current_idx = idx;
@@ -234,6 +237,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                         u32::MAX
                     } else {
                         let v = (val * fld.multiplier as f32) as i32;
+                        //eprintln!("was:{}, to: {} with mult:{}", val, v, fld.multiplier as f32);
                         if fld.zigzag {
                             zigzag::encode(v)
                         } else {

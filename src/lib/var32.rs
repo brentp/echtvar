@@ -3,6 +3,7 @@ extern crate serde;
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
 use std::convert::From;
+use std::cmp::Ordering;
 
 #[repr(C, align(1))]
 #[derive(BitfieldStruct, Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
@@ -28,14 +29,44 @@ pub struct PRA {
     alternate: [char; 3],
 }
 
-#[allow(dead_code)]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LongVariant {
     pub position: u32,
     pub reference: std::string::String,
     pub alternate: std::string::String,
     pub idx: u32,
 }
+
+// implement this as we need to exclude idx from the eq.
+impl PartialEq for LongVariant {
+  fn eq(&self, other: &Self) -> bool {
+      self.position == other.position && self.reference == other.reference && self.alternate == other.alternate
+  }
+}
+
+impl Eq for LongVariant { }
+
+// implement this as we need to exclude idx from the eq.
+impl PartialOrd for LongVariant {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+      if self.position != other.position {
+          return self.position.partial_cmp(&other.position);
+      }
+      if self.reference != other.reference {
+          return self.reference.partial_cmp(&other.reference);
+      }
+      return self.alternate.partial_cmp(&other.alternate);
+    }
+}
+
+impl Ord for LongVariant {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(&other).unwrap()
+    }
+
+}
+
+
 
 pub const MAX_COMBINED_LEN: usize = 4;
 
@@ -64,16 +95,16 @@ impl From<Var32> for u32 {
 #[inline]
 pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
     let mut v: Var32 = Var32::default();
-    v.set_alen(alt_allele.len() as u32);
-    v.set_rlen(ref_allele.len() as u32);
     v.set_position(pos);
 
     if ref_allele.len() + alt_allele.len() > MAX_COMBINED_LEN {
-        // too large to encode. but we signal that by setting lengths to 0.
-        v.set_alen(0);
-        v.set_rlen(0);
+        // too large to encode. but we signal that by setting both lengths to 3.
+        v.set_alen(3);
+        v.set_rlen(3);
         return u32::from(v);
     }
+    v.set_alen(alt_allele.len() as u32);
+    v.set_rlen(ref_allele.len() as u32);
     let mut ra: u32 = 0;
 
     for a in ref_allele.iter() {
