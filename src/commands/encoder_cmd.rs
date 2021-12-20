@@ -1,12 +1,9 @@
 use echtvar_lib::fields;
-use stream_vbyte::{
-    encode::encode,
-    x86::Sse41
-};
 use echtvar_lib::var32;
 use echtvar_lib::zigzag;
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
+use stream_vbyte::{encode::encode, x86::Sse41};
 
 use std::borrow::{Borrow, BorrowMut};
 use std::fs::File;
@@ -52,7 +49,11 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     };
 }
 
-fn write_long(zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>, long_vars: &mut Vec<var32::LongVariant>, indexes: Vec<usize>) {
+fn write_long(
+    zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>,
+    long_vars: &mut Vec<var32::LongVariant>,
+    indexes: Vec<usize>,
+) {
     eprintln!("writing {} longs", long_vars.len());
     let rev_index = argsort(&indexes);
     for l in long_vars.iter_mut() {
@@ -68,7 +69,6 @@ fn write_bits(
     zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>,
     compressed: &mut [u8],
 ) {
-
     zipf.write_u32::<LittleEndian>(values.len() as u32).ok();
 
     if sorted {
@@ -85,10 +85,14 @@ fn write_bits(
     }
 
     let encoded_len = encode::<Sse41>(&values, compressed);
-    eprintln!("encoded {} u32s into {} bytes. looks like: {:?}", values.len(), encoded_len, &compressed[..100]);
+    eprintln!(
+        "encoded {} u32s into {} bytes. looks like: {:?}",
+        values.len(),
+        encoded_len,
+        &compressed[..100]
+    );
     zipf.write_all(&compressed[..encoded_len]).ok();
 }
-
 
 // https://stackoverflow.com/a/69764256
 pub fn argsort<T: Ord>(data: &[T]) -> Vec<usize> {
@@ -98,8 +102,7 @@ pub fn argsort<T: Ord>(data: &[T]) -> Vec<usize> {
 }
 
 // https://stackoverflow.com/questions/69764803/how-to-sort-a-vector-by-indices-in-rust/69774341#69774341
-pub fn sort_by_indices<T: Ord>(data: & mut [T], mut indices: Vec<usize>) {
-
+pub fn sort_by_indices<T: Ord>(data: &mut [T], mut indices: Vec<usize>) {
     for idx in 0..data.len() {
         if indices[idx] != idx {
             let mut current_idx = idx;
@@ -118,11 +121,11 @@ pub fn sort_by_indices<T: Ord>(data: & mut [T], mut indices: Vec<usize>) {
 
 fn is_sorted<T: std::cmp::PartialOrd>(data: &Vec<T>) -> bool {
     for i in 1..data.len() {
-        if data[i] < data[i-1] {
-            return false
+        if data[i] < data[i - 1] {
+            return false;
         }
     }
-    return true
+    return true;
 }
 
 pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
@@ -152,10 +155,15 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
-    
 
-    zipf.start_file("echtvar/config.json", options).expect("error starting json file");
-    zipf.write_all(serde_json::to_string_pretty(&fields).expect("error serializing json config").as_bytes()).ok();
+    zipf.start_file("echtvar/config.json", options)
+        .expect("error starting json file");
+    zipf.write_all(
+        serde_json::to_string_pretty(&fields)
+            .expect("error serializing json config")
+            .as_bytes(),
+    )
+    .ok();
 
     let mut compressed = vec![0u8; 50_000_000]; // TODO: set this based on values.len
     let mut last_rid: i32 = -1;
@@ -179,7 +187,6 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                     let indexes = argsort(&var32s);
 
                     for (i, values) in values_vv.iter_mut().enumerate() {
-
                         let fname =
                             format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)

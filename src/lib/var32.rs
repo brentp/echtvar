@@ -2,8 +2,8 @@ extern crate libc;
 extern crate serde;
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
-use std::convert::From;
 use std::cmp::Ordering;
+use std::convert::From;
 
 #[repr(C, align(1))]
 #[derive(BitfieldStruct, Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
@@ -39,23 +39,25 @@ pub struct LongVariant {
 
 // implement this as we need to exclude idx from the eq.
 impl PartialEq for LongVariant {
-  fn eq(&self, other: &Self) -> bool {
-      self.position == other.position && self.reference == other.reference && self.alternate == other.alternate
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.position == other.position
+            && self.reference == other.reference
+            && self.alternate == other.alternate
+    }
 }
 
-impl Eq for LongVariant { }
+impl Eq for LongVariant {}
 
 // implement this as we need to exclude idx from the eq.
 impl PartialOrd for LongVariant {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-      if self.position != other.position {
-          return self.position.partial_cmp(&other.position);
-      }
-      if self.reference != other.reference {
-          return self.reference.partial_cmp(&other.reference);
-      }
-      return self.alternate.partial_cmp(&other.alternate);
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.position != other.position {
+            return self.position.partial_cmp(&other.position);
+        }
+        if self.reference != other.reference {
+            return self.reference.partial_cmp(&other.reference);
+        }
+        return self.alternate.partial_cmp(&other.alternate);
     }
 }
 
@@ -63,10 +65,7 @@ impl Ord for LongVariant {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(&other).unwrap()
     }
-
 }
-
-
 
 pub const MAX_COMBINED_LEN: usize = 4;
 
