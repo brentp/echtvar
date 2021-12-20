@@ -1,10 +1,9 @@
 use crate::fields;
 use crate::var32;
 use crate::zigzag;
-use std::{io,str,fs};
-use std::io::prelude::*;
 use rust_htslib::bcf;
-
+use std::io::prelude::*;
+use std::{fs, io, str};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -27,7 +26,6 @@ pub struct EchtVars {
 }
 
 impl EchtVars {
-
     pub fn open(path: &str) -> Self {
         let ep = std::path::Path::new(&*path);
         let file = fs::File::open(ep).expect("error accessing zip file");
@@ -64,15 +62,21 @@ impl EchtVars {
     }
 
     pub fn update_header(self: &mut EchtVars, header: &mut bcf::header::Header) {
-
         for e in &self.fields {
-
-            header.push_record( 
-                format!("##INFO=<ID={},Type={},Number=1,Description=\"{}\">", e.alias, if e.multiplier == 1 { "Integer" } else { "Float" }, "added by echtvar from ...").as_bytes()
+            header.push_record(
+                format!(
+                    "##INFO=<ID={},Type={},Number=1,Description=\"{}\">",
+                    e.alias,
+                    if e.multiplier == 1 {
+                        "Integer"
+                    } else {
+                        "Float"
+                    },
+                    "added by echtvar from ..."
+                )
+                .as_bytes(),
             );
-
         }
-
     }
 
     /*
@@ -99,7 +103,12 @@ impl EchtVars {
     */
 
     #[inline(always)]
-    pub fn set_position(self: &mut EchtVars, rid: i32, chromosome: String, position: u32) -> io::Result<()> {
+    pub fn set_position(
+        self: &mut EchtVars,
+        rid: i32,
+        chromosome: String,
+        position: u32,
+    ) -> io::Result<()> {
         if rid == self.last_rid && position >> 20 == self.start >> 20 {
             return Ok(());
         }
@@ -165,8 +174,25 @@ impl EchtVars {
         Ok(())
     }
 
-    pub fn check_and_update_variant(self: &mut EchtVars, variant: &mut bcf::record::Record, header: &bcf::header::HeaderView) -> bool {
+    #[inline]
+    fn get_int_value(self: &EchtVars, fld: &fields::Field, idx:usize) -> i32 {
+        let v: u32 = self.values[fld.values_i][idx];
+        return if v == u32::MAX {
+            fld.missing_value as i32
+        } else {
+            if fld.zigzag {
+                zigzag::decode(v) as i32
+            } else {
+                v as i32
+            }
+        };
+    }
 
+    pub fn check_and_update_variant(
+        self: &mut EchtVars,
+        variant: &mut bcf::record::Record,
+        header: &bcf::header::HeaderView,
+    ) -> bool {
         let pos = variant.pos() as u32;
         let rid = variant.rid().unwrap() as i32;
         if rid != self.last_rid || pos >> 20 != self.start >> 20 {
@@ -175,10 +201,24 @@ impl EchtVars {
             self.set_position(rid, chrom, pos);
         }
         let alleles = variant.alleles();
-        let e = var32::encode(pos, alleles[0], alleles[1]);
-        let _eidx = self.var32s.binary_search(&e);
+        let enc = var32::encode(pos, alleles[0], alleles[1]);
+        let eidx = self.var32s.binary_search(&enc);
+        match eidx {
+            Ok(idx) => {
+                for fld in &self.fields {
+                    let val = [self.get_int_value(fld, idx)];
+                    //eprintln!("found: {}={}", fld.alias, val[0]);
+                    //variant.push_info_integer(fld.alias.as_bytes(), &val[..]).expect(&format!("error adding {}", fld.alias).to_string());
+                    variant.push_info_integer(b"gnomad_AC", &val).expect(&format!("error adding {}", fld.alias).to_string());
+                }
+            }
+            Err(_) => {
+                for fld in &self.fields {
+                    eprintln!("missing: {}", fld.missing_value as i32);
+                }
+            }
 
-
+        }
 
         true
     }

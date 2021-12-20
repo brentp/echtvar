@@ -20,7 +20,7 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
 
     let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
-    let header_view = vcf.header().clone();
+    let mut header_view = vcf.header();
     let mut buffer = Buffer::new();
     let mut header = Header::from_template(&header_view);
 
@@ -33,7 +33,9 @@ pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<
     let oheader_view = ovcf.header().clone();
 
     for r in vcf.records() {
-        let mut record = r.expect("failed to read record");
+        let mut record = r.expect("error reading record");
+        ovcf.translate(&mut record); //.expect("failed to read record"));
+        //record.set_header(oheader_view);
         // TODO:
         if e.check_and_update_variant(&mut record, &oheader_view) {
             ovcf.write(&record).expect("failed to write record");
