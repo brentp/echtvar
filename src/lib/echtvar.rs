@@ -121,7 +121,7 @@ impl EchtVars {
             // RUST-TODO: use .fill function. problems with double borrow.
             let path = format!("{}/{}.bin", base_path, fi.alias);
             //self.fill(fi, path)?;
-            let mut rzip = self.zip.by_name(&path);
+            let rzip = self.zip.by_name(&path);
             match rzip {
                 Ok(mut iz) => {
                     let n = iz.read_u32::<LittleEndian>()? as usize;

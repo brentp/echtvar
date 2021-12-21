@@ -19,7 +19,7 @@ pub struct Field {
     pub multiplier: u32,
     #[serde(default)]
     pub ftype: FieldType,
-    #[serde(default = "default_values_i")]
+    #[serde(default = "default_values_i",skip_serializing)]
     pub(crate) values_i: usize,
 }
 
