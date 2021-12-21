@@ -1,8 +1,10 @@
 TODO
 ====
 
-+ get float or int from header (not multiplier)
 + fasteval ( and see thincollections crate for storing values or AC/AN and perhaps for fasteval)
++ use logging crate
++ use trait for setting values
++ check ftype against value in vcf header
 
 usage
 =====

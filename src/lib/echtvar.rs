@@ -67,7 +67,7 @@ impl EchtVars {
                 format!(
                     "##INFO=<ID={},Type={},Number=1,Description=\"{}\">",
                     e.alias,
-                    if e.multiplier == 1 {
+                    if e.ftype == fields::FieldType::Integer {
                         "Integer"
                     } else {
                         "Float"
@@ -223,7 +223,7 @@ impl EchtVars {
         if rid != self.last_rid || pos >> 20 != self.start >> 20 {
             let n: &[u8] = header.rid2name(rid as u32).unwrap();
             let chrom = str::from_utf8(n).unwrap().to_string();
-            self.set_position(rid, chrom, pos);
+            let _ = self.set_position(rid, chrom, pos);
         }
 
         // TODO prototype fasteval stuff here.
@@ -249,27 +249,29 @@ impl EchtVars {
         match eidx {
             Ok(idx) => {
                 for fld in &self.fields {
-                    if fld.multiplier == 1 {
+                    if fld.ftype == fields::FieldType::Integer {
                         let val = [self.get_int_value(fld, idx)];
                         variant
                             .push_info_integer(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding integer {}", fld.alias).to_string());
-                    } else {
+                    } else if fld.ftype == fields::FieldType::Float {
                         let val = [self.get_float_value(fld, idx)];
                         variant
                             .push_info_float(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding float {}", fld.alias).to_string());
+                    } else {
+                        panic!("not implemented");
                     }
                 }
             }
             Err(_) => {
                 for fld in &self.fields {
-                    if fld.multiplier == 1 {
+                    if fld.ftype == fields::FieldType::Integer {
                         let val = [fld.missing_value as i32];
                         variant
                             .push_info_integer(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding integer {}", fld.alias).to_string());
-                    } else {
+                    } else if fld.ftype == fields::FieldType::Float {
                         let val = [fld.missing_value as f32];
                         variant
                             .push_info_float(fld.alias.as_bytes(), &val)

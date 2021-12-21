@@ -54,7 +54,6 @@ fn write_long(
     long_vars: &mut Vec<var32::LongVariant>,
     indexes: Vec<usize>,
 ) {
-    eprintln!("writing {} longs", long_vars.len());
     let rev_index = argsort(&indexes);
     for l in long_vars.iter_mut() {
         l.idx = rev_index[l.idx as usize] as u32;
@@ -85,12 +84,6 @@ fn write_bits(
     }
 
     let encoded_len = encode::<Sse41>(&values, compressed);
-    eprintln!(
-        "encoded {} u32s into {} bytes. looks like: {:?}",
-        values.len(),
-        encoded_len,
-        &compressed[..100]
-    );
     zipf.write_all(&compressed[..encoded_len]).ok();
 }
 
