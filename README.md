@@ -3,6 +3,7 @@ TODO
 
 + fasteval ( and see thincollections crate for storing values or AC/AN and perhaps for fasteval)
 + use logging crate
++ support multiple echtvar files
 + use trait for setting values
 + check ftype against value in vcf header
 

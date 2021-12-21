@@ -15,8 +15,12 @@ use stream_vbyte::{
 };
 */
 
-pub fn annotate_main(vpath: &str, opath: &str, epaths: Vec<&str>) -> io::Result<()> {
-    let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
+pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&str>) -> io::Result<()> {
+    let mut ipath = vpath;
+    if ipath == "-" || ipath == "stdin" {
+        ipath = "/dev/stdin";
+    }
+    let mut vcf = Reader::from_path(ipath).ok().expect("Error opening vcf.");
     vcf.set_threads(2).expect("error setting threads");
     let header_view = vcf.header();
     let mut header = Header::from_template(&header_view);
