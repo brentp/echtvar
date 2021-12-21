@@ -259,11 +259,13 @@ impl EchtVars {
                         variant
                             .push_info_integer(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding integer {}", fld.alias).to_string());
+                        self.evalues[fld.values_i] = val[0] as f64;
                     } else if fld.ftype == fields::FieldType::Float {
                         let val = [self.get_float_value(fld, idx)];
                         variant
                             .push_info_float(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding float {}", fld.alias).to_string());
+                        self.evalues[fld.values_i] = val[0] as f64;
                     } else {
                         panic!("not implemented");
                     }

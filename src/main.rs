@@ -5,7 +5,6 @@ pub mod commands;
 extern crate clap;
 use commands::{annotate_cmd, encoder_cmd};
 use std::{io, error::Error};
-use fasteval::Evaler; 
 
 
 const VERSION: &str = "0.0.1";
@@ -24,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         (@subcommand anno =>
             (about: "annotate a VCF/BCF with one or more echtvar files")
             (@arg echtvar: -e ... +takes_value number_of_values(1) "echtvar files to annotate with. can be specified many times")
-            (@arg filter: -f  +takes_value number_of_values(1) "expression that determines which variants to remove")
+            (@arg include: -i  +takes_value number_of_values(1) "expression that determines which variants to keep in output")
             (@arg INPUT_VCF: +required "vcf")
             (@arg OUTPUT_VCF: +required "path to bcf output file")
         )
@@ -39,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     } else if let Some(matches) = matches.subcommand_matches("anno") {
         let echt_files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
-        let expr = matches.value_of("filter");
+        let expr = matches.value_of("include");
 
         annotate_cmd::annotate_main(
             matches.value_of("INPUT_VCF").unwrap(),

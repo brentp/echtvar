@@ -1,4 +1,3 @@
-use std::io;
 use std::time;
 use std::error::Error;
 
@@ -21,7 +20,7 @@ use stream_vbyte::{
 };
 */
 
-pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&str>) ->  Result<(), Box<dyn Error>> {
+pub fn annotate_main(vpath: &str, opath: &str, include_expr:Option<&str>, epaths: Vec<&str>) ->  Result<(), Box<dyn Error>> {
     let mut ipath = vpath;
     if ipath == "-" || ipath == "stdin" {
         ipath = "/dev/stdin";
@@ -41,7 +40,7 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
     for (i, fld) in e.fields.iter().enumerate() {
         unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &e.evalues[i])}
     }
-    let compiled = if let Some(uexpr) = expr {
+    let compiled = if let Some(uexpr) = include_expr {
         Some(parser.parse(uexpr, &mut slab.ps)?.from(&slab.ps).compile(&slab.ps, &mut slab.cs))
     } else {
         None
@@ -68,7 +67,6 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
                                      //record.set_header(oheader_view);
                                      // TODO:
         n += 1;
-        let _val = fasteval::eval_compiled!(uc, &slab, &mut ns);
         // TODO:  start here.
         if n % modu == 0 {
             let rid = record.rid().unwrap();
@@ -87,7 +85,10 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
             );
         }
         if e.check_and_update_variant(&mut record, &oheader_view) {
-            ovcf.write(&record).expect("failed to write record");
+            let include = fasteval::eval_compiled!(uc, &slab, &mut ns) != 0.0;
+            if include {
+                ovcf.write(&record).expect("failed to write record");
+            }
         }
     }
     let mili = time::Instant::now().duration_since(start).as_millis();
