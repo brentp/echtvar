@@ -19,6 +19,9 @@ pub struct EchtVars {
     pub longs: Vec<var32::LongVariant>,
     // the values for a chunk are stored in values.
     pub values: Vec<Vec<u32>>,
+
+    // for storing values used by fasteval
+    pub evalues: Vec<f64>,
     // values.len() == fields.len() and fields[i] indicates how we
     // handle values[i]
     pub fields: Vec<fields::Field>,
@@ -37,6 +40,7 @@ impl EchtVars {
             var32s: vec![],
             longs: vec![],
             values: vec![],
+            evalues: vec![],
             fields: vec![],
             buffer: vec![],
         };
@@ -57,6 +61,7 @@ impl EchtVars {
                 result.fields.push(f);
             }
             result.values.resize(result.fields.len(), vec![]);
+            result.evalues.resize(result.fields.len(), 0.0);
         }
         result
     }

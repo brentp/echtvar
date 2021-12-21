@@ -1,10 +1,16 @@
 use std::io;
 use std::time;
+use std::error::Error;
 
 use rust_htslib::bcf::{header::Header, Format, Writer};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 
 use echtvar_lib::echtvar::EchtVars;
+
+use fasteval::Evaler;
+use fasteval::Compiler;
+use fasteval::eval_compiled;
+
 
 /*
 use byteorder::{LittleEndian, ReadBytesExt};
@@ -15,7 +21,7 @@ use stream_vbyte::{
 };
 */
 
-pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&str>) -> io::Result<()> {
+pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&str>) ->  Result<(), Box<dyn Error>> {
     let mut ipath = vpath;
     if ipath == "-" || ipath == "stdin" {
         ipath = "/dev/stdin";
@@ -28,6 +34,22 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
     let mut e = EchtVars::open(&*epaths[0]);
     e.update_header(&mut header);
 
+    let parser = fasteval::Parser::new();
+    let mut slab = fasteval::Slab::new();
+    let mut ns = fasteval::EmptyNamespace;
+
+    for (i, fld) in e.fields.iter().enumerate() {
+        unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &e.evalues[i])}
+    }
+    let compiled = if let Some(uexpr) = expr {
+        Some(parser.parse(uexpr, &mut slab.ps)?.from(&slab.ps).compile(&slab.ps, &mut slab.cs))
+    } else {
+        None
+    };
+
+    //let val = fasteval::eval_compiled!(compiled.unwrap(), &slab, &mut ns);
+    //eprintln!("val:{}", val);
+
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(opath, &header, false, Format::Bcf)
         .ok()
@@ -38,6 +60,7 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
     let start = time::Instant::now();
     let mut n = 0;
     let mut modu = 10000;
+    let uc = compiled.unwrap();
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
@@ -45,6 +68,8 @@ pub fn annotate_main(vpath: &str, opath: &str, expr:Option<&str>, epaths: Vec<&s
                                      //record.set_header(oheader_view);
                                      // TODO:
         n += 1;
+        let _val = fasteval::eval_compiled!(uc, &slab, &mut ns);
+        // TODO:  start here.
         if n % modu == 0 {
             let rid = record.rid().unwrap();
             let chrom = std::str::from_utf8(oheader_view.rid2name(rid).unwrap()).unwrap();
