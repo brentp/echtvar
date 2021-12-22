@@ -237,7 +237,6 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                         u32::MAX
                     } else {
                         let v = (val * fld.multiplier as f32) as i32;
-                        //eprintln!("was:{}, to: {} with mult:{}", val, v, fld.multiplier as f32);
                         if fld.zigzag {
                             zigzag::encode(v)
                         } else {

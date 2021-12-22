@@ -43,6 +43,35 @@ pub struct EchtVars {
     buffer: Vec<u8>,
 }
 
+pub trait Variant {
+    fn chrom(&self) -> std::string::String;
+    fn rid(&self) -> i32;
+    fn position(&self) -> u32;
+    fn alleles(&self) -> Vec<&[u8]>;
+}
+
+impl Variant for bcf::record::Record {
+
+    fn chrom(&self) -> std::string::String {
+            let rid = self.rid().unwrap();
+            let n: &[u8] = self.header().rid2name(rid as u32).unwrap();
+            str::from_utf8(n).unwrap().to_string()
+    }
+
+    fn rid(&self) -> i32 {
+        self.rid().unwrap() as i32
+    }
+
+    fn position(&self) -> u32 {
+        self.pos() as u32
+    }
+
+    fn alleles(&self) -> Vec<&[u8]> {
+        self.alleles()
+    }
+
+}
+
 impl EchtVars {
     pub fn open(path: &str) -> Self {
         let ep = std::path::Path::new(&*path);
@@ -226,30 +255,25 @@ impl EchtVars {
             fld.missing_value as f32
         } else {
             if fld.zigzag {
-                (zigzag::decode(v) as f32) / fld.multiplier as f32
+                (zigzag::decode(v) as f32) / (fld.multiplier as f32)
             } else {
-                v as f32 / fld.multiplier as f32
+                (v as f32) / (fld.multiplier as f32)
             }
         };
     }
 
-    //pub fn update_expr_values(self: &mut EchtVars, )
-
-    pub fn update_expr_values(
+    pub fn update_expr_values<T : Variant>(
         self: &mut EchtVars,
-        variant: &mut bcf::record::Record,
+        variant: &mut T,
         expr_values: &mut Vec<f64>,
     ) {
-        // TODO: take chrom, pos instead of variant
-        let pos = variant.pos() as u32;
-        let rid = variant.rid().unwrap() as i32;
+        let pos = variant.position();
+        let rid = variant.rid();
         if rid != self.last_rid || pos >> 20 != self.start >> 20 {
-            let n: &[u8] = variant.header().rid2name(rid as u32).unwrap();
-            let chrom = str::from_utf8(n).unwrap().to_string();
+            let chrom = variant.chrom();
             let _ = self.set_position(rid, chrom, pos);
         }
 
-        // TODO prototype fasteval stuff here.
         let alleles = variant.alleles();
         let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {
             let enc = var32::encode(pos, alleles[0], alleles[1]);
@@ -266,8 +290,6 @@ impl EchtVars {
                 Ok(idx) => Ok(self.longs[idx].idx as usize),
                 Err(_) => Err(0),
             }
-            //Ok(0)
-            //Err(0)
         };
         match eidx {
             Ok(idx) => {
@@ -276,20 +298,10 @@ impl EchtVars {
                         let val = self.get_int_value(fld, idx);
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64
-                        /*
-                        variant
-                            .push_info_integer(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding integer {}", fld.alias).to_string());
-                            */
                     } else if fld.ftype == fields::FieldType::Float {
                         let val = self.get_float_value(fld, idx);
                         self.evalues[fld.values_i] = Value::Float(val);
                         expr_values[fld.values_i] = val as f64
-                        /*
-                        variant
-                            .push_info_float(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding float {}", fld.alias).to_string());
-                            */
                     } else {
                         panic!("not implemented");
                     }
@@ -301,20 +313,10 @@ impl EchtVars {
                         let val = fld.missing_value as i32;
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64
-                        /*
-                        variant
-                            .push_info_integer(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding integer {}", fld.alias).to_string());
-                            */
                     } else if fld.ftype == fields::FieldType::Float {
                         let val = fld.missing_value as f32;
                         self.evalues[fld.values_i] = Value::Float(val);
                         expr_values[fld.values_i] = val as f64
-                        /*
-                        variant
-                            .push_info_float(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding float {}", fld.alias).to_string());
-                            */
                     }
                 }
             }
