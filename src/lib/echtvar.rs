@@ -233,17 +233,18 @@ impl EchtVars {
         };
     }
 
+    //pub fn update_expr_values(self: &mut EchtVars, )
+
     pub fn update_expr_values(
         self: &mut EchtVars,
         variant: &mut bcf::record::Record,
-        header: &bcf::header::HeaderView,
         expr_values: &mut Vec<f64>,
     ) {
         // TODO: take chrom, pos instead of variant
         let pos = variant.pos() as u32;
         let rid = variant.rid().unwrap() as i32;
         if rid != self.last_rid || pos >> 20 != self.start >> 20 {
-            let n: &[u8] = header.rid2name(rid as u32).unwrap();
+            let n: &[u8] = variant.header().rid2name(rid as u32).unwrap();
             let chrom = str::from_utf8(n).unwrap().to_string();
             let _ = self.set_position(rid, chrom, pos);
         }

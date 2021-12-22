@@ -91,7 +91,7 @@ pub fn annotate_main(
             );
         }
         // this updates evalues
-        e.update_expr_values(&mut record, &oheader_view, &mut expr_values);
+        e.update_expr_values(&mut record, &mut expr_values);
 
         for fld in &e.fields {
             let v = e.evalues[fld.values_i].value();
