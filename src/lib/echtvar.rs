@@ -51,11 +51,10 @@ pub trait Variant {
 }
 
 impl Variant for bcf::record::Record {
-
     fn chrom(&self) -> std::string::String {
-            let rid = self.rid().unwrap();
-            let n: &[u8] = self.header().rid2name(rid as u32).unwrap();
-            str::from_utf8(n).unwrap().to_string()
+        let rid = self.rid().unwrap();
+        let n: &[u8] = self.header().rid2name(rid as u32).unwrap();
+        str::from_utf8(n).unwrap().to_string()
     }
 
     fn rid(&self) -> i32 {
@@ -69,7 +68,6 @@ impl Variant for bcf::record::Record {
     fn alleles(&self) -> Vec<&[u8]> {
         self.alleles()
     }
-
 }
 
 impl EchtVars {
@@ -262,7 +260,7 @@ impl EchtVars {
         };
     }
 
-    pub fn update_expr_values<T : Variant>(
+    pub fn update_expr_values<T: Variant>(
         self: &mut EchtVars,
         variant: &mut T,
         expr_values: &mut Vec<f64>,
@@ -349,8 +347,8 @@ mod tests {
 
         pub struct Var<'a> {
             chrom: std::string::String, //b"chr21"
-            pos: u32, // 5030087,
-            alleles: Vec<&'a [u8]>, //vec!["C", "T"],
+            pos: u32,                   // 5030087,
+            alleles: Vec<&'a [u8]>,     //vec!["C", "T"],
         }
 
         impl<'a> Variant for Var<'a> {
@@ -368,7 +366,11 @@ mod tests {
             }
         }
 
-        let mut variant = Var{chrom: "chr21".to_string(), pos: 5030087, alleles: vec![b"C", b"T"]};
+        let mut variant = Var {
+            chrom: "chr21".to_string(),
+            pos: 5030087,
+            alleles: vec![b"C", b"T"],
+        };
 
         let idx = e.update_expr_values(&mut variant, &mut vals);
         eprintln!("vals:{:?} {:?}", vals, idx);

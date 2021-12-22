@@ -4,8 +4,7 @@ pub mod commands;
 #[macro_use]
 extern crate clap;
 use commands::{annotate_cmd, encoder_cmd};
-use std::{io, error::Error};
-
+use std::error::Error;
 
 const VERSION: &str = "0.0.1";
 

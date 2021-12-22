@@ -7,7 +7,6 @@ use rust_htslib::bcf::{Read as BCFRead, Reader};
 use echtvar_lib::echtvar::EchtVars;
 use echtvar_lib::echtvar::Value;
 
-use fasteval::eval_compiled;
 use fasteval::Compiler;
 use fasteval::Evaler;
 
@@ -36,10 +35,7 @@ pub fn annotate_main(
 
     for (i, fld) in e.fields.iter().enumerate() {
         expr_values.push(0.0 as f64);
-        unsafe {
-            slab.ps
-                .add_unsafe_var(fld.alias.clone(), &expr_values[i])
-        }
+        unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &expr_values[i]) }
     }
     let compiled = if let Some(uexpr) = include_expr {
         Some(
