@@ -1,26 +1,22 @@
-use std::time;
 use std::error::Error;
+use std::time;
 
 use rust_htslib::bcf::{header::Header, Format, Writer};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 
 use echtvar_lib::echtvar::EchtVars;
+use echtvar_lib::echtvar::Value;
 
-use fasteval::Evaler;
-use fasteval::Compiler;
 use fasteval::eval_compiled;
+use fasteval::Compiler;
+use fasteval::Evaler;
 
-
-/*
-use byteorder::{LittleEndian, ReadBytesExt};
-
-use stream_vbyte::{
-    decode::decode,
-    x86::Ssse3
-};
-*/
-
-pub fn annotate_main(vpath: &str, opath: &str, include_expr:Option<&str>, epaths: Vec<&str>) ->  Result<(), Box<dyn Error>> {
+pub fn annotate_main(
+    vpath: &str,
+    opath: &str,
+    include_expr: Option<&str>,
+    epaths: Vec<&str>,
+) -> Result<(), Box<dyn Error>> {
     let mut ipath = vpath;
     if ipath == "-" || ipath == "stdin" {
         ipath = "/dev/stdin";
@@ -36,12 +32,22 @@ pub fn annotate_main(vpath: &str, opath: &str, include_expr:Option<&str>, epaths
     let parser = fasteval::Parser::new();
     let mut slab = fasteval::Slab::new();
     let mut ns = fasteval::EmptyNamespace;
+    let mut expr_values = vec![];
 
     for (i, fld) in e.fields.iter().enumerate() {
-        unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &e.evalues[i])}
+        expr_values.push(0.0 as f64);
+        unsafe {
+            slab.ps
+                .add_unsafe_var(fld.alias.clone(), &expr_values[i])
+        }
     }
     let compiled = if let Some(uexpr) = include_expr {
-        Some(parser.parse(uexpr, &mut slab.ps)?.from(&slab.ps).compile(&slab.ps, &mut slab.cs))
+        Some(
+            parser
+                .parse(uexpr, &mut slab.ps)?
+                .from(&slab.ps)
+                .compile(&slab.ps, &mut slab.cs),
+        )
     } else {
         None
     };
@@ -84,12 +90,37 @@ pub fn annotate_main(vpath: &str, opath: &str, include_expr:Option<&str>, epaths
                 1000 * n / mili
             );
         }
-        if e.check_and_update_variant(&mut record, &oheader_view) {
-            let include = fasteval::eval_compiled!(uc, &slab, &mut ns) != 0.0;
-            if include {
-                ovcf.write(&record).expect("failed to write record");
+        // this updates evalues
+        e.update_expr_values(&mut record, &oheader_view, &mut expr_values);
+
+        for fld in &e.fields {
+            let v = e.evalues[fld.values_i].value();
+            expr_values[fld.values_i] = v;
+        }
+
+        let include = fasteval::eval_compiled!(uc, &slab, &mut ns) != 0.0;
+        if !include {
+            continue;
+        }
+        for fld in &e.fields {
+            let v = e.evalues[fld.values_i];
+
+            match v {
+                Value::Int(i) => {
+                    let val = [i];
+                    record
+                        .push_info_integer(fld.alias.as_bytes(), &val)
+                        .expect(&format!("error adding integer {}", fld.alias).to_string());
+                }
+                Value::Float(f) => {
+                    let val = [f];
+                    record
+                        .push_info_float(fld.alias.as_bytes(), &val)
+                        .expect(&format!("error adding float {}", fld.alias).to_string());
+                }
             }
         }
+        ovcf.write(&record).expect("failed to write record");
     }
     let mili = time::Instant::now().duration_since(start).as_millis();
     eprintln!(

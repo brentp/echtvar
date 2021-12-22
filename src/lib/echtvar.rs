@@ -9,6 +9,21 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
+#[derive(Debug, Clone, Copy)]
+pub enum Value {
+    Int(i32),
+    Float(f32),
+}
+
+impl Value {
+    pub fn value(self) -> f64 {
+        match self {
+            Value::Int(i) => i as f64,
+            Value::Float(f) => f as f64,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct EchtVars {
     pub zip: zip::ZipArchive<std::fs::File>,
@@ -21,7 +36,7 @@ pub struct EchtVars {
     pub values: Vec<Vec<u32>>,
 
     // for storing values used by fasteval
-    pub evalues: Vec<f64>,
+    pub evalues: Vec<Value>,
     // values.len() == fields.len() and fields[i] indicates how we
     // handle values[i]
     pub fields: Vec<fields::Field>,
@@ -61,7 +76,7 @@ impl EchtVars {
                 result.fields.push(f);
             }
             result.values.resize(result.fields.len(), vec![]);
-            result.evalues.resize(result.fields.len(), 0.0);
+            result.evalues.resize(result.fields.len(), Value::Int(0));
         }
         result
     }
@@ -218,11 +233,13 @@ impl EchtVars {
         };
     }
 
-    pub fn check_and_update_variant(
+    pub fn update_expr_values(
         self: &mut EchtVars,
         variant: &mut bcf::record::Record,
         header: &bcf::header::HeaderView,
-    ) -> bool {
+        expr_values: &mut Vec<f64>,
+    ) {
+        // TODO: take chrom, pos instead of variant
         let pos = variant.pos() as u32;
         let rid = variant.rid().unwrap() as i32;
         if rid != self.last_rid || pos >> 20 != self.start >> 20 {
@@ -255,17 +272,23 @@ impl EchtVars {
             Ok(idx) => {
                 for fld in &self.fields {
                     if fld.ftype == fields::FieldType::Integer {
-                        let val = [self.get_int_value(fld, idx)];
+                        let val = self.get_int_value(fld, idx);
+                        self.evalues[fld.values_i] = Value::Int(val);
+                        expr_values[fld.values_i] = val as f64
+                        /*
                         variant
                             .push_info_integer(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding integer {}", fld.alias).to_string());
-                        self.evalues[fld.values_i] = val[0] as f64;
+                            */
                     } else if fld.ftype == fields::FieldType::Float {
-                        let val = [self.get_float_value(fld, idx)];
+                        let val = self.get_float_value(fld, idx);
+                        self.evalues[fld.values_i] = Value::Float(val);
+                        expr_values[fld.values_i] = val as f64
+                        /*
                         variant
                             .push_info_float(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding float {}", fld.alias).to_string());
-                        self.evalues[fld.values_i] = val[0] as f64;
+                            */
                     } else {
                         panic!("not implemented");
                     }
@@ -274,68 +297,27 @@ impl EchtVars {
             Err(_) => {
                 for fld in &self.fields {
                     if fld.ftype == fields::FieldType::Integer {
-                        let val = [fld.missing_value as i32];
+                        let val = fld.missing_value as i32;
+                        self.evalues[fld.values_i] = Value::Int(val);
+                        expr_values[fld.values_i] = val as f64
+                        /*
                         variant
                             .push_info_integer(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding integer {}", fld.alias).to_string());
+                            */
                     } else if fld.ftype == fields::FieldType::Float {
-                        let val = [fld.missing_value as f32];
+                        let val = fld.missing_value as f32;
+                        self.evalues[fld.values_i] = Value::Float(val);
+                        expr_values[fld.values_i] = val as f64
+                        /*
                         variant
                             .push_info_float(fld.alias.as_bytes(), &val)
                             .expect(&format!("error adding float {}", fld.alias).to_string());
+                            */
                     }
                 }
             }
         }
-
-        true
-    }
-
-    pub fn values(
-        self: &mut EchtVars,
-        rid: i32,
-        chromosome: &[u8],
-        position: u32,
-        reference: &[u8],
-        alternate: &[u8],
-        values: &mut Vec<i32>,
-    ) -> io::Result<()> {
-        self.set_position(
-            rid,
-            unsafe { std::str::from_utf8_unchecked(chromosome).to_string() },
-            position,
-        )?;
-
-        let e = var32::encode(position, reference, alternate);
-        values.clear();
-
-        let eidx = self.var32s.binary_search(&e);
-        match eidx {
-            Ok(idx) => {
-                for e in &self.fields {
-                    let v: u32 = self.values[e.values_i][idx];
-                    if v == u32::MAX {
-                        values.push(e.missing_value as i32);
-                    } else {
-                        if e.zigzag {
-                            values.push(zigzag::decode(v) as i32 / e.multiplier as i32);
-                        } else {
-                            values.push(v as i32 / e.multiplier as i32);
-                        }
-                    }
-                }
-            }
-            Err(_) => {
-                // variant nDDDDDot found. fill with missing values.
-                for e in &self.fields {
-                    values.push(e.missing_value as i32);
-                }
-            }
-        };
-
-        eprintln!("r:{:?}, {}, {:?}", eidx, e, &self.var32s[..10]);
-
-        Ok(())
     }
 }
 

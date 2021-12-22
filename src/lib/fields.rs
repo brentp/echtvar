@@ -20,7 +20,7 @@ pub struct Field {
     #[serde(default)]
     pub ftype: FieldType,
     #[serde(default = "default_values_i",skip_serializing)]
-    pub(crate) values_i: usize,
+    pub values_i: usize,
 }
 
 fn default_missing_value() -> i32 {
