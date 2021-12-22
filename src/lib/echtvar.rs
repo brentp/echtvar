@@ -345,8 +345,33 @@ mod tests {
         e.set_position(22, "chr21".to_string(), 5030088).ok();
 
         let mut vals = vec![];
+        vals.resize(3, 0.0);
 
-        let idx = e.values(1, b"chr21", 5030087, b"C", b"T", &mut vals).ok();
-        eprintln!("{:?} {:?}", vals, idx);
+        pub struct Var<'a> {
+            chrom: std::string::String, //b"chr21"
+            pos: u32, // 5030087,
+            alleles: Vec<&'a [u8]>, //vec!["C", "T"],
+        }
+
+        impl<'a> Variant for Var<'a> {
+            fn chrom(&self) -> std::string::String {
+                self.chrom.clone()
+            }
+            fn position(&self) -> u32 {
+                self.pos
+            }
+            fn rid(&self) -> i32 {
+                1
+            }
+            fn alleles(&self) -> Vec<&[u8]> {
+                self.alleles.clone()
+            }
+        }
+
+        let mut variant = Var{chrom: "chr21".to_string(), pos: 5030087, alleles: vec![b"C", b"T"]};
+
+        let idx = e.update_expr_values(&mut variant, &mut vals);
+        eprintln!("vals:{:?} {:?}", vals, idx);
+        assert_eq!(1, 200);
     }
 }
