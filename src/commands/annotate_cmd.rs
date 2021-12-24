@@ -61,7 +61,6 @@ pub fn annotate_main(
     let start = time::Instant::now();
     let mut n = 0;
     let mut modu = 10000;
-    let uc = compiled.unwrap();
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
@@ -86,18 +85,18 @@ pub fn annotate_main(
                 1000 * n / mili
             );
         }
-        // this updates evalues
+        // this updates evalues and fills expr values
         e.update_expr_values(&mut record, &mut expr_values);
 
-        for fld in &e.fields {
-            let v = e.evalues[fld.values_i].value();
-            expr_values[fld.values_i] = v;
+        match compiled {
+            Some(uc) => {
+                if fasteval::eval_compiled!(uc, &slab, &mut ns) == 0.0 {
+                    continue;
+                }
+            }
+            None => 
         }
 
-        let include = fasteval::eval_compiled!(uc, &slab, &mut ns) != 0.0;
-        if !include {
-            continue;
-        }
         for fld in &e.fields {
             let v = e.evalues[fld.values_i];
 
