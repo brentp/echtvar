@@ -1,14 +1,27 @@
-TODO
-====
+# Echtvar
+## Really, truly rapid variant annotation and filtering 
 
-+ use logging crate
-+ support multiple echtvar files
-+ check ftype against value in vcf header
+Echtvar enables rapid annotation of variants with huge pupulation datasets and
+it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
+base) chunks, encodes each variant into a 32 bit integer (with a supplemental table
+for those that can't fit). It uses [delta
+encoding](https://en.wikipedia.org/wiki/Delta_encoding)
+and [integer compression
+](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/)
+to create a compact and searchable format of any integer or float columns
+selected from the population file.
 
-usage
-=====
+Once created, an echtvar file can be used to annotate variants in a VCF (or
+BCF) file at a rate of >1 million variants per second.
 
-make a new echtvar file 
+A filter expression can be applied so that only variants that meet the
+expression are written.
+
+
+### usage
+
+make (`encode`) a new echtvar file 
+
 ```
 echtvar \
    encode \
@@ -18,30 +31,15 @@ echtvar \
 
 ```
 
-annotate a VCF with an echtvar file
+annotate a VCF with an echtvar file and only output variants where `gnomad_af`
+from the echtvar file is < 0.01.
 
 ```
 echtvar annotate \
-   -o $cohort.echtvar.bcf \
+   -o $cohort.echtvar-annotated.bcf \
    -a gnomad.echtvar \
    -a ukbiobank.echtvar \
-   -f 'gnomad_af < 0.01' \
-   $cohort.bcf
+   -i 'gnomad_af < 0.01' \
+   $cohort.input.bcf
 ```
-
-# rust
-
-
-bits
-====
-
-  01: AF < 1e-5
-  10: AF < 1e-3
-  11: AF < 1e-2
- 1  : AN < 70%
-
-
-  01: AF < 1e-2
-  10: AF < 1e-3
-  11: AN >k
 
