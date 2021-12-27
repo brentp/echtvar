@@ -15,8 +15,8 @@ Once created, an echtvar file can be used to annotate variants in a VCF (or
 BCF) file at a rate of >1 million variants per second.
 
 A filter expression can be applied so that only variants that meet the
-expression are written.
-
+expression are written. Since `echtvar` is so fast, writing the output is a bottleneck
+so filtering can actually *increase* the speed.
 
 ### usage
 
@@ -81,5 +81,14 @@ We can add more fields like this:
    }
 ]
 ```
+
 This will exctract 3 fields, the user can chooose as many as they like when encoding.
 All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
+
+# References and Acknowledgements
+
+Without these (and other) critical libraries, `echtvar` would not exist.
+
++ [rust-htslib](https://github.com/rust-bio/rust-htslib) is used for reading and writing BCF and VCF.
++ [stream-vbyte](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/) is used for integer compression via the [excellent rust bindings](https://bitbucket.org/marshallpierce/stream-vbyte-rust/src/master/)
++ [fasteval](https://github.com/likebike/fasteval) is used for the expressions. It is fast and simple.
