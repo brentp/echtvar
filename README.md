@@ -25,11 +25,15 @@ make (`encode`) a new echtvar file
 ```
 echtvar \
    encode \
-   $input_vcf \
+   $input_population_vcf \
    echtvar-gnomad-v3.zip \
-   conf.json
+   conf.json # this defines the columns to pull from $input_vcf, and how to
+name and encode them
 
 ```
+
+See below for a description of the json file that defines which columns are
+pulled from the population VCF.
 
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01.
@@ -43,3 +47,39 @@ echtvar annotate \
    $cohort.input.bcf
 ```
 
+### Configuration File for Encode
+
+When running `echtvar encode`, a [json5](https://json5.org/) (json with
+comments and other nice features) determines which columns are pulled from the
+input VCF and how they are stored.
+
+A simple example is to pull a single integer field and give it a new name (`alias`):
+
+```
+[{"field": "AC", "alias": "gnomad_AC"}]
+```
+
+This will extract the "AC" field from the INFO and labeled as "gnomad_AC" when
+later used to annotate a VCF.
+
+We can add more fields like this:
+
+```
+[
+    {"field": "AC", "alias": "gnomad_AC"},
+    // this JSON file is json 5 and so can have comments
+    // the missing value will default to -1, but the value: -2147483648 will
+    // result in '.' as it is the missing value for VCF.
+    {"field": "AN", "alias":, gnomad_AN", missing_value: -2147483648},
+    {
+           field: "AF",
+           alias: "gnomad_AF",
+           missing_value: -1,
+           // for floats, upon annotation, the score is divided by multiplier and stored as an integer.
+           multiplier: 2000000,
+          ftype: "Float"
+   }
+]
+```
+This will exctract 3 fields, the user can chooose as many as they like when encoding.
+All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
