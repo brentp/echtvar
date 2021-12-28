@@ -1,6 +1,8 @@
 # Echtvar
 ## Really, truly rapid variant annotation and filtering 
 
+[![Rust](https://github.com/brentp/echtvar/actions/workflows/ci.yml/badge.svg)](https://github.com/brentp/echtvar/actions/workflows/ci.yml)
+
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
 it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
 base) chunks, encodes each variant into a 32 bit integer (with a supplemental table

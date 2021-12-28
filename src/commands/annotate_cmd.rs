@@ -7,6 +7,7 @@ use rust_htslib::bcf::{Read as BCFRead, Reader};
 use echtvar_lib::echtvar::EchtVars;
 use echtvar_lib::echtvar::Value;
 
+use fasteval::eval_compiled;
 use fasteval::Compiler;
 use fasteval::Evaler;
 
@@ -37,19 +38,20 @@ pub fn annotate_main(
         expr_values.push(0.0 as f64);
         unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &expr_values[i]) }
     }
+    let mut is_compiled = false;
     let compiled = if let Some(uexpr) = include_expr {
-        Some(
-            parser
-                .parse(uexpr, &mut slab.ps)?
-                .from(&slab.ps)
-                .compile(&slab.ps, &mut slab.cs),
-        )
+        is_compiled = true;
+        parser
+            .parse(uexpr, &mut slab.ps)?
+            .from(&slab.ps)
+            .compile(&slab.ps, &mut slab.cs)
     } else {
-        None
+        // just compile an empty expression that never is evaluated.
+        parser
+            .parse("true", &mut slab.ps)?
+            .from(&slab.ps)
+            .compile(&slab.ps, &mut slab.cs)
     };
-
-    //let val = fasteval::eval_compiled!(compiled.unwrap(), &slab, &mut ns);
-    //eprintln!("val:{}", val);
 
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(opath, &header, false, Format::Bcf)
@@ -60,6 +62,7 @@ pub fn annotate_main(
 
     let start = time::Instant::now();
     let mut n = 0;
+    let mut n_written = 0;
     let mut modu = 10000;
 
     for r in vcf.records() {
@@ -78,24 +81,23 @@ pub fn annotate_main(
             }
 
             eprintln!(
-                "[echtvar] {}:{} annotated {} variants ({} / second)",
+                "[echtvar] {}:{} evaluated {} variants ({} / second). wrote {} variants.",
                 chrom,
                 record.pos(),
                 n,
-                1000 * n / mili
+                1000 * n / mili,
+                n_written,
             );
         }
         // this updates evalues and fills expr values
         e.update_expr_values(&mut record, &mut expr_values);
 
-        match compiled {
-            Some(uc) => {
-                if fasteval::eval_compiled!(uc, &slab, &mut ns) == 0.0 {
-                    continue;
-                }
+        if is_compiled {
+            if fasteval::eval_compiled!(compiled, &slab, &mut ns) == 0.0 {
+                continue;
             }
-            None => 
         }
+        n_written += 1;
 
         for fld in &e.fields {
             let v = e.evalues[fld.values_i];
@@ -119,9 +121,10 @@ pub fn annotate_main(
     }
     let mili = time::Instant::now().duration_since(start).as_millis();
     eprintln!(
-        "[echtvar] annotated {} variants ({} / second)",
+        "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
         n,
-        1000 * n / mili
+        1000 * n / mili,
+        n_written,
     );
 
     /*
