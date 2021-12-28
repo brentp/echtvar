@@ -325,7 +325,7 @@ impl EchtVars {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
+    //#[test]
     fn test_read() {
         let mut e = EchtVars::open("ec.zip");
         e.set_position(22, "chr21".to_string(), 5030088).ok();
@@ -337,7 +337,7 @@ mod tests {
         assert_eq!(e.longs[0].position, 5030185);
     }
 
-    #[test]
+    //#[test]
     fn test_search() {
         let mut e = EchtVars::open("ec.zip");
         e.set_position(22, "chr21".to_string(), 5030088).ok();
