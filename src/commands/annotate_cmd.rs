@@ -7,7 +7,6 @@ use rust_htslib::bcf::{Read as BCFRead, Reader};
 use echtvar_lib::echtvar::EchtVars;
 use echtvar_lib::echtvar::Value;
 
-use fasteval::eval_compiled;
 use fasteval::Compiler;
 use fasteval::Evaler;
 

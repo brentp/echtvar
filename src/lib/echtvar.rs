@@ -4,6 +4,7 @@ use crate::zigzag;
 use rust_htslib::bcf;
 use std::io::prelude::*;
 use std::{fs, io, str};
+use crate::kmer16;
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -279,8 +280,8 @@ impl EchtVars {
         } else {
             let l = var32::LongVariant {
                 position: pos,
-                reference: unsafe { str::from_utf8_unchecked(alleles[0]) }.to_string(),
-                alternate: unsafe { str::from_utf8_unchecked(alleles[1]) }.to_string(),
+                reference: kmer16::encode(alleles[0]),
+                alternate: kmer16::encode(alleles[1]),
                 idx: 0,
             };
             let r = self.longs.binary_search(&l);

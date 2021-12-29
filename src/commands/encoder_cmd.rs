@@ -1,6 +1,4 @@
-use echtvar_lib::fields;
-use echtvar_lib::var32;
-use echtvar_lib::zigzag;
+use echtvar_lib::{fields, var32, zigzag, kmer16};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -256,8 +254,8 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
             long_vars.push(var32::LongVariant {
                 position: rec.pos() as u32,
-                reference: unsafe { str::from_utf8_unchecked(alleles[0]).to_string() },
-                alternate: unsafe { str::from_utf8_unchecked(alleles[1]).to_string() },
+                reference: kmer16::encode(alleles[0]),
+                alternate: kmer16::encode(alleles[1]),
                 idx: (var32s.len() - 1) as u32,
             });
         }
