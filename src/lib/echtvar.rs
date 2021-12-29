@@ -1,10 +1,10 @@
 use crate::fields;
+use crate::kmer16;
 use crate::var32;
 use crate::zigzag;
 use rust_htslib::bcf;
 use std::io::prelude::*;
 use std::{fs, io, str};
-use crate::kmer16;
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -227,7 +227,7 @@ impl EchtVars {
             let mut iz = self.zip.by_name(&long_path)?;
             self.buffer.clear();
             iz.read_to_end(&mut self.buffer)?;
-            self.longs = serde_json::from_slice(&self.buffer)?;
+            self.longs = bincode::deserialize(&self.buffer).expect("error decoding long variants");
         } else {
             self.longs.clear();
         }

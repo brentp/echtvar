@@ -1,10 +1,10 @@
 extern crate libc;
 extern crate serde;
+use crate::kmer16;
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::convert::From;
-use crate::kmer16;
 
 #[repr(C, align(1))]
 #[derive(BitfieldStruct, Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
@@ -20,7 +20,6 @@ pub struct Var32 {
     data: [u8; 4],
 }
 
-
 // TODO: since ref[0] == alt[0], we can get one more base.
 
 #[repr(C, align(1))]
@@ -34,9 +33,9 @@ pub struct PRA {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LongVariant {
     pub position: u32,
+    pub idx: u32,
     pub reference: kmer16::K16s,
     pub alternate: kmer16::K16s,
-    pub idx: u32,
 }
 
 // implement this as we need to exclude idx from the eq.
@@ -71,14 +70,14 @@ impl Ord for LongVariant {
 
 pub const MAX_COMBINED_LEN: usize = 4;
 
-pub (crate) const LOOKUP: [u32; 128] = [
+pub(crate) const LOOKUP: [u32; 128] = [
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 0, 3, 1, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 ];
 
-pub (crate) const RLOOKUP: [char; 4] = ['A', 'C', 'G', 'T'];
+pub(crate) const RLOOKUP: [char; 4] = ['A', 'C', 'G', 'T'];
 
 impl From<u32> for Var32 {
     #[inline]

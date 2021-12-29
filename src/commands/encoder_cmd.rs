@@ -1,4 +1,4 @@
-use echtvar_lib::{fields, var32, zigzag, kmer16};
+use echtvar_lib::{fields, kmer16, var32, zigzag};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -57,7 +57,9 @@ fn write_long(
         l.idx = rev_index[l.idx as usize] as u32;
     }
     long_vars.sort();
-    serde_json::to_writer(zipf, &long_vars).expect("error writing long variables");
+
+    let bc = bincode::serialize(long_vars).expect("error serializing long vars");
+    zipf.write_all(&bc).expect("error writing long variants");
 }
 
 fn write_bits(
