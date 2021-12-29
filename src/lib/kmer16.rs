@@ -10,20 +10,20 @@ pub type K16 = u32;
 pub type K16s = Vec<K16>;
 
 pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> K16s {
-    let mut result: Vec<K16> = vec![0; 3 + ((alt_allele.len() + ref_allele.len() - 1) >> 3)];
+    let mut result: Vec<K16> = vec![0; 3 + ((alt_allele.len() + ref_allele.len() - 1) >> 4)];
     result[0] = ref_allele.len() as u32;
     result[1] = alt_allele.len() as u32;
 
     let mut i = 0;
 
     for a in ref_allele.iter() {
-        let idx = 2 + (i >> 3);
+        let idx = 2 + (i >> 4);
         result[idx] *= 4;
         result[idx] += LOOKUP[*a as usize];
         i += 1;
     }
     for a in alt_allele.iter() {
-        let idx = 2 + (i >> 3);
+        let idx = 2 + (i >> 4);
         result[idx] *= 4;
         result[idx] += LOOKUP[*a as usize];
         i += 1;
@@ -33,11 +33,11 @@ pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> K16s {
 }
 
 pub fn encode(dna: &[u8]) -> K16s {
-    let mut result: Vec<K16> = vec![0; 2 + ((dna.len() - 1) >> 3)];
+    let mut result: Vec<K16> = vec![0; 2 + ((dna.len() - 1) >> 4)];
     result[0] = dna.len() as u32;
 
     for (i, a) in dna.iter().enumerate() {
-        let idx = 1 + (i >> 3);
+        let idx = 1 + (i >> 4);
         result[idx] *= 4;
         result[idx] += LOOKUP[*a as usize];
     }
@@ -88,7 +88,12 @@ mod tests {
         let ra = b"AAAAC";
         let aa = b"A";
 
-        let e = encode_var(ra, aa);
-        assert_eq!(e.len(), 3);
+        let a = encode_var(ra, aa);
+        assert_eq!(a.len(), 3);
+
+        let b = encode_var(aa, ra);
+        assert_eq!(b.len(), 3);
+
+        assert_ne!(a, b)
     }
 }
