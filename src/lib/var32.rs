@@ -34,16 +34,14 @@ pub struct PRA {
 pub struct LongVariant {
     pub position: u32,
     pub idx: u32,
-    pub reference: kmer16::K16s,
-    pub alternate: kmer16::K16s,
+    pub sequence: kmer16::K16s,
 }
 
 // implement this as we need to exclude idx from the eq.
 impl PartialEq for LongVariant {
     fn eq(&self, other: &Self) -> bool {
         self.position == other.position
-            && self.reference == other.reference
-            && self.alternate == other.alternate
+            && self.sequence == other.sequence
     }
 }
 
@@ -55,10 +53,7 @@ impl PartialOrd for LongVariant {
         if self.position != other.position {
             return self.position.partial_cmp(&other.position);
         }
-        if self.reference != other.reference {
-            return self.reference.partial_cmp(&other.reference);
-        }
-        return self.alternate.partial_cmp(&other.alternate);
+        return self.sequence.partial_cmp(&other.sequence);
     }
 }
 

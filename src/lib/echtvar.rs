@@ -280,8 +280,7 @@ impl EchtVars {
         } else {
             let l = var32::LongVariant {
                 position: pos,
-                reference: kmer16::encode(alleles[0]),
-                alternate: kmer16::encode(alleles[1]),
+                sequence: kmer16::encode_var(alleles[0], alleles[1]),
                 idx: 0,
             };
             let r = self.longs.binary_search(&l);

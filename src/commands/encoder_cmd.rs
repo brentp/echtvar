@@ -256,8 +256,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
             long_vars.push(var32::LongVariant {
                 position: rec.pos() as u32,
-                reference: kmer16::encode(alleles[0]),
-                alternate: kmer16::encode(alleles[1]),
+                sequence: kmer16::encode_var(alleles[0], alleles[1]),
                 idx: (var32s.len() - 1) as u32,
             });
         }
