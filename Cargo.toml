@@ -32,6 +32,8 @@ json5 = "*"
 
 fasteval = { version = "0.2.4", features= ["unsafe-vars"]}
 
+bincode = { version = "*" }
+
 [profile.release]
 lto = "fat"
 codegen-units = 1
