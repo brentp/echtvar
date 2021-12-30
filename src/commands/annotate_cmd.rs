@@ -66,12 +66,9 @@ pub fn annotate_main(
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
-        ovcf.translate(&mut record); //.expect("failed to read record"));
-                                     //record.set_header(oheader_view);
-                                     // TODO:
-        n += 1;
-        // TODO:  start here.
-        if n % modu == 0 {
+        ovcf.translate(&mut record);
+
+        if n > 0 && n % modu == 0 {
             let rid = record.rid().unwrap();
             let chrom = std::str::from_utf8(oheader_view.rid2name(rid).unwrap()).unwrap();
             let mili = time::Instant::now().duration_since(start).as_millis();
@@ -88,6 +85,7 @@ pub fn annotate_main(
                 n_written,
             );
         }
+        n += 1;
         // this updates evalues and fills expr values
         e.update_expr_values(&mut record, &mut expr_values);
 

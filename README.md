@@ -5,7 +5,7 @@
 
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
 it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
-base) chunks, encodes each variant into a 32 bit integer (with a supplemental table
+) bases, encodes each variant into a 32 bit integer (with a supplemental table
 for those that can't fit). It uses [delta
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
@@ -14,7 +14,8 @@ to create a compact and searchable format of any integer or float columns
 selected from the population file.
 
 Once created, an echtvar file can be used to annotate variants in a VCF (or
-BCF) file at a rate of >1 million variants per second.
+BCF) file at a rate of >1 million variants per second (most of the time is spent
+reading and writing VCF/BCF, so this number depends on the particular file).
 
 A filter expression can be applied so that only variants that meet the
 expression are written. Since `echtvar` is so fast, writing the output is a bottleneck
@@ -44,7 +45,6 @@ from the echtvar file is < 0.01.
 echtvar annotate \
    -o $cohort.echtvar-annotated.bcf \
    -a gnomad.echtvar \
-   -a ukbiobank.echtvar \
    -i 'gnomad_af < 0.01' \
    $cohort.input.bcf
 ```
@@ -84,7 +84,7 @@ We can add more fields like this:
 ]
 ```
 
-This will exctract 3 fields, the user can chooose as many as they like when encoding.
+The above file will extract 3 fields, but the user can chooose as many as they like when encoding.
 All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
 
 # References and Acknowledgements
@@ -94,3 +94,8 @@ Without these (and other) critical libraries, `echtvar` would not exist.
 + [rust-htslib](https://github.com/rust-bio/rust-htslib) is used for reading and writing BCF and VCF.
 + [stream-vbyte](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/) is used for integer compression via the [excellent rust bindings](https://bitbucket.org/marshallpierce/stream-vbyte-rust/src/master/)
 + [fasteval](https://github.com/likebike/fasteval) is used for the expressions. It is fast and simple.
++nd awesome.
++ [bincode](https://docs.rs/bincode/latest/bincode/) is used for rapid serialization of large variants.
+
+
+`echtvar` is developed in the [Jeroen De Ridder lab](https://www.umcutrecht.nl/en/research/researchers/de-ridder-jeroen-j)
