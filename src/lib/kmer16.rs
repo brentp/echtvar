@@ -18,13 +18,13 @@ pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> K16s {
 
     for a in ref_allele.iter() {
         let idx = 2 + (i >> 4);
-        result[idx] *= 4;
+        result[idx] <<= 2;
         result[idx] += LOOKUP[*a as usize];
         i += 1;
     }
     for a in alt_allele.iter() {
         let idx = 2 + (i >> 4);
-        result[idx] *= 4;
+        result[idx] <<= 2;
         result[idx] += LOOKUP[*a as usize];
         i += 1;
     }

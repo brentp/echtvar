@@ -164,11 +164,14 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
 
     let mut long_vars: Vec<var32::LongVariant> = Vec::new();
     let mut var32s: Vec<u32> = Vec::new();
+    let mut n_long_vars = 0;
+    let mut n_vars = 0;
 
     let mut values_vv: Vec<Vec<u32>> = fields.iter().map(|_| Vec::new()).collect();
 
     for r in vcf.records() {
         let rec = r.expect("error getting record");
+        n_vars += 1;
         // if we hit a new chrom or a new chunk we write the last chunk and start a new one.
         if rec.rid().expect("no rid found") as i32 != last_rid || rec.pos() >> 20 != last_mod {
             if last_rid != -1 {
@@ -203,6 +206,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
                     zipf.start_file(fname, options)
                         .expect("error starting file");
                     write_long(&mut zipf, &mut long_vars, indexes);
+                    n_long_vars += long_vars.len();
                     long_vars.clear()
                 }
             }
@@ -284,7 +288,10 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
         zipf.start_file(fname, options)
             .expect("error starting file");
+        n_long_vars += long_vars.len();
         write_long(&mut zipf, &mut long_vars, indexes);
     }
     zipf.finish().expect("error closing zip file");
+    let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
+    eprintln!("[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)");
 }

@@ -53,7 +53,7 @@ pub fn annotate_main(
     };
 
     // TODO: handle stdout
-    let mut ovcf = Writer::from_path(opath, &header, false, Format::Bcf)
+    let mut ovcf = Writer::from_path(opath, &header, false, if opath.ends_with("bcf") { Format::Bcf } else { Format::Vcf })
         .ok()
         .expect("error opening bcf for output");
     ovcf.set_threads(2).expect("error setting threads");
