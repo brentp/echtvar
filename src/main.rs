@@ -19,9 +19,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         (about:"variant encoding and annotation")
         (@subcommand encode =>
             (about: "create an echtvar file from a population VCF/BCF")
-            (@arg VCF: +required "population vcf")
             (@arg OUTPUT: +required "output zip file")
             (@arg JSON: +required "(human)-json conf file")
+            (@arg VCFS: +required ... "population vcf(s) can be split by chrom")
         )
         (@subcommand anno =>
             (about: "annotate a VCF/BCF with one or more echtvar files")
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(matches) = matches.subcommand_matches("encode") {
         encoder_cmd::encoder_main(
-            matches.value_of("VCF").unwrap(),
+            matches.values_of("VCFS").unwrap().collect(),
             matches.value_of("OUTPUT").unwrap(),
             matches.value_of("JSON").unwrap(),
         );

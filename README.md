@@ -6,7 +6,7 @@
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
 it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
 ) bases, encodes each variant into a 32 bit integer (with a supplemental table
-for those that can't fit). It uses [delta
+for those that can't fit due to large REF and/or ALT alleles). It uses [delta
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
 ](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/)
@@ -28,9 +28,9 @@ make (`encode`) a new echtvar file
 ```
 echtvar \
    encode \
-   $input_population_vcf \
    echtvar-gnomad-v3.zip \
    conf.json # this defines the columns to pull from $input_vcf, and how to
+   $input_population_vcf[s] \ can be split by chromosome or all in a single file.
 name and encode them
 
 ```
@@ -107,8 +107,7 @@ Without these (and other) critical libraries, `echtvar` would not exist.
 
 + [rust-htslib](https://github.com/rust-bio/rust-htslib) is used for reading and writing BCF and VCF.
 + [stream-vbyte](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/) is used for integer compression via the [excellent rust bindings](https://bitbucket.org/marshallpierce/stream-vbyte-rust/src/master/)
-+ [fasteval](https://github.com/likebike/fasteval) is used for the expressions. It is fast and simple.
-+nd awesome.
++ [fasteval](https://github.com/likebike/fasteval) is used for the expressions. It is fast and simple and awesome.
 + [bincode](https://docs.rs/bincode/latest/bincode/) is used for rapid serialization of large variants.
 
 

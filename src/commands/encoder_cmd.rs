@@ -122,7 +122,7 @@ fn is_sorted<T: std::cmp::PartialOrd>(data: &Vec<T>) -> bool {
     return true;
 }
 
-pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
+pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let zpath = std::path::Path::new(opath);
     let jpath = std::path::Path::new(jpath);
 
@@ -135,7 +135,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         json5::from_str(&json).expect("error reading json into fields");
 
 
-    let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
+    let mut vcf = Reader::from_path(vpaths[0]).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
@@ -155,6 +155,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
             _ => panic!("[echtvar] unsupported field type: {:?} for field {}", tt, f.field)
         }
     }
+
 
     let zfile = std::fs::File::create(&zpath).unwrap();
     let fbuffer = std::io::BufWriter::with_capacity(65536, zfile);
@@ -187,127 +188,132 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
 
     let mut values_vv: Vec<Vec<u32>> = fields.iter().map(|_| Vec::new()).collect();
 
-    for r in vcf.records() {
-        let rec = r.expect("error getting record");
-        n_vars += 1;
-        // if we hit a new chrom or a new chunk we write the last chunk and start a new one.
-        if rec.rid().expect("no rid found") as i32 != last_rid || rec.pos() >> 20 != last_mod {
-            if last_rid != -1 {
-                if values_vv[0].len() != 0 {
-                    let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
-                    let chrom = bstrip_chr(str::from_utf8(n).unwrap());
+    for vpath in vpaths.iter() {
+        let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
+        vcf.set_threads(2).ok();
 
-                    // we just assume it's unsorted and apply the permutation
-                    let indexes = argsort(&var32s);
+        for r in vcf.records() {
+            let rec = r.expect("error getting record");
+            n_vars += 1;
+            // if we hit a new chrom or a new chunk we write the last chunk and start a new one.
+            if rec.rid().expect("no rid found") as i32 != last_rid || rec.pos() >> 20 != last_mod {
+                if last_rid != -1 {
+                    if values_vv[0].len() != 0 {
+                        let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+                        let chrom = bstrip_chr(str::from_utf8(n).unwrap());
 
-                    for (i, values) in values_vv.iter_mut().enumerate() {
-                        let fname =
-                            format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
+                        // we just assume it's unsorted and apply the permutation
+                        let indexes = argsort(&var32s);
+
+                        for (i, values) in values_vv.iter_mut().enumerate() {
+                            let fname =
+                                format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
+                            zipf.start_file(fname, options)
+                                .expect("error starting file");
+                            sort_by_indices(values, indexes.clone());
+                            write_bits(values, false, &mut zipf, &mut compressed);
+                            values.clear();
+                        }
+
+                        let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
-                        sort_by_indices(values, indexes.clone());
-                        write_bits(values, false, &mut zipf, &mut compressed);
-                        values.clear();
-                    }
+                        sort_by_indices(&mut var32s, indexes.clone());
+                        if !is_sorted(&var32s) {
+                            eprintln!("BAD\nBAD\nBAD\nBAD");
+                        }
+                        write_bits(&mut var32s, true, &mut zipf, &mut compressed);
+                        var32s.clear();
 
-                    let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
-                    zipf.start_file(fname, options)
-                        .expect("error starting file");
-                    sort_by_indices(&mut var32s, indexes.clone());
-                    if !is_sorted(&var32s) {
-                        eprintln!("BAD\nBAD\nBAD\nBAD");
+                        let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
+                        zipf.start_file(fname, options)
+                            .expect("error starting file");
+                        write_long(&mut zipf, &mut long_vars, indexes);
+                        n_long_vars += long_vars.len();
+                        long_vars.clear()
                     }
-                    write_bits(&mut var32s, true, &mut zipf, &mut compressed);
-                    var32s.clear();
-
-                    let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
-                    zipf.start_file(fname, options)
-                        .expect("error starting file");
-                    write_long(&mut zipf, &mut long_vars, indexes);
-                    n_long_vars += long_vars.len();
-                    long_vars.clear()
                 }
+                last_rid = rec.rid().unwrap() as i32;
+                last_mod = rec.pos() >> 20;
             }
-            last_rid = rec.rid().unwrap() as i32;
-            last_mod = rec.pos() >> 20;
-        }
 
-        for (i, fld) in fields.iter().enumerate() {
-            // NOTE that internally, we always use u32::MAX as missing and then replace this with `missing_value` when annotating.
-            let v = match fld.ftype {
-                fields::FieldType::Integer => {
-                    let val =
-                        get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
-                    if val == fld.missing_value {
-                        u32::MAX
-                    } else {
-                        if fld.zigzag {
-                            zigzag::encode(val)
+            for (i, fld) in fields.iter().enumerate() {
+                // NOTE that internally, we always use u32::MAX as missing and then replace this with `missing_value` when annotating.
+                let v = match fld.ftype {
+                    fields::FieldType::Integer => {
+                        let val =
+                            get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
+                        if val == fld.missing_value {
+                            u32::MAX
                         } else {
-                            val as u32
+                            if fld.zigzag {
+                                zigzag::encode(val)
+                            } else {
+                                val as u32
+                            }
                         }
                     }
-                }
-                fields::FieldType::Float => {
-                    let val = get_float_field(
-                        &rec,
-                        fld.field.as_bytes(),
-                        &mut buffer,
-                        fld.missing_value as f32,
-                    );
-                    if (val - fld.missing_value as f32).abs() <= f32::EPSILON {
-                        u32::MAX
-                    } else {
-                        let v = (val * fld.multiplier as f32) as i32;
-                        if fld.zigzag {
-                            zigzag::encode(v)
+                    fields::FieldType::Float => {
+                        let val = get_float_field(
+                            &rec,
+                            fld.field.as_bytes(),
+                            &mut buffer,
+                            fld.missing_value as f32,
+                        );
+                        if (val - fld.missing_value as f32).abs() <= f32::EPSILON {
+                            u32::MAX
                         } else {
-                            v as u32
+                            let v = (val * fld.multiplier as f32) as i32;
+                            if fld.zigzag {
+                                zigzag::encode(v)
+                            } else {
+                                v as u32
+                            }
                         }
                     }
-                }
-                fields::FieldType::Categorical => panic!("not implemented"),
-            };
+                    fields::FieldType::Categorical => panic!("not implemented"),
+                };
 
-            values_vv[i].push(v);
+                values_vv[i].push(v);
+            }
+
+            let alleles = rec.alleles();
+            var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));
+
+            if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
+                long_vars.push(var32::LongVariant {
+                    position: rec.pos() as u32,
+                    sequence: kmer16::encode_var(alleles[0], alleles[1]),
+                    idx: (var32s.len() - 1) as u32,
+                });
+            }
         }
+        if values_vv[0].len() != 0 {
+            let indexes = argsort(&var32s);
+            let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+            let chrom = bstrip_chr(str::from_utf8(n).unwrap());
 
-        let alleles = rec.alleles();
-        var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));
+            for (i, values) in values_vv.iter_mut().enumerate() {
+                let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
+                zipf.start_file(fname, options)
+                    .expect("error starting file");
+                sort_by_indices(values, indexes.clone());
+                write_bits(values, false, &mut zipf, &mut compressed);
+                values.clear();
+            }
 
-        if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
-            long_vars.push(var32::LongVariant {
-                position: rec.pos() as u32,
-                sequence: kmer16::encode_var(alleles[0], alleles[1]),
-                idx: (var32s.len() - 1) as u32,
-            });
-        }
-    }
-    if values_vv[0].len() != 0 {
-        let indexes = argsort(&var32s);
-        let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
-        let chrom = bstrip_chr(str::from_utf8(n).unwrap());
-
-        for (i, values) in values_vv.iter_mut().enumerate() {
-            let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
+            let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
             zipf.start_file(fname, options)
                 .expect("error starting file");
-            sort_by_indices(values, indexes.clone());
-            write_bits(values, false, &mut zipf, &mut compressed);
-            values.clear();
+            sort_by_indices(&mut var32s, indexes.clone());
+            write_bits(&mut var32s, true, &mut zipf, &mut compressed);
+
+            let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
+            zipf.start_file(fname, options)
+                .expect("error starting file");
+            n_long_vars += long_vars.len();
+            write_long(&mut zipf, &mut long_vars, indexes);
         }
-
-        let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
-        zipf.start_file(fname, options)
-            .expect("error starting file");
-        sort_by_indices(&mut var32s, indexes.clone());
-        write_bits(&mut var32s, true, &mut zipf, &mut compressed);
-
-        let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
-        zipf.start_file(fname, options)
-            .expect("error starting file");
-        n_long_vars += long_vars.len();
-        write_long(&mut zipf, &mut long_vars, indexes);
     }
     zipf.finish().expect("error closing zip file");
     let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
