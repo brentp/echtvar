@@ -1,4 +1,4 @@
-use echtvar_lib::{fields, kmer16, var32, zigzag};
+use echtvar_lib::{fields, kmer16, var32, zigzag, echtvar::bstrip_chr};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -177,7 +177,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
             if last_rid != -1 {
                 if values_vv[0].len() != 0 {
                     let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
-                    let chrom = str::from_utf8(n).unwrap();
+                    let chrom = bstrip_chr(str::from_utf8(n).unwrap());
 
                     // we just assume it's unsorted and apply the permutation
                     let indexes = argsort(&var32s);
@@ -268,7 +268,7 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
     if values_vv[0].len() != 0 {
         let indexes = argsort(&var32s);
         let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
-        let chrom = str::from_utf8(n).unwrap();
+        let chrom = bstrip_chr(str::from_utf8(n).unwrap());
 
         for (i, values) in values_vv.iter_mut().enumerate() {
             let fname = format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);

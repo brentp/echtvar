@@ -51,6 +51,26 @@ pub trait Variant {
     fn alleles(&self) -> Vec<&[u8]>;
 }
 
+#[inline]
+pub fn strip_chr(chrom: std::string::String) -> std::string::String {
+    if chrom.len() < 4 { return chrom; }
+    let bchrom = chrom.as_bytes();
+    if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
+        return chrom[3..].to_string();
+    }
+    return chrom;
+}
+
+#[inline]
+pub fn bstrip_chr(chrom: &str) -> &str {
+    if chrom.len() < 4 { return chrom; }
+    let bchrom = chrom.as_bytes();
+    if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
+        return &chrom[3..];
+    }
+    return chrom;
+}
+
 impl Variant for bcf::record::Record {
     fn chrom(&self) -> std::string::String {
         let rid = self.rid().unwrap();
@@ -162,7 +182,7 @@ impl EchtVars {
         }
         self.last_rid = rid;
         self.start = position >> 20 << 20; // round to 20 bits.
-        self.chrom = chromosome;
+        self.chrom = strip_chr(chromosome);
         let base_path = format!("echtvar/{}/{}", self.chrom, position >> 20);
 
         for fi in self.fields.iter_mut() {
@@ -330,7 +350,7 @@ mod tests {
         let mut e = EchtVars::open("ec.zip");
         e.set_position(22, "chr21".to_string(), 5030088).ok();
 
-        assert_eq!(e.fields.len(), 2);
+        assert_eq!(e.fields.len(), 3);
         assert_eq!(e.values[0].len(), 46881);
         assert_eq!(e.values[1].len(), e.var32s.len());
 
@@ -374,6 +394,6 @@ mod tests {
 
         let idx = e.update_expr_values(&mut variant, &mut vals);
         eprintln!("vals:{:?} {:?}", vals, idx);
-        assert_eq!(1, 200);
+        assert_eq!(vals[1], 2.0);
     }
 }

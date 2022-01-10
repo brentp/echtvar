@@ -17,6 +17,7 @@ header = ("""##fileformat=VCFv4.2
 ##INFO=<ID=nvar,Number=1,Type=Integer,Description="variant index">
 ##INFO=<ID=AF,Number=A,Type=Float,Description="Alternate allele frequency">
 ##contig=<ID=chr1,length=248956422>
+##contig=<ID=1,length=248956422>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO""")
 
 print(header, file=all_fh)
