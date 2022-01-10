@@ -40,8 +40,7 @@ pub struct LongVariant {
 // implement this as we need to exclude idx from the eq.
 impl PartialEq for LongVariant {
     fn eq(&self, other: &Self) -> bool {
-        self.position == other.position
-            && self.sequence == other.sequence
+        self.position == other.position && self.sequence == other.sequence
     }
 }
 

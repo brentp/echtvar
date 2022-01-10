@@ -53,7 +53,9 @@ pub trait Variant {
 
 #[inline]
 pub fn strip_chr(chrom: std::string::String) -> std::string::String {
-    if chrom.len() < 4 { return chrom; }
+    if chrom.len() < 4 {
+        return chrom;
+    }
     let bchrom = chrom.as_bytes();
     if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
         return chrom[3..].to_string();
@@ -63,7 +65,9 @@ pub fn strip_chr(chrom: std::string::String) -> std::string::String {
 
 #[inline]
 pub fn bstrip_chr(chrom: &str) -> &str {
-    if chrom.len() < 4 { return chrom; }
+    if chrom.len() < 4 {
+        return chrom;
+    }
     let bchrom = chrom.as_bytes();
     if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
         return &chrom[3..];

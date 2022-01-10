@@ -1,7 +1,7 @@
-use echtvar_lib::{fields, kmer16, var32, zigzag, echtvar::bstrip_chr};
+use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
+use rust_htslib::bcf::header::TagType;
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
-use rust_htslib::bcf::header::TagType;
 use stream_vbyte::{encode::encode, x86::Sse41};
 
 use std::borrow::{Borrow, BorrowMut};
@@ -134,28 +134,36 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let mut fields: Vec<fields::Field> =
         json5::from_str(&json).expect("error reading json into fields");
 
-
-    let mut vcf = Reader::from_path(vpaths[0]).ok().expect("Error opening vcf.");
+    let mut vcf = Reader::from_path(vpaths[0])
+        .ok()
+        .expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
 
     for f in fields.iter_mut() {
-        let (tt, _tl) = header.info_type(&(f.field.as_bytes())).expect(&format!("unable to find header type for {}", f.field).to_string());
+        let (tt, _tl) = header
+            .info_type(&(f.field.as_bytes()))
+            .expect(&format!("unable to find header type for {}", f.field).to_string());
         match tt {
             TagType::Integer => f.ftype = fields::FieldType::Integer,
             TagType::Float => {
                 f.ftype = fields::FieldType::Float;
                 if f.multiplier == 1 {
-                    eprintln!("[echtvar] warning! using a multiplier of 1 for float field {}.", f.field);
+                    eprintln!(
+                        "[echtvar] warning! using a multiplier of 1 for float field {}.",
+                        f.field
+                    );
                     eprintln!("\tIf this field contains values less than 1, use a multiplier so the values can be stored as integers.");
                     eprintln!("\tLarger multipliers result in higher precision.");
                 }
-            },
-            _ => panic!("[echtvar] unsupported field type: {:?} for field {}", tt, f.field)
+            }
+            _ => panic!(
+                "[echtvar] unsupported field type: {:?} for field {}",
+                tt, f.field
+            ),
         }
     }
-
 
     let zfile = std::fs::File::create(&zpath).unwrap();
     let fbuffer = std::io::BufWriter::with_capacity(65536, zfile);
@@ -225,7 +233,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         write_bits(&mut var32s, true, &mut zipf, &mut compressed);
                         var32s.clear();
 
-                        let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
+                        let fname =
+                            format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
                         write_long(&mut zipf, &mut long_vars, indexes);
@@ -241,8 +250,12 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 // NOTE that internally, we always use u32::MAX as missing and then replace this with `missing_value` when annotating.
                 let v = match fld.ftype {
                     fields::FieldType::Integer => {
-                        let val =
-                            get_int_field(&rec, fld.field.as_bytes(), &mut buffer, fld.missing_value);
+                        let val = get_int_field(
+                            &rec,
+                            fld.field.as_bytes(),
+                            &mut buffer,
+                            fld.missing_value,
+                        );
                         if val == fld.missing_value {
                             u32::MAX
                         } else {
@@ -317,5 +330,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     }
     zipf.finish().expect("error closing zip file");
     let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
-    eprintln!("[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)");
+    eprintln!(
+        "[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)"
+    );
 }
