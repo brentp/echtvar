@@ -49,7 +49,7 @@ echtvar annotate \
    $cohort.input.bcf
 ```
 
-### Configuration File for Encode
+#### Configuration File for Encode
 
 When running `echtvar encode`, a [json5](https://json5.org/) (json with
 comments and other nice features) determines which columns are pulled from the
@@ -86,6 +86,20 @@ We can add more fields like this:
 
 The above file will extract 3 fields, but the user can chooose as many as they like when encoding.
 All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
+
+#### Expressions
+
+An optional expression will determine which variants are written. It can utilize any fields present in the
+echtvar file (not those present in the query VCF). An example could be:
+
+```
+-i 'gnomad_af < 0.01 && gnomad_nhomalts < 10'
+```
+
+The expressions are enabled by [fasteval](https://github.com/likebike/fasteval) with supported syntax detailed [here](https://docs.rs/fasteval/latest/fasteval/). 
+
+In brief, the normal operators: (`&&, ||, +, -, *, /, <, <=, >, >=` and groupings `(, )`, etc) are supported and can be used to
+craft an expression that returns true or false as above.
 
 # References and Acknowledgements
 
