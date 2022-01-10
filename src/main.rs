@@ -3,8 +3,6 @@ pub mod commands;
 
 #[macro_use]
 extern crate clap;
-
-#[macro_use]
 extern crate fasteval;
 
 use commands::{annotate_cmd, encoder_cmd};

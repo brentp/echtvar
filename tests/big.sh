@@ -1,5 +1,6 @@
 # make *lot* of variants
 
+cargo build
 echtvar=../target/debug/echtvar
 
 set -e

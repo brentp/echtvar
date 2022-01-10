@@ -28,7 +28,7 @@ nvar = 0
 for switch in [1, 2, 3, 4, 5, 1132, 1133, 1134]:
     switch = switch<<20
 
-    for i in range(switch - 64, switch + 64):
+    for i in range(switch - 32, switch + 32):
         for rlen in range(1, 5):
             for ref in itertools.permutations("ACGT", rlen):
                 ref = "".join(ref)
