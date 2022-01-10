@@ -78,8 +78,8 @@ We can add more fields like this:
            alias: "gnomad_AF",
            missing_value: -1,
            // for floats, upon annotation, the score is divided by multiplier and stored as an integer.
+           // higher values give better precision and worse compression.
            multiplier: 2000000,
-          ftype: "Float"
    }
 ]
 ```

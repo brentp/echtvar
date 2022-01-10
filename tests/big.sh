@@ -35,4 +35,5 @@ for mod in 1 2 3 4 5; do
 
 
 done
+rm generated-all.vcf generated-exclude.vcf
 echo "SUCCESS"

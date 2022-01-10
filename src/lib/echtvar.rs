@@ -268,6 +268,8 @@ impl EchtVars {
             }
         };
     }
+
+    #[inline]
     fn get_float_value(self: &EchtVars, fld: &fields::Field, idx: usize) -> f32 {
         let v: u32 = self.values[fld.values_i][idx];
         return if v == u32::MAX {

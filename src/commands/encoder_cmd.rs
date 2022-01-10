@@ -1,6 +1,7 @@
 use echtvar_lib::{fields, kmer16, var32, zigzag, echtvar::bstrip_chr};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
+use rust_htslib::bcf::header::TagType;
 use stream_vbyte::{encode::encode, x86::Sse41};
 
 use std::borrow::{Borrow, BorrowMut};
@@ -130,13 +131,30 @@ pub fn encoder_main(vpath: &str, opath: &str, jpath: &str) {
         .expect("error opening json file")
         .read_to_string(&mut json)
         .expect("error parsing json file");
-    let fields: Vec<fields::Field> =
+    let mut fields: Vec<fields::Field> =
         json5::from_str(&json).expect("error reading json into fields");
+
 
     let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
+
+    for f in fields.iter_mut() {
+        let (tt, _tl) = header.info_type(&(f.field.as_bytes())).expect(&format!("unable to find header type for {}", f.field).to_string());
+        match tt {
+            TagType::Integer => f.ftype = fields::FieldType::Integer,
+            TagType::Float => {
+                f.ftype = fields::FieldType::Float;
+                if f.multiplier == 1 {
+                    eprintln!("[echtvar] warning! using a multiplier of 1 for float field {}.", f.field);
+                    eprintln!("\tIf this field contains values less than 1, use a multiplier so the values can be stored as integers.");
+                    eprintln!("\tLarger multipliers result in higher precision.");
+                }
+            },
+            _ => panic!("[echtvar] unsupported field type: {:?} for field {}", tt, f.field)
+        }
+    }
 
     let zfile = std::fs::File::create(&zpath).unwrap();
     let fbuffer = std::io::BufWriter::with_capacity(65536, zfile);
