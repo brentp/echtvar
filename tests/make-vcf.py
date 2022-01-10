@@ -1,5 +1,8 @@
 import itertools
 import random
+import sys
+
+mod = int(sys.argv[1])
 
 random.seed(42)
 
@@ -34,6 +37,13 @@ for switch in [1, 2, 3, 4, 5, 1132, 1133, 1134]:
                         alt = ref[0] + "".join(balt)
                         print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=all_fh)
 
-                        if nvar % 2 == 0:
+                        if nvar % mod == 0:
                             print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=exclude_fh)
                         nvar += 1
+
+        for ref in ["ACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+                   "ACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCT"]:
+            for alt in ["ACCCCCCCCCCCCCCCCC", "A", "ACCCCCCCCCCCCCCC"]:
+                print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=exclude_fh)
+                print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=all_fh)
+                nvar += 1
