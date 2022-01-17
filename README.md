@@ -23,7 +23,8 @@ so filtering can actually *increase* the speed.
 
 ### usage
 
-make (`encode`) a new echtvar file 
+make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the Release pages) 
+and then the file can be re-used for the `annotate` step with each new query file.
 
 ```
 echtvar \
@@ -62,7 +63,8 @@ A simple example is to pull a single integer field and give it a new name (`alia
 ```
 
 This will extract the "AC" field from the INFO and labeled as "gnomad_AC" when
-later used to annotate a VCF.
+later used to annotate a VCF. Note that it's important to give a description/unique prefix lke "`gnomad_`" so
+as not to collide with fields already in the query VCF.
 
 We can add more fields like this:
 
@@ -89,7 +91,7 @@ All fields in an `echtvar` file will be added (with the given alias) to any VCF 
 
 #### Expressions
 
-An optional expression will determine which variants are written. It can utilize any fields present in the
+An optional expression will determine which variants are written. It can utilize any (and only) fields present in the
 echtvar file (not those present in the query VCF). An example could be:
 
 ```
