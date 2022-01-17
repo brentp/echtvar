@@ -5,7 +5,7 @@
 
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
 it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
-) bases, encodes each variant into a 32 bit integer (with a supplemental table
+) bases, [encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
 for those that can't fit due to large REF and/or ALT alleles). It uses [delta
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
