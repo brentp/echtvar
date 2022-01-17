@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::time;
 
-use rust_htslib::bcf::{header::Header, Format, Writer};
+use rust_htslib::bcf::{header::Header, Format, Writer, record::Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 
 use echtvar_lib::echtvar::EchtVars;
@@ -9,6 +9,9 @@ use echtvar_lib::echtvar::Value;
 
 use fasteval::Compiler;
 use fasteval::Evaler;
+
+use std::thread;
+use std::sync::mpsc::sync_channel;
 
 pub fn annotate_main(
     vpath: &str,
@@ -52,6 +55,19 @@ pub fn annotate_main(
             .compile(&slab.ps, &mut slab.cs)
     };
 
+    let mut fake_ovcf = Writer::from_path(
+        "/dev/null",
+        &header,
+        false,
+        if opath.ends_with("bcf") {
+            Format::Bcf
+        } else {
+            Format::Vcf
+        },
+    )
+    .ok()
+    .expect("error opening bcf for output");
+
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(
         opath,
@@ -66,6 +82,8 @@ pub fn annotate_main(
     .ok()
     .expect("error opening bcf for output");
     ovcf.set_threads(2).expect("error setting threads");
+
+
     let oheader_view = ovcf.header().clone();
 
     let start = time::Instant::now();
@@ -73,9 +91,19 @@ pub fn annotate_main(
     let mut n_written = 0;
     let mut modu = 10000;
 
+    
+    let (tx, rx) = sync_channel::<Record>(100);
+    
+    thread::spawn(move|| {
+       while let Ok(record) = rx.recv() {
+          ovcf.write(&record).expect("failed to write record");
+          drop(record)
+       }
+    });
+
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
-        ovcf.translate(&mut record);
+        fake_ovcf.translate(&mut record);
 
         if n > 0 && n % modu == 0 {
             let rid = record.rid().unwrap();
@@ -123,8 +151,10 @@ pub fn annotate_main(
                 }
             }
         }
-        ovcf.write(&record).expect("failed to write record");
+        tx.send(record).expect("error sending record");
+        //ovcf.write(&record).expect("failed to write record");
     }
+    drop(tx);
     let mili = time::Instant::now().duration_since(start).as_millis();
     eprintln!(
         "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
