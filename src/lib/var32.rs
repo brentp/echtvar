@@ -1,6 +1,5 @@
 extern crate libc;
 extern crate serde;
-use crate::kmer16;
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -34,7 +33,7 @@ pub struct PRA {
 pub struct LongVariant {
     pub position: u32,
     pub idx: u32,
-    pub sequence: kmer16::K16s,
+    pub sequence: Vec<u32>,
 }
 
 // implement this as we need to exclude idx from the eq.

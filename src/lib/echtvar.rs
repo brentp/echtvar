@@ -2,6 +2,7 @@ use crate::fields;
 use crate::kmer16;
 use crate::var32;
 use crate::zigzag;
+use bincode::Options;
 use rust_htslib::bcf;
 use std::io::prelude::*;
 use std::{fs, io, str};
@@ -247,11 +248,13 @@ impl EchtVars {
         }
 
         if self.var32s.len() > 0 {
-            let long_path = format!("{}/too-long-for-var32.txt", base_path);
+            let long_path = format!("{}/too-long-for-var32.enc", base_path);
             let mut iz = self.zip.by_name(&long_path)?;
             self.buffer.clear();
             iz.read_to_end(&mut self.buffer)?;
-            self.longs = bincode::deserialize(&self.buffer).expect("error decoding long variants");
+            self.longs = bincode::DefaultOptions::new()
+                .deserialize(&self.buffer)
+                .expect("error decoding long variants");
         } else {
             self.longs.clear();
         }

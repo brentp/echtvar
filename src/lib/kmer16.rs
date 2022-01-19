@@ -5,12 +5,8 @@ const LOOKUP: [u32; 128] = [
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 ];
 
-pub type K16 = u32;
-
-pub type K16s = Vec<K16>;
-
-pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> K16s {
-    let mut result: Vec<K16> = vec![0; 3 + ((alt_allele.len() + ref_allele.len() - 1) >> 4)];
+pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> Vec<u32> {
+    let mut result: Vec<u32> = vec![0; 3 + ((alt_allele.len() + ref_allele.len() - 1) >> 4)];
     result[0] = ref_allele.len() as u32;
     result[1] = alt_allele.len() as u32;
 
@@ -32,8 +28,8 @@ pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> K16s {
     result
 }
 
-pub fn encode(dna: &[u8]) -> K16s {
-    let mut result: Vec<K16> = vec![0; 2 + ((dna.len() - 1) >> 4)];
+pub fn encode(dna: &[u8]) -> Vec<u32> {
+    let mut result: Vec<u32> = vec![0; 2 + ((dna.len() - 1) >> 4)];
     result[0] = dna.len() as u32;
 
     for (i, a) in dna.iter().enumerate() {

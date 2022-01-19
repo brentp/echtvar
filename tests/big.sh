@@ -33,10 +33,21 @@ for mod in 1 2 3 4 5; do
 		$echtvar encode test.echtvar test.hjson generated-all.no-prefix.vcf
 		$echtvar anno generated-all.vcf  -e test.echtvar anno.vcf.gz
 		python3 check.py anno.vcf.gz 1
+
+                
+                cat generated-all.no-prefix.vcf | perl -pe 's/^(chr1|1)|chr1/chr21/' > chr21.vcf
+                $echtvar anno chr21.vcf -e test.echtvar anno.vcf.gz
+                n=$(zgrep -v ^# anno.vcf.gz | grep -cv 'aval=-1')
+                if [[ "$n" -ne "0" ]]; then
+                    echo "annotated variants from another chrom!!!"
+                    exit 1;
+		fi
+
+                rm chr21.vcf
 		rm generated-all.no-prefix.vcf
 	fi
 
 
 done
-rm generated-all.vcf generated-exclude.vcf
+rm generated-all.vcf generated-exclude.vcf anno.vcf.gz
 echo "SUCCESS"

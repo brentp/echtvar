@@ -1,3 +1,4 @@
+use bincode::Options;
 use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
 use rust_htslib::bcf::header::TagType;
 use rust_htslib::bcf::record::{Buffer, Record};
@@ -59,7 +60,9 @@ fn write_long(
     }
     long_vars.sort();
 
-    let bc = bincode::serialize(long_vars).expect("error serializing long vars");
+    let bc = bincode::DefaultOptions::new()
+        .serialize(long_vars)
+        .expect("error serializing long vars");
     zipf.write_all(&bc).expect("error writing long variants");
 }
 
@@ -236,7 +239,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         var32s.clear();
 
                         let fname =
-                            format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
+                            format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
                         write_long(&mut zipf, &mut long_vars, indexes);
@@ -323,7 +326,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             sort_by_indices(&mut var32s, indexes.clone());
             write_bits(&mut var32s, true, &mut zipf, &mut compressed);
 
-            let fname = format!("echtvar/{}/{}/too-long-for-var32.txt", chrom, last_mod);
+            let fname = format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
             zipf.start_file(fname, options)
                 .expect("error starting file");
             n_long_vars += long_vars.len();
