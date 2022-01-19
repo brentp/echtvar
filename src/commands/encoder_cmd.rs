@@ -97,6 +97,7 @@ pub fn argsort<T: Ord>(data: &[T]) -> Vec<usize> {
 
 // https://stackoverflow.com/questions/69764803/how-to-sort-a-vector-by-indices-in-rust/69774341#69774341
 pub fn sort_by_indices<T: Ord>(data: &mut [T], mut indices: Vec<usize>) {
+    assert!(data.len() == indices.len());
     for idx in 0..data.len() {
         if indices[idx] != idx {
             let mut current_idx = idx;
@@ -198,6 +199,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     for vpath in vpaths.iter() {
         let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
+        eprintln!("[echtvar] adding VCF:{}", vpath);
         vcf.set_threads(2).ok();
 
         for r in vcf.records() {
@@ -326,6 +328,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 .expect("error starting file");
             n_long_vars += long_vars.len();
             write_long(&mut zipf, &mut long_vars, indexes);
+            long_vars.clear();
+            var32s.clear();
         }
     }
     zipf.finish().expect("error closing zip file");
