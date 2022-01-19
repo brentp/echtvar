@@ -19,7 +19,7 @@ path = "src/main.rs"
 
 flate2 = { version = "1.0", features = ["zlib-ng-compat"]}
 
-rust-htslib = { version = "*", features = ["libdeflate"] }
+rust-htslib = { version = "*", features = ["libdeflate", "static"] }
 #bitpacking = "0.8.4"
 stream-vbyte = {version = "0.4.0", features=["x86_ssse3", "x86_sse41"]}
 clap = {version = "~2.27.0", features=["suggestions"] }
