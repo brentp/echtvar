@@ -16,14 +16,17 @@ path = "src/main.rs"
 
 
 [dependencies]
+
+flate2 = { version = "1.0", features = ["zlib-ng-compat"]}
+
 rust-htslib = { version = "*", features = ["libdeflate"] }
 #bitpacking = "0.8.4"
 stream-vbyte = {version = "0.4.0", features=["x86_ssse3", "x86_sse41"]}
 clap = {version = "~2.27.0", features=["suggestions"] }
 c2rust-bitfields = "0.3.0"
 libc = "*"
-# TODO: try deflate-miniz, deflate-zlib
-zip = { version = "0.5", default-features = false, features=["deflate-miniz"] }
+# TODO: try deflate-miniz, deflate-zlib, deflate
+zip = { version = "0.5", default-features = false, features=["deflate"] }
 byteorder = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
