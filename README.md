@@ -6,14 +6,14 @@
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
 it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
 ) bases, [encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
-for those that can't fit due to large REF and/or ALT alleles). It uses [delta
+for those that can't fit due to large REF and/or ALT alleles). It uses the zip format, [delta
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
 ](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/)
 to create a compact and searchable format of any integer or float columns
 selected from the population file.
 
-Once created, an echtvar file can be used to annotate variants in a VCF (or
+Once created, an echtvar (zip) file can be used to annotate variants in a VCF (or
 BCF) file at a rate of >1 million variants per second (most of the time is spent
 reading and writing VCF/BCF, so this number depends on the particular file).
 
@@ -29,7 +29,7 @@ and then the file can be re-used for the `annotate` step with each new query fil
 ```
 echtvar \
    encode \
-   echtvar-gnomad-v3.zip \
+   gnomad.v3.1.2.echtvar.zip \
    conf.json # this defines the columns to pull from $input_vcf, and how to
    $input_population_vcf[s] \ can be split by chromosome or all in a single file.
 name and encode them
@@ -39,14 +39,19 @@ name and encode them
 See below for a description of the json file that defines which columns are
 pulled from the population VCF.
 
+> you can get a pre-made 6.8GB echtvar file from gnomad v3.1.2 (hg38 whole genomes) with this command:
+> ```
+> curl -L -o gnomad.v3.1.2.echtvar.zip https://surfdrive.surf.nl/files/index.php/s/O4mehMM7b3cmK9s/download
+> ```
+
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01.
 
 ```
 echtvar annotate \
-   -o $cohort.echtvar-annotated.bcf \
-   -a gnomad.echtvar \
-   -i 'gnomad_af < 0.01' \
+   -o $cohort.echtvar-annotated.filtered.bcf \
+   -a gnomad.v3.1.2.echtvar.zip \
+   -i 'gnomad_popmax_af < 0.01' \
    $cohort.input.bcf
 ```
 

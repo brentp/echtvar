@@ -1,0 +1,18 @@
+// this it the file used to create the files linked from echtvar releases.
+// when using that echtvar file, each of the "aliases" listed here will be added
+// to the output file.
+[
+        {"field": "AC", "alias": "gnomad_ac"},
+        {"field": "AN", "alias": "gnomad_an"},
+        {"field": "nhomalt", "alias": "gnomad_nhomalt"},
+        {"field": "AF", "alias": "gnomad_af", multiplier: 2000000},
+
+        {"field": "AC_popmax", "alias": "gnomad_popmax_ac"},
+        {"field": "AN_popmax", "alias": "gnomad_popmax_an"},
+        {"field": "nhomalt_popmax", "alias": "gnomad_popmax_nhomalt"},
+        {"field": "AF_popmax", "alias": "gnomad_popmax_af", multiplier: 2000000},
+
+        {"field": "AF_controls_and_biobanks", "alias": "gnomad_controls_and_biobanks_af", multiplier: 2000000},
+        {"field": "nhomalt_controls_and_biobanks", "alias": "gnomad_controls_and_biobanks_nhomalt"},
+]
+
