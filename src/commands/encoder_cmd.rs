@@ -227,7 +227,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     for vpath in vpaths.iter() {
         let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
-        eprintln!("[echtvar] adding VCF:{}", vpath);
+        eprintln!("[echtvar] encoding variants from:{}", vpath);
         vcf.set_threads(2).ok();
 
         for r in vcf.records() {
@@ -275,6 +275,11 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             .expect("error starting file");
                         write_var64s(&mut zipf, &mut var64s, &mut var64_idxs, indexes);
                         n_var64s += var64s.len();
+
+                        let fname = format!("echtvar/{}/{}/var64_idxs.bin", chrom, last_mod);
+                        zipf.start_file(fname, options)
+                            .expect("error starting file");
+                        write_bits(&mut var64_idxs, false, &mut zipf, &mut compressed);
                         var64s.clear();
                         var64_idxs.clear();
                     }
@@ -377,6 +382,12 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             zipf.start_file(fname, options)
                 .expect("error starting file");
             write_var64s(&mut zipf, &mut var64s, &mut var64_idxs, indexes);
+            n_var64s += var64s.len();
+            let fname = format!("echtvar/{}/{}/var64_idxs.bin", chrom, last_mod);
+	    zipf.start_file(fname, options)
+	       .expect("error starting file");
+	    write_bits(&mut var64_idxs, false, &mut zipf, &mut compressed);
+
             var64s.clear();
             var64_idxs.clear();
 
@@ -386,6 +397,6 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let long_pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
     let v64_pct = 100.0 * (n_var64s as f32) / (n_vars as f32);
     eprintln!("[echtvar] wrote {n_vars} total variants.");
-    eprintln!("[echtvar] ... and {n_var64s} 64-bit variants ({v64_pct:.2}%)");
-    eprintln!("[echtvar] ... and {n_long_vars} long variants ({long_pct:.2}%)");
+    eprintln!("[echtvar] .. and {n_var64s} 64-bit variants ({v64_pct:.2}%)");
+    eprintln!("[echtvar] .. and {n_long_vars} long variants ({long_pct:.2}%)");
 }
