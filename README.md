@@ -1,6 +1,4 @@
-# Echtvar
-## Really, truly rapid variant annotation and filtering 
-
+## Echtvar: Really, truly rapid variant annotation and filtering 
 [![Rust](https://github.com/brentp/echtvar/actions/workflows/ci.yml/badge.svg)](https://github.com/brentp/echtvar/actions/workflows/ci.yml)
 
 Echtvar enables rapid annotation of variants with huge pupulation datasets and
@@ -21,9 +19,15 @@ A filter expression can be applied so that only variants that meet the
 expression are written. Since `echtvar` is so fast, writing the output is a bottleneck
 so filtering can actually *increase* the speed.
 
+read more at the [why of echtvar](https://github.com/brentp/echtvar/wiki/why)
+
+### Getting started.
+
+Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here: https://github.com/brentp/echtvar/releases/latest
+
 ### usage
 
-make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the Release pages) 
+make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
 and then the file can be re-used for the `annotate` step with each new query file.
 
 ```
@@ -93,6 +97,8 @@ We can add more fields like this:
 
 The above file will extract 3 fields, but the user can chooose as many as they like when encoding.
 All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
+
+Other examples are available [here](https://github.com/brentp/echtvar/tree/main/examples)
 
 #### Expressions
 
