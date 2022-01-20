@@ -248,7 +248,7 @@ impl EchtVars {
         }
 
         if self.var32s.len() > 0 {
-            let long_path = format!("{}/too-long-for-var32.enc", base_path);
+            let long_path = format!("{}/long-vars.enc", base_path);
             let mut iz = self.zip.by_name(&long_path)?;
             self.buffer.clear();
             iz.read_to_end(&mut self.buffer)?;

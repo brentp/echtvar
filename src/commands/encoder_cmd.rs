@@ -66,6 +66,28 @@ fn write_long(
     zipf.write_all(&bc).expect("error writing long variants");
 }
 
+fn write_var64s(
+    zipf: &mut zip::ZipWriter<std::io::BufWriter<std::fs::File>>,
+    var64s: &mut Vec<u64>,
+    var64_idxs: &mut Vec<u32>,
+    indexes: Vec<usize>,
+) {
+    /*
+    let rev_index = argsort(&indexes);
+    for l in long_vars.iter_mut() {
+        l.idx = rev_index[l.idx as usize] as u32;
+    }
+    long_vars.sort();
+    */
+
+    let bc = bincode::DefaultOptions::new()
+        .serialize(var64s)
+        .expect("error serializing var64 vars");
+    zipf.write_all(&bc).expect("error writing var64 variants");
+}
+
+
+
 fn write_bits(
     values: &mut Vec<u32>,
     sorted: bool,
@@ -195,6 +217,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     let mut long_vars: Vec<var32::LongVariant> = Vec::new();
     let mut var32s: Vec<u32> = Vec::new();
+    let mut var64s: Vec<u64> = Vec::new();
+    let mut var64_idxs: Vec<u32> = Vec::new();
+    let mut n_var64s = 0;
     let mut n_long_vars = 0;
     let mut n_vars = 0;
 
@@ -238,13 +263,20 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         write_bits(&mut var32s, true, &mut zipf, &mut compressed);
                         var32s.clear();
 
-                        let fname =
-                            format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
+                        let fname = format!("echtvar/{}/{}/long-vars.enc", chrom, last_mod);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
-                        write_long(&mut zipf, &mut long_vars, indexes);
+                        write_long(&mut zipf, &mut long_vars, indexes.clone());
                         n_long_vars += long_vars.len();
-                        long_vars.clear()
+                        long_vars.clear();
+
+                        let fname = format!("echtvar/{}/{}/var64.bin", chrom, last_mod);
+                        zipf.start_file(fname, options)
+                            .expect("error starting file");
+                        write_var64s(&mut zipf, &mut var64s, &mut var64_idxs, indexes);
+                        n_var64s += var64s.len();
+                        var64s.clear();
+                        var64_idxs.clear();
                     }
                 }
                 last_rid = rec.rid().unwrap() as i32;
@@ -299,11 +331,18 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));
 
             if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
-                long_vars.push(var32::LongVariant {
-                    position: rec.pos() as u32,
-                    sequence: kmer16::encode_var(alleles[0], alleles[1]),
-                    idx: (var32s.len() - 1) as u32,
-                });
+
+               if alleles[0].len() + alleles[1].len() <= var32::MAX_COMBINED_LEN_64 {
+                   let v = var32::encode64(rec.pos() as u32, alleles[0], alleles[1]);
+                   var64s.push(v);
+                   var64_idxs.push((var32s.len() - 1) as u32)
+               } else {
+                    long_vars.push(var32::LongVariant {
+                        position: rec.pos() as u32,
+                        sequence: kmer16::encode_var(alleles[0], alleles[1]),
+                        idx: (var32s.len() - 1) as u32,
+                    });
+               }
             }
         }
         if values_vv[0].len() != 0 {
@@ -325,19 +364,28 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 .expect("error starting file");
             sort_by_indices(&mut var32s, indexes.clone());
             write_bits(&mut var32s, true, &mut zipf, &mut compressed);
+            var32s.clear();
 
-            let fname = format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
+            let fname = format!("echtvar/{}/{}/long-vars.enc", chrom, last_mod);
             zipf.start_file(fname, options)
                 .expect("error starting file");
             n_long_vars += long_vars.len();
-            write_long(&mut zipf, &mut long_vars, indexes);
+            write_long(&mut zipf, &mut long_vars, indexes.clone());
             long_vars.clear();
-            var32s.clear();
+
+            let fname = format!("echtvar/{}/{}/var64.bin", chrom, last_mod);
+            zipf.start_file(fname, options)
+                .expect("error starting file");
+            write_var64s(&mut zipf, &mut var64s, &mut var64_idxs, indexes);
+            var64s.clear();
+            var64_idxs.clear();
+
         }
     }
     zipf.finish().expect("error closing zip file");
-    let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
-    eprintln!(
-        "[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)"
-    );
+    let long_pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
+    let v64_pct = 100.0 * (n_var64s as f32) / (n_vars as f32);
+    eprintln!("[echtvar] wrote {n_vars} total variants.");
+    eprintln!("[echtvar] ... and {n_var64s} 64-bit variants ({v64_pct:.2}%)");
+    eprintln!("[echtvar] ... and {n_long_vars} long variants ({long_pct:.2}%)");
 }
