@@ -1,7 +1,8 @@
 # make *lot* of variants
 
-cargo build
-echtvar=../target/debug/echtvar
+target=x86_64-unknown-linux-gnu
+cargo build --target $target
+echtvar=../target/$target/debug/echtvar
 
 set -e
 for mod in 1 2 3 4 5; do

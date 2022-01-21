@@ -134,7 +134,7 @@ impl EchtVars {
         result
     }
 
-    pub fn update_header(self: &mut EchtVars, header: &mut bcf::header::Header) {
+    pub fn update_header(self: &mut EchtVars, header: &mut bcf::header::Header, path: &str) {
         for e in &self.fields {
             header.push_record(
                 format!(
@@ -145,7 +145,7 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    "added by echtvar from ..."
+                    format!("added by echtvar from {}", path)
                 )
                 .as_bytes(),
             );

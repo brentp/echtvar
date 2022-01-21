@@ -4,8 +4,7 @@ use std::time;
 use rust_htslib::bcf::{header::Header, Format, Writer};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 
-use echtvar_lib::echtvar::EchtVars;
-use echtvar_lib::echtvar::Value;
+use echtvar_lib::echtvar::{EchtVars, Value};
 
 use fasteval::Compiler;
 use fasteval::Evaler;
@@ -25,17 +24,31 @@ pub fn annotate_main(
     let header_view = vcf.header();
     let mut header = Header::from_template(&header_view);
 
-    let mut e = EchtVars::open(&*epaths[0]);
-    e.update_header(&mut header);
+    // each given echtvar file updates the header.
+    let mut echts: Vec<EchtVars> = epaths
+        .iter()
+        .map(|p| {
+            let mut e = EchtVars::open(&*p);
+            e.update_header(&mut header, &*p);
+            e
+        })
+        .collect();
 
     let parser = fasteval::Parser::new();
     let mut slab = fasteval::Slab::new();
     let mut ns = fasteval::EmptyNamespace;
     let mut expr_values = vec![];
 
-    for (i, fld) in e.fields.iter().enumerate() {
-        expr_values.push(0.0 as f64);
-        unsafe { slab.ps.add_unsafe_var(fld.alias.clone(), &expr_values[i]) }
+    for (i, e) in echts.iter().enumerate() {
+        // a vector within expr_values for each echtvar file.
+        expr_values.push(vec![]);
+        for (j, fld) in e.fields.iter().enumerate() {
+            expr_values[i].push(0.0 as f64);
+            unsafe {
+                slab.ps
+                    .add_unsafe_var(fld.alias.clone(), &expr_values[i][j])
+            }
+        }
     }
     let mut is_compiled = false;
     let compiled = if let Some(uexpr) = include_expr {
@@ -96,7 +109,9 @@ pub fn annotate_main(
         }
         n += 1;
         // this updates evalues and fills expr values
-        e.update_expr_values(&mut record, &mut expr_values);
+        for (i, e) in echts.iter_mut().enumerate() {
+            e.update_expr_values(&mut record, &mut expr_values[i]);
+        }
 
         if is_compiled {
             if fasteval::eval_compiled!(compiled, &slab, &mut ns) == 0.0 {
@@ -105,21 +120,23 @@ pub fn annotate_main(
         }
         n_written += 1;
 
-        for fld in &e.fields {
-            let v = e.evalues[fld.values_i];
+        for e in echts.iter() {
+            for fld in &e.fields {
+                let v = e.evalues[fld.values_i];
 
-            match v {
-                Value::Int(i) => {
-                    let val = [i];
-                    record
-                        .push_info_integer(fld.alias.as_bytes(), &val)
-                        .expect(&format!("error adding integer {}", fld.alias).to_string());
-                }
-                Value::Float(f) => {
-                    let val = [f];
-                    record
-                        .push_info_float(fld.alias.as_bytes(), &val)
-                        .expect(&format!("error adding float {}", fld.alias).to_string());
+                match v {
+                    Value::Int(i) => {
+                        let val = [i];
+                        record
+                            .push_info_integer(fld.alias.as_bytes(), &val)
+                            .expect(&format!("error adding integer {}", fld.alias).to_string());
+                    }
+                    Value::Float(f) => {
+                        let val = [f];
+                        record
+                            .push_info_float(fld.alias.as_bytes(), &val)
+                            .expect(&format!("error adding float {}", fld.alias).to_string());
+                    }
                 }
             }
         }

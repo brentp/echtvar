@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         (@subcommand anno =>
             (about: "annotate a VCF/BCF with one or more echtvar files")
-            (@arg echtvar: -e ... +takes_value number_of_values(1) "echtvar files to annotate with. can be specified many times")
+            (@arg echtvar: -e + takes_value number_of_values(1) ... "echtvar files to annotate with. can be specified many times")
             (@arg include: -i  +takes_value number_of_values(1) "expression that determines which variants to keep in output")
             (@arg INPUT_VCF: +required "vcf")
             (@arg OUTPUT_VCF: +required "path to bcf output file")
