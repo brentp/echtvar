@@ -28,7 +28,7 @@ Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here:
 ### usage
 
 make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
-and then the file can be re-used for the `annotate` step with each new query file.
+and then the file can be re-used for the `anno` step with each new query file.
 
 ```
 echtvar \
@@ -52,11 +52,11 @@ annotate a VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01.
 
 ```
-echtvar annotate \
-   -o $cohort.echtvar-annotated.filtered.bcf \
-   -a gnomad.v3.1.2.echtvar.zip \
+echtvar anno \
+   -e gnomad.v3.1.2.echtvar.zip \
    -i 'gnomad_popmax_af < 0.01' \
-   $cohort.input.bcf
+   $cohort.input.bcf \
+   $cohort.echtvar-annotated.filtered.bcf
 ```
 
 #### Configuration File for Encode
