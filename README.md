@@ -28,7 +28,7 @@ Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here:
 ### usage
 
 make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
-and then the file can be re-used for the `anno` step with each new query file.
+and then the file can be re-used for the annotation (`echtvar anno`) step with each new query file.
 
 ```
 echtvar \
