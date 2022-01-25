@@ -5,6 +5,7 @@ use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
 
+use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
 use std::fs::File;
 use std::io::Read;
@@ -47,6 +48,34 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
         Some(v) => v[0],
         None => default,
     };
+}
+
+fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
+    rec: &Record,
+    field: &[u8],
+    buffer: B,
+    default: String,
+    lookup: &mut HashMap<String, u32>,
+    
+) -> u32 {
+    let s = match rec
+        .info_shared_buffer(field, buffer)
+        .string()
+        .unwrap_or(None) 
+    {
+       Some(v) => {
+           unsafe { String::from_utf8_unchecked(v[0].to_vec()) }
+       },
+       None => default
+    };
+    let l = lookup.len() as u32;
+    *lookup.entry(s).or_insert(l)
+    /*
+    if ! lookup.contains_key(&s) {
+        lookup[&s] = lookup.len() as u32;
+    }
+    return *lookup.get(&s).expect("error extracting key");
+    */
 }
 
 fn write_long(
@@ -144,6 +173,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
+    let mut lookup = HashMap::new();
 
     for f in fields.iter_mut() {
         let (tt, _tl) = header
@@ -161,7 +191,10 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                     eprintln!("\tIf this field contains values less than 1, use a multiplier so the values can be stored as integers.");
                     eprintln!("\tLarger multipliers result in higher precision.");
                 }
-            }
+            },
+            TagType::String /* TagType::Flag */ => {
+              f.ftype = fields::FieldType::Categorical;
+            },
             _ => panic!(
                 "[echtvar] unsupported field type: {:?} for field {}",
                 tt, f.field
@@ -289,7 +322,17 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             }
                         }
                     }
-                    fields::FieldType::Categorical => panic!("not implemented"),
+                    fields::FieldType::Categorical => {
+                        let val = get_string_field(
+                            &rec,
+                            fld.field.as_bytes(),
+                            &mut buffer,
+                            "missing".to_string(),
+                            &mut lookup,
+                          );
+                          val
+
+                    },
                 };
 
                 values_vv[i].push(v);
