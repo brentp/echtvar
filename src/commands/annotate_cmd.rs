@@ -42,6 +42,7 @@ pub fn annotate_main(
     for (i, e) in echts.iter().enumerate() {
         // a vector within expr_values for each echtvar file.
         expr_values.push(vec![]);
+        // handle the expression stuff.
         for (j, fld) in e.fields.iter().enumerate() {
             expr_values[i].push(0.0 as f64);
             unsafe {
@@ -142,7 +143,7 @@ pub fn annotate_main(
         }
         ovcf.write(&record).expect("failed to write record");
     }
-    let mili = time::Instant::now().duration_since(start).as_millis();
+    let mili = std::cmp::max(1, time::Instant::now().duration_since(start).as_millis());
     eprintln!(
         "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
         n,

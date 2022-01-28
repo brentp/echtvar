@@ -187,6 +187,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             },
             TagType::String /* TagType::Flag */ => {
               f.ftype = fields::FieldType::Categorical;
+              // and a new table into lookups for this field
               lookups.entry(f.alias.clone()).or_insert(HashMap::new());
             },
             _ => panic!(
@@ -385,6 +386,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         for (name, idx) in lookup.iter() {
             arr[*idx as usize] = name;
         }
+        // write the string entries it order to the file.
+        // when decoding, we can index into this array to get the string value from
+        // the encoded integer.
         for v in arr.iter() {
             zipf.write(v.as_bytes()).expect("error writing to zip file");
             zipf.write(b"\n").expect("error writing to zip file");
