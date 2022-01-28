@@ -5,8 +5,8 @@ use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
 
-use std::collections::HashMap;
 use std::borrow::{Borrow, BorrowMut};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -56,26 +56,18 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     buffer: B,
     default: String,
     lookup: &mut HashMap<String, u32>,
-    
 ) -> u32 {
     let s = match rec
         .info_shared_buffer(field, buffer)
         .string()
-        .unwrap_or(None) 
+        .unwrap_or(None)
     {
-       Some(v) => {
-           unsafe { String::from_utf8_unchecked(v[0].to_vec()) }
-       },
-       None => default
+        Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
+        None => default,
     };
+    // lookup from string -> idx so we can get the reverse when decoding.
     let l = lookup.len() as u32;
     *lookup.entry(s).or_insert(l)
-    /*
-    if ! lookup.contains_key(&s) {
-        lookup[&s] = lookup.len() as u32;
-    }
-    return *lookup.get(&s).expect("error extracting key");
-    */
 }
 
 fn write_long(
@@ -173,7 +165,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
-    let mut lookup = HashMap::new();
+    // hashmap of hashmaps e.g. {'alias': {'A': 0, 'B': 1}, 'othercol': {'PASS': 0, 'FAIL': 1}}
+    let mut lookups = HashMap::new();
 
     for f in fields.iter_mut() {
         let (tt, _tl) = header
@@ -194,6 +187,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             },
             TagType::String /* TagType::Flag */ => {
               f.ftype = fields::FieldType::Categorical;
+              lookups.entry(f.alias.clone()).or_insert(HashMap::new());
             },
             _ => panic!(
                 "[echtvar] unsupported field type: {:?} for field {}",
@@ -328,11 +322,10 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             fld.field.as_bytes(),
                             &mut buffer,
                             "missing".to_string(),
-                            &mut lookup,
-                          );
-                          val
-
-                    },
+                            lookups.get_mut(&fld.alias).unwrap(),
+                        );
+                        val
+                    }
                 };
 
                 values_vv[i].push(v);
@@ -378,6 +371,26 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             var32s.clear();
         }
     }
+    for (afld, lookup) in lookups.iter() {
+        let fname = format!("echtvar/strings/{}.txt", afld);
+        zipf.start_file(fname, options)
+            .expect("error starting file");
+        eprintln!(
+            "[echtvar] found {} unique values for {})",
+            lookup.len(),
+            afld
+        );
+        // use array to make sure we save in sorted order.
+        let mut arr = vec![""; lookup.len()];
+        for (name, idx) in lookup.iter() {
+            arr[*idx as usize] = name;
+        }
+        for v in arr.iter() {
+            zipf.write(v.as_bytes()).expect("error writing to zip file");
+            zipf.write(b"\n").expect("error writing to zip file");
+        }
+    }
+
     zipf.finish().expect("error closing zip file");
     let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
     eprintln!(
