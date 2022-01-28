@@ -54,7 +54,7 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     rec: &Record,
     field: &[u8],
     buffer: B,
-    default: String,
+    default: &String,
     lookup: &mut HashMap<String, u32>,
 ) -> u32 {
     let s = match rec
@@ -63,7 +63,7 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
         .unwrap_or(None)
     {
         Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
-        None => default,
+        None => default.to_string(),
     };
     // lookup from string -> idx so we can get the reverse when decoding.
     let l = lookup.len() as u32;
@@ -322,7 +322,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             &rec,
                             fld.field.as_bytes(),
                             &mut buffer,
-                            "MISSING".to_string(),
+                            &fld.missing_string,
                             lookups.get_mut(&fld.alias).unwrap(),
                         );
                         val

@@ -8,7 +8,7 @@ for those that can't fit due to large REF and/or ALT alleles). It uses the zip f
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
 ](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/)
-to create a compact and searchable format of any integer or float columns
+to create a compact and searchable format of any integer, float, or low-cardinality string columns
 selected from the population file.
 
 Once created, an echtvar (zip) file can be used to annotate variants in a VCF (or
@@ -92,6 +92,8 @@ We can add more fields like this:
            // higher values give better precision and worse compression.
            multiplier: 2000000,
    }
+   // echtvar will save strings as integers along with a lookup. this can work for fields with a low cardinality.
+    {"field": "string_field", "alias":, gnomad_string_field", missing_string: "UNKNOWN"},
 ]
 ```
 

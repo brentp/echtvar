@@ -13,6 +13,9 @@ pub struct Field {
     pub alias: String,
     #[serde(default = "default_missing_value")]
     pub missing_value: i32,
+    #[serde(default = "default_missing_string")]
+    pub missing_string: std::string::String,
+
     #[serde(default)]
     pub zigzag: bool,
     #[serde(default = "default_multiplier")]
@@ -25,6 +28,9 @@ pub struct Field {
 
 fn default_missing_value() -> i32 {
     -1
+}
+fn default_missing_string() -> std::string::String {
+    "MISSING".to_string()
 }
 fn default_multiplier() -> u32 {
     1
@@ -39,6 +45,7 @@ impl Default for Field {
             field: "field".to_string(),
             alias: "name".to_string(),
             missing_value: -1,
+            missing_string: "MISSING".to_string(),
             zigzag: false,
             multiplier: 1,
             ftype: FieldType::Integer,

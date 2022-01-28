@@ -144,8 +144,6 @@ impl EchtVars {
                     result
                         .strings
                         .push(BufReader::new(fh).lines().map(|l| l.unwrap()).collect());
-                    //let l = result.strings.len();
-                    //result.strings[l - 1].push("MISSING".to_string());
                 } else {
                     result.strings.push(Vec::new());
                 }
