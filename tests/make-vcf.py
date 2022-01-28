@@ -15,6 +15,7 @@ header = ("""##fileformat=VCFv4.2
 ##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles">
 ##INFO=<ID=val,Number=1,Type=Integer,Description="random value">
 ##INFO=<ID=nvar,Number=1,Type=Integer,Description="variant index">
+##INFO=<ID=str,Number=.,Type=String,Description="string value">
 ##INFO=<ID=AF,Number=A,Type=Float,Description="Alternate allele frequency">
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=1,length=248956422>

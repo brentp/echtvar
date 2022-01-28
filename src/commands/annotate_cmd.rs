@@ -133,7 +133,6 @@ pub fn annotate_main(
                             record.push_info_string(fld.alias.as_bytes(), &val).expect(
                                 &format!("error adding string for {}", fld.alias).to_string(),
                             );
-                            eprintln!("{:?}", val[0]);
                         }
                         _ => {
                             let val = [i];

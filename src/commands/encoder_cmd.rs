@@ -1,6 +1,6 @@
 use bincode::Options;
 use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
-use rust_htslib::bcf::header::TagType;
+use rust_htslib::bcf::header::{TagLength, TagType};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -57,13 +57,27 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     default: &String,
     lookup: &mut HashMap<String, u32>,
 ) -> u32 {
-    let s = match rec
-        .info_shared_buffer(field, buffer)
-        .string()
-        .unwrap_or(None)
-    {
-        Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
-        None => default.to_string(),
+    let s = if field == b"FILTER" {
+        let hdr = rec.header();
+        let f = rec
+            .filters()
+            .map(|f| unsafe { String::from_utf8_unchecked(hdr.id_to_name(f)) })
+            .collect::<Vec<String>>()
+            .join(";");
+        if f.len() == 0 {
+            default.clone()
+        } else {
+            f
+        }
+    } else {
+        match rec
+            .info_shared_buffer(field, buffer)
+            .string()
+            .unwrap_or(None)
+        {
+            Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
+            None => default.to_string(),
+        }
     };
     // lookup from string -> idx so we can get the reverse when decoding.
     let l = lookup.len() as u32;
@@ -169,9 +183,13 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let mut lookups = HashMap::new();
 
     for f in fields.iter_mut() {
-        let (tt, _tl) = header
-            .info_type(&(f.field.as_bytes()))
-            .expect(&format!("unable to find header type for {}", f.field).to_string());
+        let (tt, _tl) = if f.field == "FILTER" {
+            (TagType::String, TagLength::Variable)
+        } else {
+            header
+                .info_type(&(f.field.as_bytes()))
+                .expect(&format!("unable to find header type for {}", f.field).to_string())
+        };
         match tt {
             TagType::Integer => f.ftype = fields::FieldType::Integer,
             TagType::Float => {
