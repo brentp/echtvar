@@ -322,7 +322,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             &rec,
                             fld.field.as_bytes(),
                             &mut buffer,
-                            "missing".to_string(),
+                            "MISSING".to_string(),
                             lookups.get_mut(&fld.alias).unwrap(),
                         );
                         val
