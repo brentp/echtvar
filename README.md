@@ -106,7 +106,7 @@ Other examples are available [here](https://github.com/brentp/echtvar/tree/main/
 
 #### Expressions
 
-An optional expression will determine which variants are written. It can utilize any (and only) fields present in the
+An optional expression will determine which variants are written. It can utilize any (and only) integer or float fields present in the
 echtvar file (not those present in the query VCF). An example could be:
 
 ```
