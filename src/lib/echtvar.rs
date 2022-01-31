@@ -135,7 +135,7 @@ impl EchtVars {
                 f.values_i = result.fields.len();
                 result.fields.push(f);
                 if fld.ftype == fields::FieldType::Categorical {
-                    // read in the strings for this field.
+                    // read in the strings for this field. replace ';' with ',' to handle the filter field.
                     let fname = format!("echtvar/strings/{}.txt", fld.alias);
                     let fh = result
                         .zip
@@ -143,7 +143,7 @@ impl EchtVars {
                         .expect("error opening strings file");
                     result
                         .strings
-                        .push(BufReader::new(fh).lines().map(|l| l.unwrap()).collect());
+                        .push(BufReader::new(fh).lines().map(|l| l.unwrap().replace(";", ",")).collect());
                 } else {
                     result.strings.push(Vec::new());
                 }
