@@ -12,5 +12,10 @@ for line in fh:
     if i % mod != 0: continue
     info = line.split("\t")[7].strip().split(';')
     val = [x for x in info if x.startswith('val=')][0]
-    aval = [x for x in info if x.startswith('aval=')][0]
+    # we get -1 for a missing so don't include that.
+    aval = [x for x in info if x.startswith(('aval=', 'aval1=')) and not x.startswith(('aval=-', 'val=-'))][0]
+    # replace aval1= with aval= for comparison.
+    aval = aval.replace('1=', '=')
     assert val == aval[1:], (val, aval[1:], i)
+
+assert i >= 0

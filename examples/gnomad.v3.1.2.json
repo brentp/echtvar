@@ -14,5 +14,7 @@
 
         {"field": "AF_controls_and_biobanks", "alias": "gnomad_controls_and_biobanks_af", multiplier: 2000000},
         {"field": "nhomalt_controls_and_biobanks", "alias": "gnomad_controls_and_biobanks_nhomalt"},
+
+        {"field": "FILTER", "alias": "gnomad_filter", "missing_string": "PASS"},
 ]
 

@@ -7,21 +7,24 @@ mod = int(sys.argv[1])
 random.seed(42)
 
 all_fh = open("generated-all.vcf", "w")
-exclude_fh = open("generated-exclude.vcf", "w")
+subset0_fh = open("generated-subset0.vcf", "w")
+subset1_fh = open("generated-subset1.vcf", "w")
 
 header = ("""##fileformat=VCFv4.2
 ##FILTER=<ID=PASS,Description="All filters passed",IDX=0>
 ##INFO=<ID=AC,Number=A,Type=Integer,Description="Alternate allele count">
 ##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles">
-##INFO=<ID=val,Number=1,Type=Integer,Description="random value">
+##INFO=<ID=val%s,Number=1,Type=Integer,Description="random value">
 ##INFO=<ID=nvar,Number=1,Type=Integer,Description="variant index">
+##INFO=<ID=str,Number=.,Type=String,Description="string value">
 ##INFO=<ID=AF,Number=A,Type=Float,Description="Alternate allele frequency">
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=1,length=248956422>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO""")
 
-print(header, file=all_fh)
-print(header, file=exclude_fh)
+print(header % "", file=all_fh)
+print(header % 0, file=subset0_fh)
+print(header % 1, file=subset1_fh)
 
 nvar = 0
 
@@ -39,12 +42,19 @@ for switch in [1, 2, 3, 4, 5, 1132, 1133, 1134]:
                         print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=all_fh)
 
                         if nvar % mod == 0:
-                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=exclude_fh)
+                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval0={val};nvar={nvar}", file=subset0_fh)
+                        else:
+                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval1={val};nvar={nvar}", file=subset1_fh)
                         nvar += 1
 
         for ref in ["ACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
                    "ACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCT"]:
             for alt in ["ACCCCCCCCCCCCCCCCC", "A", "ACCCCCCCCCCCCCCC"]:
-                print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=exclude_fh)
+              
                 print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=all_fh)
+
+                if nvar % mod == 0:
+                    print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval0={val};nvar={nvar}", file=subset0_fh)
+                else:
+                    print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval1={val};nvar={nvar}", file=subset1_fh)
                 nvar += 1

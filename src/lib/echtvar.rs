@@ -8,6 +8,7 @@ use std::io::prelude::*;
 use std::{fs, io, str};
 
 use byteorder::{LittleEndian, ReadBytesExt};
+use std::io::BufReader;
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
@@ -43,6 +44,10 @@ pub struct EchtVars {
     // handle values[i]
     pub fields: Vec<fields::Field>,
     buffer: Vec<u8>,
+
+    // lookup for categorical fields.
+    // these will be empty for non-categorical.
+    pub strings: Vec<Vec<std::string::String>>,
 }
 
 pub trait Variant {
@@ -111,22 +116,37 @@ impl EchtVars {
             evalues: vec![],
             fields: vec![],
             buffer: vec![],
+            strings: vec![],
         };
 
         {
-            let mut f = result
+            let mut fc = result
                 .zip
                 .by_name("echtvar/config.json")
                 .expect("unable to open echtvar/config.json");
             let mut contents = String::new();
-            f.read_to_string(&mut contents)
+            fc.read_to_string(&mut contents)
                 .expect("eror reading config.json");
+            drop(fc);
             let flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
             eprintln!("fields: {:?}", flds);
             for fld in flds {
                 let mut f = fld.clone();
                 f.values_i = result.fields.len();
                 result.fields.push(f);
+                if fld.ftype == fields::FieldType::Categorical {
+                    // read in the strings for this field. replace ';' with ',' to handle the filter field.
+                    let fname = format!("echtvar/strings/{}.txt", fld.alias);
+                    let fh = result
+                        .zip
+                        .by_name(&fname)
+                        .expect("error opening strings file");
+                    result
+                        .strings
+                        .push(BufReader::new(fh).lines().map(|l| l.unwrap().replace(";", ",")).collect());
+                } else {
+                    result.strings.push(Vec::new());
+                }
             }
             result.values.resize(result.fields.len(), vec![]);
             result.evalues.resize(result.fields.len(), Value::Int(0));
@@ -142,6 +162,8 @@ impl EchtVars {
                     e.alias,
                     if e.ftype == fields::FieldType::Integer {
                         "Integer"
+                    } else if e.ftype == fields::FieldType::Categorical {
+                        "String"
                     } else {
                         "Float"
                     },
@@ -321,7 +343,9 @@ impl EchtVars {
         match eidx {
             Ok(idx) => {
                 for fld in &self.fields {
-                    if fld.ftype == fields::FieldType::Integer {
+                    if fld.ftype == fields::FieldType::Integer
+                        || fld.ftype == fields::FieldType::Categorical
+                    {
                         let val = self.get_int_value(fld, idx);
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64
@@ -336,7 +360,9 @@ impl EchtVars {
             }
             Err(_) => {
                 for fld in &self.fields {
-                    if fld.ftype == fields::FieldType::Integer {
+                    if fld.ftype == fields::FieldType::Integer
+                        || fld.ftype == fields::FieldType::Categorical
+                    {
                         let val = fld.missing_value as i32;
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64

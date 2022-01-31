@@ -5,6 +5,7 @@ use rust_htslib::bcf::{header::Header, Format, Writer};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 
 use echtvar_lib::echtvar::{EchtVars, Value};
+use echtvar_lib::fields;
 
 use fasteval::Compiler;
 use fasteval::Evaler;
@@ -42,6 +43,7 @@ pub fn annotate_main(
     for (i, e) in echts.iter().enumerate() {
         // a vector within expr_values for each echtvar file.
         expr_values.push(vec![]);
+        // handle the expression stuff.
         for (j, fld) in e.fields.iter().enumerate() {
             expr_values[i].push(0.0 as f64);
             unsafe {
@@ -125,12 +127,20 @@ pub fn annotate_main(
                 let v = e.evalues[fld.values_i];
 
                 match v {
-                    Value::Int(i) => {
-                        let val = [i];
-                        record
-                            .push_info_integer(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding integer {}", fld.alias).to_string());
-                    }
+                    Value::Int(i) => match fld.ftype {
+                        fields::FieldType::Categorical => {
+                            let val = [e.strings[fld.values_i][i as usize].as_bytes()];
+                            record.push_info_string(fld.alias.as_bytes(), &val).expect(
+                                &format!("error adding string for {}", fld.alias).to_string(),
+                            );
+                        }
+                        _ => {
+                            let val = [i];
+                            record
+                                .push_info_integer(fld.alias.as_bytes(), &val)
+                                .expect(&format!("error adding integer {}", fld.alias).to_string());
+                        }
+                    },
                     Value::Float(f) => {
                         let val = [f];
                         record
@@ -142,7 +152,7 @@ pub fn annotate_main(
         }
         ovcf.write(&record).expect("failed to write record");
     }
-    let mili = time::Instant::now().duration_since(start).as_millis();
+    let mili = std::cmp::max(1, time::Instant::now().duration_since(start).as_millis());
     eprintln!(
         "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
         n,

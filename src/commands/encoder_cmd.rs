@@ -1,11 +1,12 @@
 use bincode::Options;
 use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
-use rust_htslib::bcf::header::TagType;
+use rust_htslib::bcf::header::{TagLength, TagType};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
 
 use std::borrow::{Borrow, BorrowMut};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -47,6 +48,40 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
         Some(v) => v[0],
         None => default,
     };
+}
+
+fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
+    rec: &Record,
+    field: &[u8],
+    buffer: B,
+    default: &String,
+    lookup: &mut HashMap<String, u32>,
+) -> u32 {
+    let s = if field == b"FILTER" {
+        let hdr = rec.header();
+        let f = rec
+            .filters()
+            .map(|f| unsafe { String::from_utf8_unchecked(hdr.id_to_name(f)) })
+            .collect::<Vec<String>>()
+            .join(";");
+        if f.len() == 0 {
+            default.clone()
+        } else {
+            f
+        }
+    } else {
+        match rec
+            .info_shared_buffer(field, buffer)
+            .string()
+            .unwrap_or(None)
+        {
+            Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
+            None => default.to_string(),
+        }
+    };
+    // lookup from string -> idx so we can get the reverse when decoding.
+    let l = lookup.len() as u32;
+    *lookup.entry(s).or_insert(l)
 }
 
 fn write_long(
@@ -144,11 +179,17 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
+    // hashmap of hashmaps e.g. {'alias': {'A': 0, 'B': 1}, 'othercol': {'PASS': 0, 'FAIL': 1}}
+    let mut lookups = HashMap::new();
 
     for f in fields.iter_mut() {
-        let (tt, _tl) = header
-            .info_type(&(f.field.as_bytes()))
-            .expect(&format!("unable to find header type for {}", f.field).to_string());
+        let (tt, _tl) = if f.field == "FILTER" {
+            (TagType::String, TagLength::Variable)
+        } else {
+            header
+                .info_type(&(f.field.as_bytes()))
+                .expect(&format!("unable to find header type for {}", f.field).to_string())
+        };
         match tt {
             TagType::Integer => f.ftype = fields::FieldType::Integer,
             TagType::Float => {
@@ -161,7 +202,12 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                     eprintln!("\tIf this field contains values less than 1, use a multiplier so the values can be stored as integers.");
                     eprintln!("\tLarger multipliers result in higher precision.");
                 }
-            }
+            },
+            TagType::String /* TagType::Flag */ => {
+              f.ftype = fields::FieldType::Categorical;
+              // and a new table into lookups for this field
+              lookups.entry(f.alias.clone()).or_insert(HashMap::new());
+            },
             _ => panic!(
                 "[echtvar] unsupported field type: {:?} for field {}",
                 tt, f.field
@@ -289,7 +335,16 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             }
                         }
                     }
-                    fields::FieldType::Categorical => panic!("not implemented"),
+                    fields::FieldType::Categorical => {
+                        let val = get_string_field(
+                            &rec,
+                            fld.field.as_bytes(),
+                            &mut buffer,
+                            &fld.missing_string,
+                            lookups.get_mut(&fld.alias).unwrap(),
+                        );
+                        val
+                    }
                 };
 
                 values_vv[i].push(v);
@@ -335,6 +390,29 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             var32s.clear();
         }
     }
+    for (afld, lookup) in lookups.iter() {
+        let fname = format!("echtvar/strings/{}.txt", afld);
+        zipf.start_file(fname, options)
+            .expect("error starting file");
+        eprintln!(
+            "[echtvar] found {} unique values for {})",
+            lookup.len(),
+            afld
+        );
+        // use array to make sure we save in sorted order.
+        let mut arr = vec![""; lookup.len()];
+        for (name, idx) in lookup.iter() {
+            arr[*idx as usize] = name;
+        }
+        // write the string entries it order to the file.
+        // when decoding, we can index into this array to get the string value from
+        // the encoded integer.
+        for v in arr.iter() {
+            zipf.write(v.as_bytes()).expect("error writing to zip file");
+            zipf.write(b"\n").expect("error writing to zip file");
+        }
+    }
+
     zipf.finish().expect("error closing zip file");
     let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
     eprintln!(
