@@ -49,11 +49,12 @@ pulled from the population VCF.
 > ```
 
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
-from the echtvar file is < 0.01.
+from the echtvar file is < 0.01. Note that multiple echtvar files can be specified.
 
 ```
 echtvar anno \
-   -e gnomad.v3.1.2.echtvar.zip \
+   -e gnomad.v3.1.2.echtvar.v2.zip \
+   -e dbsnp.echtvar.zip \
    -i 'gnomad_popmax_af < 0.01' \
    $cohort.input.bcf \
    $cohort.echtvar-annotated.filtered.bcf
