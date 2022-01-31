@@ -1,0 +1,5 @@
+[
+  {"field": "FILTER", "alias": "filter"},
+  {"field": "val", "alias": "string_val"},
+  {"field": "num", "alias": "anno_num"},
+]
