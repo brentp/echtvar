@@ -43,9 +43,9 @@ name and encode them
 See below for a description of the json file that defines which columns are
 pulled from the population VCF.
 
-> you can get a pre-made 6.8GB echtvar file from gnomad v3.1.2 (hg38 whole genomes) with this command:
+> you can get a pre-made 7.1GB echtvar file from gnomad v3.1.2 (hg38 whole genomes) with this command:
 > ```
-> curl -L -o gnomad.v3.1.2.echtvar.zip https://surfdrive.surf.nl/files/index.php/s/O4mehMM7b3cmK9s/download
+> curl -L -o gnomad.v3.1.2.echtvar.v2.zip https://surfdrive.surf.nl/files/index.php/s/nJPDxM3b9C7hkM2
 > ```
 
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
