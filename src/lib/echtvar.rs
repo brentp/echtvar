@@ -128,12 +128,9 @@ impl EchtVars {
             fc.read_to_string(&mut contents)
                 .expect("eror reading config.json");
             drop(fc);
-            let flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
-            eprintln!("fields: {:?}", flds);
-            for fld in flds {
-                let mut f = fld.clone();
-                f.values_i = result.fields.len();
-                result.fields.push(f);
+            let mut flds: Vec<fields::Field> = json5::from_str(&contents).unwrap();
+            for fld in flds.iter_mut() {
+                fld.values_i = result.fields.len();
                 if fld.ftype == fields::FieldType::Categorical {
                     // read in the strings for this field. replace ';' with ',' to handle the filter field.
                     let fname = format!("echtvar/strings/{}.txt", fld.alias);
@@ -144,13 +141,24 @@ impl EchtVars {
                     result
                         .strings
                         .push(BufReader::new(fh).lines().map(|l| l.unwrap().replace(";", ",")).collect());
+                    // update missing value to be the index of the missing_string
+                    let strings_len = result.strings[result.strings.len() - 1].len();
+                    fld.missing_value = result.strings[result.strings.len() - 1].iter().position(|s| s == &fld.missing_string).unwrap_or(strings_len) as i32;
+                    // if it wasn't in the list, add it.
+                    if fld.missing_value == strings_len as i32 {
+                        let rl = result.strings.len() - 1;
+                        result.strings[rl].push(fld.missing_string.clone());
+                    }
                 } else {
                     result.strings.push(Vec::new());
                 }
+                let f = fld.clone();
+                result.fields.push(f);
             }
             result.values.resize(result.fields.len(), vec![]);
             result.evalues.resize(result.fields.len(), Value::Int(0));
         }
+        eprintln!("fields: {:?}", result.fields);
         result
     }
 
@@ -363,6 +371,7 @@ impl EchtVars {
                     if fld.ftype == fields::FieldType::Integer
                         || fld.ftype == fields::FieldType::Categorical
                     {
+                        // for Categorical missing_value has been set to the index of missing_string
                         let val = fld.missing_value as i32;
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64

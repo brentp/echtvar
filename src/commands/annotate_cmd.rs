@@ -129,6 +129,8 @@ pub fn annotate_main(
                 match v {
                     Value::Int(i) => match fld.ftype {
                         fields::FieldType::Categorical => {
+                            // categorical missing_value must be set to the index of the missing_string
+                            assert!(i >= 0, "can't have missing value for categorical!");
                             let val = [e.strings[fld.values_i][i as usize].as_bytes()];
                             record.push_info_string(fld.alias.as_bytes(), &val).expect(
                                 &format!("error adding string for {}", fld.alias).to_string(),
