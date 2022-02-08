@@ -1,3 +1,7 @@
+v0.1.2
+======
++ fix #8. bug introduced for string values.
+
 v0.1.1
 ======
 + support multiple echtvar files to `echtvar anno`. This makes it possible to annoate with, for example gnomad *and* dbsnp.
