@@ -123,7 +123,7 @@ craft an expression that returns true or false as above.
 
 Without these (and other) critical libraries, `echtvar` would not exist.
 
-+ [rust-htslib](https://github.com/rust-bio/rust-htslib) is used for reading and writing BCF and VCF.
++ [htslib](https://github.com/samtools/htslib) is used for reading and writing BCF and VCF via [rust-htslib](https://github.com/rust-bio/rust-htslib)
 + [stream-vbyte](https://lemire.me/blog/2017/09/27/stream-vbyte-breaking-new-speed-records-for-integer-compression/) is used for integer compression via the [excellent rust bindings](https://bitbucket.org/marshallpierce/stream-vbyte-rust/src/master/)
 + [fasteval](https://github.com/likebike/fasteval) is used for the expressions. It is fast and simple and awesome.
 + [bincode](https://docs.rs/bincode/latest/bincode/) is used for rapid serialization of large variants.
