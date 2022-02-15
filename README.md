@@ -24,6 +24,7 @@ read more at the [why of echtvar](https://github.com/brentp/echtvar/wiki/why)
 ### Getting started.
 
 Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here: https://github.com/brentp/echtvar/releases/latest
+That page contains exact instructions to get started with the static binary.
 
 ### usage
 
@@ -128,4 +129,4 @@ Without these (and other) critical libraries, `echtvar` would not exist.
 + [bincode](https://docs.rs/bincode/latest/bincode/) is used for rapid serialization of large variants.
 
 
-`echtvar` is developed in the [Jeroen De Ridder lab](https://www.umcutrecht.nl/en/research/researchers/de-ridder-jeroen-j)
+`echtvar` is developed in the [Jeroen De Ridder lab](https://www.deridderlab.nl/)
