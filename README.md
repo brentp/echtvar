@@ -27,6 +27,8 @@ Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here:
 
 ### usage
 
+##### encode 
+
 make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
 and then the file can be re-used for the annotation (`echtvar anno`) step with each new query file.
 
@@ -43,10 +45,7 @@ name and encode them
 See below for a description of the json file that defines which columns are
 pulled from the population VCF.
 
-> you can get a pre-made 7.1GB echtvar file from gnomad v3.1.2 (hg38 whole genomes) with this command:
-> ```
-> curl -L -o gnomad.v3.1.2.echtvar.v2.zip https://surfdrive.surf.nl/files/index.php/s/nJPDxM3b9C7hkM2
-> ```
+##### annotate 
 
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01. Note that multiple echtvar files can be specified.
