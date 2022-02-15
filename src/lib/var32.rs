@@ -1,5 +1,6 @@
 extern crate libc;
 extern crate serde;
+
 use c2rust_bitfields::BitfieldStruct;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -19,6 +20,11 @@ pub struct Var32 {
     data: [u8; 4],
 }
 
+const fn init_bitset() -> u128 {
+    0u128 | (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize)
+}
+
+const DNA_BITS: u128 = init_bitset();
 // TODO: since ref[0] == alt[0], we can get one more base.
 
 #[repr(C, align(1))]
@@ -85,6 +91,11 @@ impl From<Var32> for u32 {
     }
 }
 
+#[inline(always)]
+fn bit_test(set: u128, bit: usize) -> bool {
+    set & (1 << bit as u32) != 0
+}
+
 #[inline]
 pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
     let mut v: Var32 = Var32::default();
@@ -101,11 +112,23 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
     let mut ra: u32 = 0;
 
     for a in ref_allele.iter() {
+        if !bit_test(DNA_BITS, *a as usize) {
+            eprintln!(
+                "[warning] found non ACGT REF character '{}', encoding as 'T' for position: {}",
+                *a as char, pos
+            );
+        }
         ra *= 4;
         ra += LOOKUP[*a as usize];
     }
 
     for a in alt_allele.iter() {
+        if !bit_test(DNA_BITS, *a as usize) {
+            eprintln!(
+                "[warning] found non ACGT ALT character '{}', encoding as 'T' for position: {}",
+                *a as char, pos
+            );
+        }
         ra *= 4;
         ra += LOOKUP[*a as usize];
     }
