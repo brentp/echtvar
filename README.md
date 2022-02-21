@@ -49,7 +49,8 @@ pulled from the population VCF.
 ##### annotate 
 
 annotate a VCF with an echtvar file and only output variants where `gnomad_af`
-from the echtvar file is < 0.01. Note that multiple echtvar files can be specified.
+from the echtvar file is < 0.01. Note that multiple echtvar files can be specified
+and the `-i` expression is optional and can be elided to output all variants.
 
 ```
 echtvar anno \
