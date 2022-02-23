@@ -90,8 +90,10 @@ We can add more fields like this:
            field: "AF",
            alias: "gnomad_AF",
            missing_value: -1,
-           // for floats, upon annotation, the score is divided by multiplier and stored as an integer.
+           // since all values (including floats) are stored as integers, echtvar internally converts
+           // any float to an integer by multiplying by `multiplier`.
            // higher values give better precision and worse compression.
+           // upon annotation, the score is divided by multiplier to give a number close to the original float.
            multiplier: 2000000,
    }
     // echtvar will save strings as integers along with a lookup. this can work for fields with a low cardinality.
