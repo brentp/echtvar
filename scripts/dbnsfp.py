@@ -10,10 +10,10 @@ Then use that conf file (with same command except without --json) and pipe resul
 
 $ python dbnsfp.py \
         dbNSFP4.3a.zip \
-        -f SIFT4G_converted_rankscore
-        -f SIFT_score
-        -f Polyphen2_HDIV_score
-        -f Polyphen2_HDIV_pred
+        -f SIFT4G_converted_rankscore \
+        -f SIFT_score \
+        -f Polyphen2_HDIV_score \
+        -f Polyphen2_HDIV_pred \
         | echtvar encode dbsnfp.zip conf.json -
 
 """
