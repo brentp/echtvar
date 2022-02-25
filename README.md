@@ -32,6 +32,7 @@ That page contains exact instructions to get started with the static binary.
 
 make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
 and then the file can be re-used for the annotation (`echtvar anno`) step with each new query file.
+Note that input VCFs must be decomposed.
 
 ```
 echtvar \
@@ -48,7 +49,7 @@ pulled from the population VCF.
 
 ##### annotate 
 
-annotate a VCF with an echtvar file and only output variants where `gnomad_af`
+annotate a **decomposed** (and normalized) VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01. Note that multiple echtvar files can be specified
 and the `-i` expression is optional and can be elided to output all variants.
 

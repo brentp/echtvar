@@ -138,12 +138,18 @@ impl EchtVars {
                         .zip
                         .by_name(&fname)
                         .expect("error opening strings file");
-                    result
-                        .strings
-                        .push(BufReader::new(fh).lines().map(|l| l.unwrap().replace(";", ",")).collect());
+                    result.strings.push(
+                        BufReader::new(fh)
+                            .lines()
+                            .map(|l| l.unwrap().replace(";", ","))
+                            .collect(),
+                    );
                     // update missing value to be the index of the missing_string
                     let strings_len = result.strings[result.strings.len() - 1].len();
-                    fld.missing_value = result.strings[result.strings.len() - 1].iter().position(|s| s == &fld.missing_string).unwrap_or(strings_len) as i32;
+                    fld.missing_value = result.strings[result.strings.len() - 1]
+                        .iter()
+                        .position(|s| s == &fld.missing_string)
+                        .unwrap_or(strings_len) as i32;
                     // if it wasn't in the list, add it.
                     if fld.missing_value == strings_len as i32 {
                         let rl = result.strings.len() - 1;
@@ -333,6 +339,14 @@ impl EchtVars {
         }
 
         let alleles = variant.alleles();
+        if alleles.len() > 2 {
+            panic!(
+                "[echtvar] variants must be decomposed before running. got variant with {} alleles at {}:{}",
+                alleles.len() - 1,
+                variant.chrom(),
+                variant.position() + 1
+            );
+        }
         let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {
             let enc = var32::encode(pos, alleles[0], alleles[1]);
             self.var32s.binary_search(&enc)

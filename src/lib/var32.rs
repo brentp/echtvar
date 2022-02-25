@@ -24,9 +24,10 @@ const fn init_bitset() -> u128 {
     0u128 | (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize)
 }
 
+// use a bitset to check if incoming letters are ACGT and issue warning if not.
 const DNA_BITS: u128 = init_bitset();
-// TODO: since ref[0] == alt[0], we can get one more base.
 
+// TODO: since ref[0] == alt[0], we can get one more base.
 #[repr(C, align(1))]
 #[derive(Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
 pub struct PRA {

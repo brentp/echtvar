@@ -173,9 +173,14 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let mut fields: Vec<fields::Field> =
         json5::from_str(&json).expect("error reading json into fields");
 
-    let mut vcf = Reader::from_path(vpaths[0])
-        .ok()
-        .expect("Error opening vcf.");
+    let mut vcf = if !(*vpaths[0]).eq("/dev/stdin") && !(*vpaths[0]).eq("-") {
+        Reader::from_path(vpaths[0])
+            .ok()
+            .expect("Error opening vcf.")
+    } else {
+        Reader::from_stdin().ok().expect("Error opening stdin vcf.")
+    };
+
     vcf.set_threads(2).ok();
     let header = vcf.header().clone();
     let mut buffer = Buffer::new();
@@ -246,8 +251,17 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     let mut values_vv: Vec<Vec<u32>> = fields.iter().map(|_| Vec::new()).collect();
 
-    for vpath in vpaths.iter() {
-        let mut vcf = Reader::from_path(vpath).ok().expect("Error opening vcf.");
+    for (i, vpath) in vpaths.iter().enumerate() {
+        if i > 0 {
+            vcf = if !(*vpath).eq("/dev/stdin") && !(*vpath).eq("-") {
+                Reader::from_path(vpath).ok().expect("Error opening vcf.")
+            } else {
+                match Reader::from_stdin() {
+                    Ok(file) => file,
+                    Err(error) => panic!("problem opening from stdin: {:?}", error),
+                }
+            };
+        }
         eprintln!("[echtvar] adding VCF:{}", vpath);
         vcf.set_threads(2).ok();
 
@@ -290,10 +304,15 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             .expect("error starting file");
                         write_long(&mut zipf, &mut long_vars, indexes);
                         n_long_vars += long_vars.len();
-                        long_vars.clear()
+                        long_vars.clear();
                     }
                 }
-                last_rid = rec.rid().unwrap() as i32;
+                if last_rid != rec.rid().unwrap() as i32 {
+                    last_rid = rec.rid().unwrap() as i32;
+                    let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+                    let chrom = bstrip_chr(str::from_utf8(n).unwrap());
+                    eprintln!("[echtvar] on chromosome {:?}", chrom);
+                }
                 last_mod = rec.pos() >> 20;
             }
 
@@ -351,6 +370,12 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             }
 
             let alleles = rec.alleles();
+            if alleles.len() > 2 {
+                panic!(
+                    "[echtvar] variants must be decomposed before running {:?}",
+                    rec
+                );
+            }
             var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));
 
             if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
