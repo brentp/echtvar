@@ -1,3 +1,9 @@
+v0.1.3
+======
++ exit with error on multi-allelics (previously, only first allele was used) ( #11)
++ more docs on conf file (thanks @m-pauper)
++ fix compression error for very dense regions (#12)
+
 v0.1.2
 ======
 + fix #8. bug introduced for string values.

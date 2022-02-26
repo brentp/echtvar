@@ -240,7 +240,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     )
     .ok();
 
-    let mut compressed = vec![0u8; 50_000_000]; // TODO: set this based on values.len
+    let mut compressed = vec![0u8; 50_000_000];
     let mut last_rid: i32 = -1;
     let mut last_mod: i64 = 0;
 
@@ -284,6 +284,13 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             zipf.start_file(fname, options)
                                 .expect("error starting file");
                             sort_by_indices(values, indexes.clone());
+                            if compressed.len() < 5 * values.len() {
+                                eprintln!(
+                                    "[echtvar] resizing compressed array to: {}",
+                                    5 * values.len()
+                                );
+                                compressed.resize(5 * values.len(), 0x0);
+                            }
                             write_bits(values, false, &mut zipf, &mut compressed);
                             values.clear();
                         }
@@ -396,6 +403,13 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 zipf.start_file(fname, options)
                     .expect("error starting file");
                 sort_by_indices(values, indexes.clone());
+                if compressed.len() < 5 * values.len() {
+                    eprintln!(
+                        "[echtvar] resizing compressed array to: {}",
+                        5 * values.len()
+                    );
+                    compressed.resize(5 * values.len(), 0x0);
+                }
                 write_bits(values, false, &mut zipf, &mut compressed);
                 values.clear();
             }
