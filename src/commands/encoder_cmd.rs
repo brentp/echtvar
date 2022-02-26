@@ -261,9 +261,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                     Err(error) => panic!("problem opening from stdin: {:?}", error),
                 }
             };
+            vcf.set_threads(2).ok();
         }
         eprintln!("[echtvar] adding VCF:{}", vpath);
-        vcf.set_threads(2).ok();
 
         for r in vcf.records() {
             let rec = r.expect("error getting record");
@@ -377,7 +377,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             }
 
             let alleles = rec.alleles();
-            if alleles.len() > 2 {
+            if alleles.len() != 2 {
                 panic!(
                     "[echtvar] variants must be decomposed before running {:?}",
                     rec
