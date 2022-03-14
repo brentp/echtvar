@@ -56,8 +56,8 @@ echo "#SIZE: $ssize" >> slivar-time.txt
 
 #<<ECHTVAR
 /usr/bin/time -v \
-  ~/src/echtvar/target/release/echtvar anno \
-  -e gnomad.v3.1.2.echtvar.v2.zip \
+  echtvar anno \
+  -e /data/gnomad/gnomad.v3.1.2.echtvar.v2.zip \
   $qbcf annotated.bcf 2> echtvar-time.txt
 esize=$(du -cm /data/gnomad/gnomad.v3.1.2.echtvar.v2.zip | grep total)
 echo "#SIZE: $esize" >> echtvar-time.txt
@@ -69,8 +69,7 @@ echo "#SIZE: $esize" >> echtvar-time.txt
 ## VarNote prep
 
 <<VARNOTE
-java -Xmx5G -jar ~/Downloads/VarNote-1.2.0.jar Index \
-  -I $avcf -O varnote-index 
+varnote Index -I $avcf -O varnote-index 
 
 echo "
 @gnomAD
@@ -86,7 +85,7 @@ export TMPDIR=/tmp/
 mkdir -p null/temp # varnote needs this but won't create it.
 
 /usr/bin/time -v \
-java -Xmx5G -jar ~/Downloads/VarNote-1.2.0.jar Annotation \
+varnote Annotation \
   --query-file $qvcf \
   --d-files:db,tag=gnomAD,mode=1 $avcf  \
   --out-format VCF \
