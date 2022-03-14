@@ -48,7 +48,7 @@ fi
 /usr/bin/time -v slivar expr \
     -v $qbcf \
     -g gnomad.slivar.v3.1.2.zip -o slivar-anno.bcf 2> slivar-time.txt
--ssize=$(du -cm gnomad.slivar.v3.1.2.zip | grep total)
+ssize=$(du -cm gnomad.slivar.v3.1.2.zip | grep total)
 echo "#SIZE: $ssize" >> slivar-time.txt
 #SLIVAR
 
