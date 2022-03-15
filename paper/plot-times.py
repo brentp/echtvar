@@ -58,26 +58,35 @@ df = pd.melt(df, id_vars=('tool',),
 
 df.to_csv('exome.plots.tsv', index=False, sep="\t")
 
-fig, axes = plt.subplots(4, 1, figsize=(4, 12), constrained_layout=True)
+fig, axes = plt.subplots(2, 2, figsize=(6, 6), constrained_layout=True)
 
-for i, var in enumerate(('Wall time (seconds)', 'User time (seconds)', 'Memory (MB)', 'File size (GB)')):
+# dropped wall time
+for ii, var in enumerate(('Wall time (seconds)', 'User time (seconds)', 'Memory (MB)', 'File size (GB)')):
+
+    i, j = [(0, 0), (0, 1), (1, 0), (1, 1)][ii]
 
     sub = df.loc[df.variable == var, :]
-    subplot = sns.barplot(data=sub, x='tool', y='value', ax=axes[i])
-    axes[i].set_ylabel(var)
-    axes[i].set_xlabel(None)
+    subplot = sns.barplot(data=sub, x='tool', y='value', ax=axes[i, j])
+    axes[i, j].set_ylabel(var)
+    axes[i, j].set_xlabel(None)
     #show_values_on_bars(subplot)
-    axes[i].bar_label(subplot.containers[0], fmt='%.1f')
-    axes[i].set_ylim(ymax=1.07*axes[i].get_ylim()[1])
+    axes[i, j].bar_label(subplot.containers[0], fmt='%.1f')
+    axes[i, j].set_ylim(ymax=1.07*axes[i, j].get_ylim()[1])
 
-    lbls = axes[i].get_xticklabels()
-    axes[i].set_xticklabels(lbls, rotation=15, ha='right')
+    if i == 1:
+      lbls = axes[i, j].get_xticklabels()
+      axes[i, j].set_xticklabels(lbls, rotation=15, ha='right')
+    else:
+      axes[i, j].set_xticklabels([], rotation=15, ha='right')
 
-#    for y in sub.value:
-#
-#        axes[i].text(
-#        print(y)
+
+# set times to same y-axis
+ym = max(axes[0, 1].get_ylim()[1], axes[0, 0].get_ylim()[1])
+axes[0, 1].set_ylim(ymax=ym)
+axes[0, 0].set_ylim(ymax=ym)
 
 
 plt.tight_layout()
+plt.savefig('echtvar-comparison.png', format='png', dpi=1200)
+plt.savefig('echtvar-comparison.eps', format='eps', dpi=1200)
 plt.show()

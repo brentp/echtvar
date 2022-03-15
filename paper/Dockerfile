@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 ARG varnote_version=1.2.0
-ARG echtvar_version=0.1.2
+ARG echtvar_version=0.1.3
 ARG slivar_version=0.2.7
 ARG htslib_version=1.14
 
@@ -12,7 +12,7 @@ RUN \
     # install packages dependencies
     apt-get update -yqq && \
     apt-get install -yqq \
-        curl \
+        curl time \
         r-base r-base-dev \
         git \
         bash \
@@ -44,5 +44,5 @@ RUN mkdir -p /opt/programs/ && \
     chmod +x /usr/local/bin/echtvar && \
     wget -qO /usr/local/bin/slivar https://github.com/brentp/slivar/releases/download/v${slivar_version}/slivar && \
     chmod +x /usr/local/bin/slivar && \
-    echo "#!/bin/sh\njava -Xmx5G -jar /opt/programs/VarNote.jar \"$@\"" > /usr/local/bin/varnote && \
+    echo '#!/bin/sh\njava -Xmx5G -jar /opt/programs/VarNote.jar "$@"' > /usr/local/bin/varnote && \
     chmod +x /usr/local/bin/varnote
