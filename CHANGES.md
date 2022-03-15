@@ -1,3 +1,7 @@
+v0.1.4
+======
++ fix bug with filter not removing (not filtering) variants correctly.
+
 v0.1.3
 ======
 + exit with error on multi-allelics (previously, only first allele was used) ( #11)

@@ -341,10 +341,11 @@ impl EchtVars {
         let alleles = variant.alleles();
         if alleles.len() != 2 {
             panic!(
-                "[echtvar] variants must be decomposed before running. got variant with {} alleles at {}:{}",
+                "[echtvar] variants must be decomposed before running. got variant with {} alleles at {}:{} ({:?})",
                 alleles.len() - 1,
                 variant.chrom(),
-                variant.position() + 1
+                variant.position() + 1,
+                variant.alleles()
             );
         }
         let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {

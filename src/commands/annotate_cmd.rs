@@ -38,11 +38,11 @@ pub fn annotate_main(
     let parser = fasteval::Parser::new();
     let mut slab = fasteval::Slab::new();
     let mut ns = fasteval::EmptyNamespace;
-    let mut expr_values = vec![];
+    let mut expr_values = Vec::with_capacity(echts.len());
 
     for (i, e) in echts.iter().enumerate() {
         // a vector within expr_values for each echtvar file.
-        expr_values.push(vec![]);
+        expr_values.push(Vec::with_capacity(e.fields.len()));
         // handle the expression stuff.
         for (j, fld) in e.fields.iter().enumerate() {
             expr_values[i].push(0.0 as f64);
