@@ -30,6 +30,13 @@ position_lookup = {
         "hg38": ("#chr", "pos(1-based)"),
 }
 
+lower_is_more_damaging = [
+        "SIFT_score",
+        "SIFT4G_score",
+        "FATHHMM_score",
+        "PROVEAN_score",
+]
+
 vcf_header = """##fileformat=VCFv4.3
 ##source=echtvar-dbnsfp
 ##dbNSFP=https://sites.google.com/site/jpopgen/dbNSFP
@@ -46,15 +53,17 @@ def get_field_lookup(z):
       lookup[col] = desc.strip()
     return lookup
 
-def getfloat(f):
-    if f == '.': return '.'
+def getfloat(f, reducer):
+    if f == ".": return '.'
     r = [x for x in f.split(';') if x != '.']
     if len(r) == 0: return '.'
-    return "%.4g" % max(map(float, r))
+    return "%.4g" % reducer(map(float, r))
 
 def getstring(f):
     if f == '.': return '.'
-    return ",".join(x for x in f.split(';') if x != '.')
+    r = [x for x in f.split(';') if x != '.']
+    if len(r) == 0: return '.'
+    return ",".join(r)
 
 def write_json(field_lookup, fields):
     d = []
@@ -63,6 +72,8 @@ def write_json(field_lookup, fields):
       f = {"field": field, "alias": "dbsnfp_" + field}
       if not field.endswith("pred"):
         f["multiplier"] = 1000000
+      if field in lower_is_more_damaging:
+        f["missing_value"] = 999
       d.append(f)
     import json
     print(json.dumps(d, indent=4))
@@ -98,9 +109,9 @@ def main(path, genome_build, fields, json, out_fh=sys.stdout):
             info = []
             for field in fields:
                 if field.endswith("pred"):
-                   info.append(f'{field.replace("-", "_")}={getstring(d[field])}')
+                    info.append(f'{field.replace("-", "_")}={getstring(d[field])}')
                 else:
-                   info.append(f'{field.replace("-", "_")}={getfloat(d[field])}')
+                    info.append(f'{field.replace("-", "_")}={getfloat(d[field], min if field in lower_is_more_damaging else max)}')
 
             print(f'{d[chrom_col]}\t{d[pos_col]}\t.\t{d["ref"]}\t{d["alt"]}\t32\tPASS\t{";".join(info)}', file=out_fh)
 
