@@ -26,6 +26,22 @@ read more at the [why of echtvar](https://github.com/brentp/echtvar/wiki/why)
 Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here: https://github.com/brentp/echtvar/releases/latest
 That page contains exact instructions to get started with the static binary.
 
+<details>
+  <summary>:arrow_down:Download instructions for linux</summary>
+
+The linux binary is available via:
+
+```
+wget -O ~/bin/echtvar https://github.com/brentp/echtvar/releases/latest/download/echtvar \
+    && chmod +x ~/bin/echtvar \
+    && ~/bin/echtvar
+ ```
+
+Users can make their own *echtvar* archives with `echtvar encode`, and pre-made archives for
+gnomAD version 3.1.2 are [here](https://github.com/brentp/echtvar/release)
+
+</details>
+
 ### usage
 
 ##### encode 
@@ -78,7 +94,8 @@ This will extract the "AC" field from the INFO and labeled as "gnomad_AC" when
 later used to annotate a VCF. Note that it's important to give a description/unique prefix lke "`gnomad_`" so
 as not to collide with fields already in the query VCF.
 
-We can add more fields like this:
+<details>
+  <summary>:arrow_down:Expand this section for detail on additional fields, including float and string types</summary>
 
 ```
 [
@@ -106,6 +123,8 @@ We can add more fields like this:
 
 The above file will extract 5 fields, but the user can chooose as many as they like when encoding.
 All fields in an `echtvar` file will be added (with the given alias) to any VCF it is used to annotate.
+
+</details>
 
 Other examples are available [here](https://github.com/brentp/echtvar/tree/main/examples)
 
