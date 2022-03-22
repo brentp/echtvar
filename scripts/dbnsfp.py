@@ -104,7 +104,7 @@ def main(path, genome_build, fields, json, out_fh=sys.stdout):
 
     chrom_col, pos_col = position_lookup[genome_build]
     for chrom in list(range(1, 23)) + ["X", "Y", "M"]:
-        fh = gzip.open(z.open(f'dbNSFP4.2a_variant.chr{chrom}.gz'), mode='rt')
+        fh = gzip.open(z.open(f'dbNSFP4.3a_variant.chr{chrom}.gz'), mode='rt')
         for i, line in enumerate(fh):
             toks = line.rstrip().split("\t")
             if i == 0:
