@@ -68,7 +68,7 @@ def getstring(f):
 def write_json(field_lookup, fields):
     d = []
     for field in fields:
-      field = field.replace("-", "_")
+      field = field.replace("-", "_").replace('+', 'p') # gerp++
       f = {"field": field, "alias": "dbsnfp_" + field}
       if not field.endswith("pred"):
         f["multiplier"] = 1000000
