@@ -376,11 +376,21 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 values_vv[i].push(v);
             }
 
-            let alleles = rec.alleles();
-            if alleles.len() != 2 {
+            let mut alleles = rec.alleles();
+            if alleles.len() == 1 {
+                alleles.push(&alleles[0]);
+            } else if alleles.len() != 2 {
+                last_rid = rec.rid().unwrap() as i32;
+                let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+                let chrom = bstrip_chr(str::from_utf8(n).unwrap());
                 panic!(
-                    "[echtvar] variants must be decomposed before running {:?}",
-                    rec
+                    "[echtvar] variants must be decomposed before running {}:{} {:?}",
+                    chrom,
+                    rec.pos(),
+                    rec.alleles()
+                        .iter()
+                        .map(|a| String::from_utf8_lossy(a))
+                        .collect::<Vec<_>>()
                 );
             }
             var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));

@@ -13,7 +13,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 fn main() -> Result<(), Box<dyn Error>> {
     let mut app = clap_app!(echtvar =>
         (version: VERSION)
-        (author: "Brent Pedersen <bpederse@gmail.com")
+        (author: "Brent Pedersen <bpederse@gmail.com>")
         (about: "variant encoding and annotation")
         (@subcommand encode =>
             (about: "create an echtvar file from a population VCF/BCF")
