@@ -68,8 +68,8 @@ def getstring(f):
 def write_json(field_lookup, fields):
     d = []
     for field in fields:
-      field = field.replace("-", "_").replace('+', 'p') # gerp++
-      f = {"field": field, "alias": "dbsnfp_" + field}
+      field = field.replace("-", "_") # gerp++
+      f = {"field": field, "alias": "dbsnfp_" + field. replace('+', 'p')}
       if not field.endswith("pred"):
         f["multiplier"] = 1000000
       if field in lower_is_more_damaging:
