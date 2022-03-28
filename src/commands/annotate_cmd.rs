@@ -15,6 +15,7 @@ pub fn annotate_main(
     opath: &str,
     include_expr: Option<&str>,
     epaths: Vec<&str>,
+    countonly: bool,
 ) -> Result<(), Box<dyn Error>> {
     let mut ipath = vpath;
     if ipath == "-" || ipath == "stdin" {
@@ -69,10 +70,14 @@ pub fn annotate_main(
 
     // TODO: handle stdout
     let mut ovcf = Writer::from_path(
-        opath,
+        if countonly {
+            "/dev/null"
+        } else {
+            opath
+        },
         &header,
         false,
-        if opath.ends_with("bcf") {
+        if countonly || opath.ends_with("bcf") {
             Format::Bcf
         } else {
             Format::Vcf
@@ -90,7 +95,9 @@ pub fn annotate_main(
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
-        ovcf.translate(&mut record);
+        if !countonly {
+          ovcf.translate(&mut record);
+        }
 
         if n > 0 && n % modu == 0 {
             let rid = record.rid().unwrap();
@@ -122,6 +129,9 @@ pub fn annotate_main(
         }
         n_written += 1;
 
+        if countonly { continue; }
+
+        // update the output record.
         for e in echts.iter() {
             for fld in &e.fields {
                 let v = e.evalues[fld.values_i];
@@ -156,7 +166,7 @@ pub fn annotate_main(
     }
     let mili = std::cmp::max(1, time::Instant::now().duration_since(start).as_millis());
     eprintln!(
-        "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
+        "[echtvar] evaluated {} variants ({} / second). passed {} variants.",
         n,
         1000 * n / mili,
         n_written,
