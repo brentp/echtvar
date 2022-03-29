@@ -1,2 +1,4 @@
 [toolchain]
+# Nightly needed for portable simd feature
 channel = "nightly"
+components = ["rustfmt", "clippy"]
