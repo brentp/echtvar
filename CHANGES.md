@@ -1,3 +1,9 @@
+v0.1.5
+======
++ fix build on OSX (#18 from @sstadick)
++ handle empty alts (#16 from @sstadick)
++ add script for converting dbNSFP -> VCF -> echtvar encode
+
 v0.1.4
 ======
 + fix bug with filter not removing (not filtering) variants correctly.

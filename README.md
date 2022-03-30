@@ -40,6 +40,12 @@ wget -O ~/bin/echtvar https://github.com/brentp/echtvar/releases/latest/download
 Users can make their own *echtvar* archives with `echtvar encode`, and pre-made archives for
 gnomAD version 3.1.2 are [here](https://github.com/brentp/echtvar/release)
 
+Rust users can build on linux with:
+
+```
+cargo build --release --target x86_64-unknown-linux-gnu
+```
+
 </details>
 
 ### usage
