@@ -5,7 +5,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 import pandas as pd
 
-matplotlib.rc('font', size=13)
+matplotlib.rc('font', size=12)
 plt.rcParams['figure.constrained_layout.use'] = True
 sns.set_style('white')
 
@@ -34,22 +34,6 @@ def parse_time(f):
 
 import numpy as np
 
-# https://stackoverflow.com/a/51535326
-def show_values_on_bars(axs):
-    def _show_on_single_plot(ax):        
-        for p in ax.patches:
-            _x = p.get_x() + p.get_width() / 2
-            _y = p.get_y() + p.get_height()
-            value = '{:.1f}'.format(p.get_height())
-            ax.text(_x, _y, value, ha="center") 
-
-    if isinstance(axs, np.ndarray):
-        for idx, ax in np.ndenumerate(axs):
-            _show_on_single_plot(ax)
-    else:
-        _show_on_single_plot(axs)
-
-
 tools = [parse_time(f) for f in files]
 df = pd.DataFrame.from_records(tools)
 
@@ -69,8 +53,7 @@ for ii, var in enumerate(('Wall time (seconds)', 'User time (seconds)', 'Memory 
     subplot = sns.barplot(data=sub, x='tool', y='value', ax=axes[i, j])
     axes[i, j].set_ylabel(var)
     axes[i, j].set_xlabel(None)
-    #show_values_on_bars(subplot)
-    axes[i, j].bar_label(subplot.containers[0], fmt='%.1f')
+    axes[i, j].bar_label(subplot.containers[0], fmt='%.1f', size=10)
     axes[i, j].set_ylim(ymax=1.07*axes[i, j].get_ylim()[1])
 
     if i == 1:
