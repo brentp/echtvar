@@ -1,3 +1,7 @@
+v0.1.6 (dev)
+============
++ change VCF header (#19)
+
 v0.1.5
 ======
 + fix build on OSX (#18 from @sstadick)
