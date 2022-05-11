@@ -9,6 +9,7 @@ matplotlib.rc('font', size=13)
 #plt.rcParams['figure.constrained_layout.use'] = True
 sns.set_style('white')
 
+# python plot-icgc.py /media/brentp/transcend/data/icgc/snv_mnv/*.txt
 files = sys.argv[1:]
 
 def parse_time(f):
@@ -76,6 +77,11 @@ df = df[df.variants < 100]
 axes[1].hist(df.variants, 50)
 axes[1].set_xlabel("Number of variants after filtering")
 axes[1].set_ylabel("Count")
+
+
+axes[0].text(0.92, 0.92, "A", transform=axes[0].transAxes, weight="bold")
+axes[1].text(0.92, 0.92, "B", transform=axes[1].transAxes, weight="bold")
+
 
 plt.tight_layout()
 plt.savefig('echtvar-somatic-filter.png', format='png', dpi=1200)

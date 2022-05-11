@@ -29,4 +29,5 @@ for f in snv_mnv/*.bcf; do
     echo "OK $f"
 done
 
+# python plot-icgc.py /media/brentp/transcend/data/icgc/snv_mnv/*.txt
 python plot-icgc.py snv_mnv/*.txt
