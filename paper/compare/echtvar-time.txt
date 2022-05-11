@@ -1,0 +1,35 @@
+fields: [Field { field: "AC", alias: "gnomad_ac", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 0 }, Field { field: "AN", alias: "gnomad_an", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 1 }, Field { field: "nhomalt", alias: "gnomad_nhomalt", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 2 }, Field { field: "AF", alias: "gnomad_af", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 5000000, ftype: Float, values_i: 3 }, Field { field: "AC_popmax", alias: "gnomad_popmax_ac", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 4 }, Field { field: "AN_popmax", alias: "gnomad_popmax_an", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 5 }, Field { field: "nhomalt_popmax", alias: "gnomad_popmax_nhomalt", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 6 }, Field { field: "AF_popmax", alias: "gnomad_popmax_af", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 5000000, ftype: Float, values_i: 7 }, Field { field: "AF_controls_and_biobanks", alias: "gnomad_controls_and_biobanks_af", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 5000000, ftype: Float, values_i: 8 }, Field { field: "nhomalt_controls_and_biobanks", alias: "gnomad_controls_and_biobanks_nhomalt", missing_value: -1, missing_string: "MISSING", zigzag: false, multiplier: 1, ftype: Integer, values_i: 9 }, Field { field: "FILTER", alias: "gnomad_filter", missing_value: 3, missing_string: "PASS", zigzag: false, multiplier: 1, ftype: Categorical, values_i: 10 }]
+[echtvar] chr1:7877871 evaluated 10000 variants (20449 / second). wrote 10000 variants.
+[echtvar] chr1:15267944 evaluated 20000 variants (24009 / second). wrote 20000 variants.
+[echtvar] chr1:22033889 evaluated 30000 variants (24813 / second). wrote 30000 variants.
+[echtvar] chr1:76813066 evaluated 100000 variants (28506 / second). wrote 100000 variants.
+[echtvar] chr1:173869649 evaluated 200000 variants (29214 / second). wrote 200000 variants.
+[echtvar] chr1:242649563 evaluated 300000 variants (29603 / second). wrote 300000 variants.
+[echtvar] chr4:57827243 evaluated 1000000 variants (30100 / second). wrote 1000000 variants.
+[echtvar] chr8:19069994 evaluated 2000000 variants (31017 / second). wrote 2000000 variants.
+[echtvar] chr13:63491913 evaluated 3000000 variants (30938 / second). wrote 3000000 variants.
+[echtvar] evaluated 3935389 variants (30483 / second). wrote 3935389 variants.
+	Command being timed: "echtvar anno -e /data/gnomad/gnomad.v3.1.2.echtvar.v2.zip HG001_GRCh38_1_22_v4.2.1_benchmark.bcf annotated.bcf"
+	User time (seconds): 130.68
+	System time (seconds): 4.34
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:12.18
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 69176
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 54
+	Minor (reclaiming a frame) page faults: 20315
+	Voluntary context switches: 111923
+	Involuntary context switches: 9339
+	Swaps: 0
+	File system inputs: 14215744
+	File system outputs: 568608
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+#SIZE: 7267	total

@@ -68,6 +68,13 @@ ym = max(axes[0, 1].get_ylim()[1], axes[0, 0].get_ylim()[1])
 axes[0, 1].set_ylim(ymax=ym)
 axes[0, 0].set_ylim(ymax=ym)
 
+axes[0, 0].text(0.04, 0.92, "A", transform=axes[0, 0].transAxes, weight="bold")
+axes[1, 0].text(0.04, 0.92, "C", transform=axes[1, 0].transAxes, weight="bold")
+axes[1, 1].text(0.04, 0.92, "D", transform=axes[1, 1].transAxes, weight="bold")
+
+axes[0, 1].text(0.96, 0.92, "B", transform=axes[0, 1].transAxes, ha='right', weight="bold")
+
+
 
 plt.tight_layout()
 plt.savefig('echtvar-comparison.png', format='png', dpi=1200)

@@ -1,0 +1,48 @@
+> slivar version: 0.2.7 71af7d12881ae0590c6d2a97ef2b282cc93fe7c6
+[slivar] 1 samples matched in VCF and PED to be evaluated
+[slivar] message for gnomad.slivar.v3.1.2.zip:
+   > created on:2022-03-08
+[slivar tsv] warning! didn't find ANN in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar tsv] warning! didn't find ANN in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar tsv] warning! didn't find CSQ in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar tsv] warning! didn't find CSQ in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar tsv] warning! didn't find BCSQ in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar tsv] warning! didn't find BCSQ in header in HG001_GRCh38_1_22_v4.2.1_benchmark.bcf trying other fields
+[slivar] 10000 chr1:7876823 evaluated 10000 variants in 20.8 seconds (480.0/second)
+[slivar] 20000 chr1:15267851 evaluated 10000 variants in 0.3 seconds (32803.6/second)
+[slivar] 100000 chr1:76812773 evaluated 100000 variants in 2.4 seconds (41150.0/second)
+[slivar] 200000 chr1:173868167 evaluated 100000 variants in 3.0 seconds (32815.1/second)
+[slivar] 300000 chr1:242649558 evaluated 100000 variants in 3.0 seconds (33074.2/second)
+[slivar] 400000 chr2:57045394 evaluated 100000 variants in 28.3 seconds (3538.2/second)
+[slivar] 500000 chr2:141431141 evaluated 100000 variants in 3.1 seconds (32059.1/second)
+[slivar] 1000000 chr4:57823682 evaluated 500000 variants in 52.1 seconds (9590.1/second)
+[slivar] 1500000 chr6:22627610 evaluated 500000 variants in 47.4 seconds (10539.4/second)
+[slivar] 2000000 chr8:19069948 evaluated 500000 variants in 40.0 seconds (12510.0/second)
+[slivar] 2500000 chr10:112241136 evaluated 500000 variants in 38.3 seconds (13064.9/second)
+[slivar] 3000000 chr13:63491756 evaluated 500000 variants in 44.3 seconds (11290.1/second)
+[slivar] 3500000 chr17:52681537 evaluated 500000 variants in 53.3 seconds (9378.5/second)
+[slivar] Finished. evaluated 3935389 total variants and wrote 3935389 variants that passed your slivar expressions.
+	Command being timed: "slivar expr -v HG001_GRCh38_1_22_v4.2.1_benchmark.bcf -g gnomad.slivar.v3.1.2.zip -o slivar-anno.bcf"
+	User time (seconds): 367.38
+	System time (seconds): 16.08
+	Percent of CPU this job got: 69%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:11.86
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5690456
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 588
+	Minor (reclaiming a frame) page faults: 3880231
+	Voluntary context switches: 139582
+	Involuntary context switches: 9354
+	Swaps: 0
+	File system inputs: 15468072
+	File system outputs: 573384
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+#SIZE: 11102	total

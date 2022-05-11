@@ -1,0 +1,470 @@
+08:18:02.339 INFO  LoggingUtils - 
+
+----------------------------------------------------            QUERY            ----------------------------------------------------
+08:18:02.341 INFO  LoggingUtils - Query File: HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+08:18:02.341 INFO  LoggingUtils - Query Format: VCF
+08:18:02.343 INFO  LoggingUtils - Query header is: CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	HG001
+08:18:02.375 INFO  LoggingUtils - 
+
+----------------------------------------------------           Database           ----------------------------------------------------
+08:18:02.375 INFO  LoggingUtils - Database File: gnomad.v3.1.2.concat.vcf.gz
+08:18:02.375 INFO  LoggingUtils - Query Mode: EXACT
+08:18:02.375 INFO  LoggingUtils - Index Type: VARNOTE
+08:18:02.375 INFO  LoggingUtils - Output Name: gnomAD
+08:18:02.375 INFO  LoggingUtils - 
+
+----------------------------------------------------        OTHER  SETTING        ----------------------------------------------------
+08:18:02.376 INFO  LoggingUtils - Thread number: 4
+08:18:02.376 INFO  LoggingUtils - 
+
+----------------------------------------------------     ANNOTATION  SETTING     ----------------------------------------------------
+08:18:02.551 INFO  LoggingUtils - 
+
+----------------------------------------------------             RUN             ----------------------------------------------------
+08:18:07.357 INFO  LoggingUtils - Thread 3 processed 10000 variants, elapsed time: 00:00:04s.
+08:18:07.468 INFO  LoggingUtils - Thread 2 processed 10000 variants, elapsed time: 00:00:04s.
+08:18:08.908 INFO  LoggingUtils - Thread 1 processed 10000 variants, elapsed time: 00:00:06s.
+08:18:09.533 INFO  LoggingUtils - Thread 0 processed 10000 variants, elapsed time: 00:00:06s.
+08:18:12.019 INFO  LoggingUtils - Thread 2 processed 20000 variants, elapsed time: 00:00:09s.
+08:18:12.794 INFO  LoggingUtils - Thread 3 processed 20000 variants, elapsed time: 00:00:10s.
+08:18:14.439 INFO  LoggingUtils - Thread 1 processed 20000 variants, elapsed time: 00:00:11s.
+08:18:15.738 INFO  LoggingUtils - Thread 0 processed 20000 variants, elapsed time: 00:00:13s.
+08:18:18.160 INFO  LoggingUtils - Thread 2 processed 30000 variants, elapsed time: 00:00:15s.
+08:18:18.313 INFO  LoggingUtils - Thread 3 processed 30000 variants, elapsed time: 00:00:15s.
+08:18:19.562 INFO  LoggingUtils - Thread 1 processed 30000 variants, elapsed time: 00:00:17s.
+08:18:21.363 INFO  LoggingUtils - Thread 0 processed 30000 variants, elapsed time: 00:00:18s.
+08:18:23.591 INFO  LoggingUtils - Thread 2 processed 40000 variants, elapsed time: 00:00:21s.
+08:18:23.665 INFO  LoggingUtils - Thread 3 processed 40000 variants, elapsed time: 00:00:21s.
+08:18:24.004 INFO  LoggingUtils - Thread 1 processed 40000 variants, elapsed time: 00:00:21s.
+08:18:27.698 INFO  LoggingUtils - Thread 0 processed 40000 variants, elapsed time: 00:00:25s.
+08:18:29.124 INFO  LoggingUtils - Thread 3 processed 50000 variants, elapsed time: 00:00:26s.
+08:18:29.226 INFO  LoggingUtils - Thread 1 processed 50000 variants, elapsed time: 00:00:26s.
+08:18:29.962 INFO  LoggingUtils - Thread 2 processed 50000 variants, elapsed time: 00:00:27s.
+08:18:34.036 INFO  LoggingUtils - Thread 0 processed 50000 variants, elapsed time: 00:00:31s.
+08:18:34.276 INFO  LoggingUtils - Thread 3 processed 60000 variants, elapsed time: 00:00:31s.
+08:18:35.024 INFO  LoggingUtils - Thread 1 processed 60000 variants, elapsed time: 00:00:32s.
+08:18:37.338 INFO  LoggingUtils - Thread 2 processed 60000 variants, elapsed time: 00:00:34s.
+08:18:39.322 INFO  LoggingUtils - Thread 3 processed 70000 variants, elapsed time: 00:00:36s.
+08:18:40.547 INFO  LoggingUtils - Thread 0 processed 60000 variants, elapsed time: 00:00:37s.
+08:18:41.114 INFO  LoggingUtils - Thread 1 processed 70000 variants, elapsed time: 00:00:38s.
+08:18:43.320 INFO  LoggingUtils - Thread 2 processed 70000 variants, elapsed time: 00:00:40s.
+08:18:44.807 INFO  LoggingUtils - Thread 3 processed 80000 variants, elapsed time: 00:00:42s.
+08:18:47.778 INFO  LoggingUtils - Thread 0 processed 70000 variants, elapsed time: 00:00:45s.
+08:18:48.563 INFO  LoggingUtils - Thread 1 processed 80000 variants, elapsed time: 00:00:46s.
+08:18:49.551 INFO  LoggingUtils - Thread 2 processed 80000 variants, elapsed time: 00:00:46s.
+08:18:49.791 INFO  LoggingUtils - Thread 3 processed 90000 variants, elapsed time: 00:00:47s.
+08:18:53.178 INFO  LoggingUtils - Thread 0 processed 80000 variants, elapsed time: 00:00:50s.
+08:18:54.683 INFO  LoggingUtils - Thread 1 processed 90000 variants, elapsed time: 00:00:52s.
+08:18:54.976 INFO  LoggingUtils - Thread 3 processed 100000 variants, elapsed time: 00:00:52s.
+08:18:55.558 INFO  LoggingUtils - Thread 2 processed 90000 variants, elapsed time: 00:00:52s.
+08:18:58.540 INFO  LoggingUtils - Thread 0 processed 90000 variants, elapsed time: 00:00:55s.
+08:18:59.624 INFO  LoggingUtils - Thread 3 processed 110000 variants, elapsed time: 00:00:57s.
+08:19:00.593 INFO  LoggingUtils - Thread 1 processed 100000 variants, elapsed time: 00:00:58s.
+08:19:02.700 INFO  LoggingUtils - Thread 2 processed 100000 variants, elapsed time: 00:01:00s.
+08:19:04.198 INFO  LoggingUtils - Thread 0 processed 100000 variants, elapsed time: 00:01:01s.
+08:19:05.414 INFO  LoggingUtils - Thread 1 processed 110000 variants, elapsed time: 00:01:02s.
+08:19:05.639 INFO  LoggingUtils - Thread 3 processed 120000 variants, elapsed time: 00:01:03s.
+08:19:08.959 INFO  LoggingUtils - Thread 2 processed 110000 variants, elapsed time: 00:01:06s.
+08:19:09.341 INFO  LoggingUtils - Thread 0 processed 110000 variants, elapsed time: 00:01:06s.
+08:19:10.089 INFO  LoggingUtils - Thread 1 processed 120000 variants, elapsed time: 00:01:07s.
+08:19:10.457 INFO  LoggingUtils - Thread 3 processed 130000 variants, elapsed time: 00:01:07s.
+08:19:14.508 INFO  LoggingUtils - Thread 2 processed 120000 variants, elapsed time: 00:01:11s.
+08:19:14.857 INFO  LoggingUtils - Thread 0 processed 120000 variants, elapsed time: 00:01:12s.
+08:19:15.116 INFO  LoggingUtils - Thread 1 processed 130000 variants, elapsed time: 00:01:12s.
+08:19:15.710 INFO  LoggingUtils - Thread 3 processed 140000 variants, elapsed time: 00:01:13s.
+08:19:20.019 INFO  LoggingUtils - Thread 2 processed 130000 variants, elapsed time: 00:01:17s.
+08:19:20.456 INFO  LoggingUtils - Thread 1 processed 140000 variants, elapsed time: 00:01:17s.
+08:19:20.642 INFO  LoggingUtils - Thread 0 processed 130000 variants, elapsed time: 00:01:18s.
+08:19:21.313 INFO  LoggingUtils - Thread 3 processed 150000 variants, elapsed time: 00:01:18s.
+08:19:25.401 INFO  LoggingUtils - Thread 1 processed 150000 variants, elapsed time: 00:01:22s.
+08:19:25.835 INFO  LoggingUtils - Thread 2 processed 140000 variants, elapsed time: 00:01:23s.
+08:19:25.852 INFO  LoggingUtils - Thread 0 processed 140000 variants, elapsed time: 00:01:23s.
+08:19:26.383 INFO  LoggingUtils - Thread 3 processed 160000 variants, elapsed time: 00:01:23s.
+08:19:30.906 INFO  LoggingUtils - Thread 0 processed 150000 variants, elapsed time: 00:01:28s.
+08:19:31.427 INFO  LoggingUtils - Thread 1 processed 160000 variants, elapsed time: 00:01:28s.
+08:19:31.701 INFO  LoggingUtils - Thread 2 processed 150000 variants, elapsed time: 00:01:29s.
+08:19:31.983 INFO  LoggingUtils - Thread 3 processed 170000 variants, elapsed time: 00:01:29s.
+08:19:36.239 INFO  LoggingUtils - Thread 1 processed 170000 variants, elapsed time: 00:01:33s.
+08:19:36.658 INFO  LoggingUtils - Thread 0 processed 160000 variants, elapsed time: 00:01:34s.
+08:19:36.904 INFO  LoggingUtils - Thread 2 processed 160000 variants, elapsed time: 00:01:34s.
+08:19:37.227 INFO  LoggingUtils - Thread 3 processed 180000 variants, elapsed time: 00:01:34s.
+08:19:40.909 INFO  LoggingUtils - Thread 1 processed 180000 variants, elapsed time: 00:01:38s.
+08:19:42.065 INFO  LoggingUtils - Thread 2 processed 170000 variants, elapsed time: 00:01:39s.
+08:19:43.495 INFO  LoggingUtils - Thread 3 processed 190000 variants, elapsed time: 00:01:40s.
+08:19:44.713 INFO  LoggingUtils - Thread 0 processed 170000 variants, elapsed time: 00:01:42s.
+08:19:45.864 INFO  LoggingUtils - Thread 1 processed 190000 variants, elapsed time: 00:01:43s.
+08:19:46.976 INFO  LoggingUtils - Thread 2 processed 180000 variants, elapsed time: 00:01:44s.
+08:19:50.271 INFO  LoggingUtils - Thread 3 processed 200000 variants, elapsed time: 00:01:47s.
+08:19:50.972 INFO  LoggingUtils - Thread 0 processed 180000 variants, elapsed time: 00:01:48s.
+08:19:51.024 INFO  LoggingUtils - Thread 1 processed 200000 variants, elapsed time: 00:01:48s.
+08:19:52.607 INFO  LoggingUtils - Thread 2 processed 190000 variants, elapsed time: 00:01:50s.
+08:19:55.423 INFO  LoggingUtils - Thread 3 processed 210000 variants, elapsed time: 00:01:52s.
+08:19:55.423 INFO  LoggingUtils - Thread 1 processed 210000 variants, elapsed time: 00:01:52s.
+08:19:55.638 INFO  LoggingUtils - Thread 0 processed 190000 variants, elapsed time: 00:01:53s.
+08:19:57.959 INFO  LoggingUtils - Thread 2 processed 200000 variants, elapsed time: 00:01:55s.
+08:19:59.327 INFO  LoggingUtils - Thread 1 processed 220000 variants, elapsed time: 00:01:56s.
+08:20:00.640 INFO  LoggingUtils - Thread 3 processed 220000 variants, elapsed time: 00:01:58s.
+08:20:01.036 INFO  LoggingUtils - Thread 0 processed 200000 variants, elapsed time: 00:01:58s.
+08:20:02.341 INFO  LoggingUtils - Thread 2 processed 210000 variants, elapsed time: 00:01:59s.
+08:20:03.521 INFO  LoggingUtils - Thread 1 processed 230000 variants, elapsed time: 00:02:00s.
+08:20:06.347 INFO  LoggingUtils - Thread 3 processed 230000 variants, elapsed time: 00:02:03s.
+08:20:06.930 INFO  LoggingUtils - Thread 0 processed 210000 variants, elapsed time: 00:02:04s.
+08:20:07.476 INFO  LoggingUtils - Thread 2 processed 220000 variants, elapsed time: 00:02:04s.
+08:20:08.529 INFO  LoggingUtils - Thread 1 processed 240000 variants, elapsed time: 00:02:05s.
+08:20:12.030 INFO  LoggingUtils - Thread 3 processed 240000 variants, elapsed time: 00:02:09s.
+08:20:13.164 INFO  LoggingUtils - Thread 0 processed 220000 variants, elapsed time: 00:02:10s.
+08:20:13.169 INFO  LoggingUtils - Thread 1 processed 250000 variants, elapsed time: 00:02:10s.
+08:20:13.463 INFO  LoggingUtils - Thread 2 processed 230000 variants, elapsed time: 00:02:10s.
+08:20:18.758 INFO  LoggingUtils - Thread 1 processed 260000 variants, elapsed time: 00:02:16s.
+08:20:19.131 INFO  LoggingUtils - Thread 0 processed 230000 variants, elapsed time: 00:02:16s.
+08:20:19.238 INFO  LoggingUtils - Thread 3 processed 250000 variants, elapsed time: 00:02:16s.
+08:20:19.511 INFO  LoggingUtils - Thread 2 processed 240000 variants, elapsed time: 00:02:16s.
+08:20:24.235 INFO  LoggingUtils - Thread 1 processed 270000 variants, elapsed time: 00:02:21s.
+08:20:24.734 INFO  LoggingUtils - Thread 2 processed 250000 variants, elapsed time: 00:02:22s.
+08:20:24.748 INFO  LoggingUtils - Thread 0 processed 240000 variants, elapsed time: 00:02:22s.
+08:20:25.169 INFO  LoggingUtils - Thread 3 processed 260000 variants, elapsed time: 00:02:22s.
+08:20:30.828 INFO  LoggingUtils - Thread 1 processed 280000 variants, elapsed time: 00:02:28s.
+08:20:30.956 INFO  LoggingUtils - Thread 3 processed 270000 variants, elapsed time: 00:02:28s.
+08:20:31.393 INFO  LoggingUtils - Thread 0 processed 250000 variants, elapsed time: 00:02:28s.
+08:20:33.241 INFO  LoggingUtils - Thread 2 processed 260000 variants, elapsed time: 00:02:30s.
+08:20:35.828 INFO  LoggingUtils - Thread 1 processed 290000 variants, elapsed time: 00:02:33s.
+08:20:37.518 INFO  LoggingUtils - Thread 0 processed 260000 variants, elapsed time: 00:02:34s.
+08:20:38.510 INFO  LoggingUtils - Thread 3 processed 280000 variants, elapsed time: 00:02:35s.
+08:20:39.068 INFO  LoggingUtils - Thread 2 processed 270000 variants, elapsed time: 00:02:36s.
+08:20:40.968 INFO  LoggingUtils - Thread 1 processed 300000 variants, elapsed time: 00:02:38s.
+08:20:43.536 INFO  LoggingUtils - Thread 0 processed 270000 variants, elapsed time: 00:02:40s.
+08:20:44.754 INFO  LoggingUtils - Thread 3 processed 290000 variants, elapsed time: 00:02:42s.
+08:20:45.372 INFO  LoggingUtils - Thread 2 processed 280000 variants, elapsed time: 00:02:42s.
+08:20:48.220 INFO  LoggingUtils - Thread 1 processed 310000 variants, elapsed time: 00:02:45s.
+08:20:50.459 INFO  LoggingUtils - Thread 0 processed 280000 variants, elapsed time: 00:02:47s.
+08:20:51.268 INFO  LoggingUtils - Thread 3 processed 300000 variants, elapsed time: 00:02:48s.
+08:20:52.004 INFO  LoggingUtils - Thread 2 processed 290000 variants, elapsed time: 00:02:49s.
+08:20:54.282 INFO  LoggingUtils - Thread 1 processed 320000 variants, elapsed time: 00:02:51s.
+08:20:55.549 INFO  LoggingUtils - Thread 0 processed 290000 variants, elapsed time: 00:02:52s.
+08:20:57.378 INFO  LoggingUtils - Thread 3 processed 310000 variants, elapsed time: 00:02:54s.
+08:20:58.719 INFO  LoggingUtils - Thread 2 processed 300000 variants, elapsed time: 00:02:56s.
+08:21:00.478 INFO  LoggingUtils - Thread 1 processed 330000 variants, elapsed time: 00:02:57s.
+08:21:00.893 INFO  LoggingUtils - Thread 0 processed 300000 variants, elapsed time: 00:02:58s.
+08:21:04.352 INFO  LoggingUtils - Thread 3 processed 320000 variants, elapsed time: 00:03:01s.
+08:21:05.276 INFO  LoggingUtils - Thread 2 processed 310000 variants, elapsed time: 00:03:02s.
+08:21:06.095 INFO  LoggingUtils - Thread 0 processed 310000 variants, elapsed time: 00:03:03s.
+08:21:06.792 INFO  LoggingUtils - Thread 1 processed 340000 variants, elapsed time: 00:03:04s.
+08:21:10.884 INFO  LoggingUtils - Thread 3 processed 330000 variants, elapsed time: 00:03:08s.
+08:21:10.977 INFO  LoggingUtils - Thread 2 processed 320000 variants, elapsed time: 00:03:08s.
+08:21:12.021 INFO  LoggingUtils - Thread 0 processed 320000 variants, elapsed time: 00:03:09s.
+08:21:12.997 INFO  LoggingUtils - Thread 1 processed 350000 variants, elapsed time: 00:03:10s.
+08:21:16.214 INFO  LoggingUtils - Thread 2 processed 330000 variants, elapsed time: 00:03:13s.
+08:21:16.974 INFO  LoggingUtils - Thread 3 processed 340000 variants, elapsed time: 00:03:14s.
+08:21:17.486 INFO  LoggingUtils - Thread 0 processed 330000 variants, elapsed time: 00:03:14s.
+08:21:19.095 INFO  LoggingUtils - Thread 1 processed 360000 variants, elapsed time: 00:03:16s.
+08:21:22.557 INFO  LoggingUtils - Thread 3 processed 350000 variants, elapsed time: 00:03:19s.
+08:21:23.277 INFO  LoggingUtils - Thread 0 processed 340000 variants, elapsed time: 00:03:20s.
+08:21:23.882 INFO  LoggingUtils - Thread 2 processed 340000 variants, elapsed time: 00:03:21s.
+08:21:25.801 INFO  LoggingUtils - Thread 1 processed 370000 variants, elapsed time: 00:03:23s.
+08:21:27.896 INFO  LoggingUtils - Thread 3 processed 360000 variants, elapsed time: 00:03:25s.
+08:21:29.155 INFO  LoggingUtils - Thread 0 processed 350000 variants, elapsed time: 00:03:26s.
+08:21:29.740 INFO  LoggingUtils - Thread 2 processed 350000 variants, elapsed time: 00:03:27s.
+08:21:31.595 INFO  LoggingUtils - Thread 1 processed 380000 variants, elapsed time: 00:03:29s.
+08:21:35.288 INFO  LoggingUtils - Thread 3 processed 370000 variants, elapsed time: 00:03:32s.
+08:21:35.878 INFO  LoggingUtils - Thread 0 processed 360000 variants, elapsed time: 00:03:33s.
+08:21:36.566 INFO  LoggingUtils - Thread 2 processed 360000 variants, elapsed time: 00:03:34s.
+08:21:38.274 INFO  LoggingUtils - Thread 1 processed 390000 variants, elapsed time: 00:03:35s.
+08:21:40.493 INFO  LoggingUtils - Thread 3 processed 380000 variants, elapsed time: 00:03:37s.
+08:21:40.928 INFO  LoggingUtils - Thread 0 processed 370000 variants, elapsed time: 00:03:38s.
+08:21:41.012 INFO  LoggingUtils - Thread 2 processed 370000 variants, elapsed time: 00:03:38s.
+08:21:43.525 INFO  LoggingUtils - Thread 1 processed 400000 variants, elapsed time: 00:03:40s.
+08:21:46.117 INFO  LoggingUtils - Thread 2 processed 380000 variants, elapsed time: 00:03:43s.
+08:21:46.624 INFO  LoggingUtils - Thread 3 processed 390000 variants, elapsed time: 00:03:44s.
+08:21:47.564 INFO  LoggingUtils - Thread 0 processed 380000 variants, elapsed time: 00:03:45s.
+08:21:49.556 INFO  LoggingUtils - Thread 1 processed 410000 variants, elapsed time: 00:03:46s.
+08:21:51.786 INFO  LoggingUtils - Thread 2 processed 390000 variants, elapsed time: 00:03:49s.
+08:21:53.762 INFO  LoggingUtils - Thread 3 processed 400000 variants, elapsed time: 00:03:51s.
+08:21:53.970 INFO  LoggingUtils - Thread 0 processed 390000 variants, elapsed time: 00:03:51s.
+08:21:55.908 INFO  LoggingUtils - Thread 1 processed 420000 variants, elapsed time: 00:03:53s.
+08:21:57.857 INFO  LoggingUtils - Thread 2 processed 400000 variants, elapsed time: 00:03:55s.
+08:21:59.810 INFO  LoggingUtils - Thread 0 processed 400000 variants, elapsed time: 00:03:57s.
+08:22:02.120 INFO  LoggingUtils - Thread 3 processed 410000 variants, elapsed time: 00:03:59s.
+08:22:03.187 INFO  LoggingUtils - Thread 1 processed 430000 variants, elapsed time: 00:04:00s.
+08:22:03.410 INFO  LoggingUtils - Thread 2 processed 410000 variants, elapsed time: 00:04:00s.
+08:22:07.668 INFO  LoggingUtils - Thread 0 processed 410000 variants, elapsed time: 00:04:05s.
+08:22:09.073 INFO  LoggingUtils - Thread 3 processed 420000 variants, elapsed time: 00:04:06s.
+08:22:09.133 INFO  LoggingUtils - Thread 1 processed 440000 variants, elapsed time: 00:04:06s.
+08:22:10.362 INFO  LoggingUtils - Thread 2 processed 420000 variants, elapsed time: 00:04:07s.
+08:22:14.347 INFO  LoggingUtils - Thread 0 processed 420000 variants, elapsed time: 00:04:11s.
+08:22:15.352 INFO  LoggingUtils - Thread 3 processed 430000 variants, elapsed time: 00:04:12s.
+08:22:15.563 INFO  LoggingUtils - Thread 1 processed 450000 variants, elapsed time: 00:04:13s.
+08:22:17.470 INFO  LoggingUtils - Thread 2 processed 430000 variants, elapsed time: 00:04:14s.
+08:22:20.859 INFO  LoggingUtils - Thread 0 processed 430000 variants, elapsed time: 00:04:18s.
+08:22:21.846 INFO  LoggingUtils - Thread 1 processed 460000 variants, elapsed time: 00:04:19s.
+08:22:22.197 INFO  LoggingUtils - Thread 2 processed 440000 variants, elapsed time: 00:04:19s.
+08:22:23.112 INFO  LoggingUtils - Thread 3 processed 440000 variants, elapsed time: 00:04:20s.
+08:22:27.620 INFO  LoggingUtils - Thread 2 processed 450000 variants, elapsed time: 00:04:25s.
+08:22:28.737 INFO  LoggingUtils - Thread 1 processed 470000 variants, elapsed time: 00:04:26s.
+08:22:29.297 INFO  LoggingUtils - Thread 0 processed 440000 variants, elapsed time: 00:04:26s.
+08:22:29.850 INFO  LoggingUtils - Thread 3 processed 450000 variants, elapsed time: 00:04:27s.
+08:22:33.021 INFO  LoggingUtils - Thread 2 processed 460000 variants, elapsed time: 00:04:30s.
+08:22:34.759 INFO  LoggingUtils - Thread 1 processed 480000 variants, elapsed time: 00:04:32s.
+08:22:35.308 INFO  LoggingUtils - Thread 3 processed 460000 variants, elapsed time: 00:04:32s.
+08:22:35.911 INFO  LoggingUtils - Thread 0 processed 450000 variants, elapsed time: 00:04:33s.
+08:22:40.094 INFO  LoggingUtils - Thread 2 processed 470000 variants, elapsed time: 00:04:37s.
+08:22:40.542 INFO  LoggingUtils - Thread 1 processed 490000 variants, elapsed time: 00:04:37s.
+08:22:40.684 INFO  LoggingUtils - Thread 3 processed 470000 variants, elapsed time: 00:04:38s.
+08:22:42.138 INFO  LoggingUtils - Thread 0 processed 460000 variants, elapsed time: 00:04:39s.
+08:22:45.585 INFO  LoggingUtils - Thread 1 processed 500000 variants, elapsed time: 00:04:43s.
+08:22:46.169 INFO  LoggingUtils - Thread 2 processed 480000 variants, elapsed time: 00:04:43s.
+08:22:46.784 INFO  LoggingUtils - Thread 3 processed 480000 variants, elapsed time: 00:04:44s.
+08:22:48.089 INFO  LoggingUtils - Thread 0 processed 470000 variants, elapsed time: 00:04:45s.
+08:22:51.092 INFO  LoggingUtils - Thread 1 processed 510000 variants, elapsed time: 00:04:48s.
+08:22:52.065 INFO  LoggingUtils - Thread 2 processed 490000 variants, elapsed time: 00:04:49s.
+08:22:53.114 INFO  LoggingUtils - Thread 3 processed 490000 variants, elapsed time: 00:04:50s.
+08:22:53.668 INFO  LoggingUtils - Thread 0 processed 480000 variants, elapsed time: 00:04:51s.
+08:22:56.820 INFO  LoggingUtils - Thread 1 processed 520000 variants, elapsed time: 00:04:54s.
+08:22:58.372 INFO  LoggingUtils - Thread 2 processed 500000 variants, elapsed time: 00:04:55s.
+08:22:58.990 INFO  LoggingUtils - Thread 3 processed 500000 variants, elapsed time: 00:04:56s.
+08:22:59.989 INFO  LoggingUtils - Thread 0 processed 490000 variants, elapsed time: 00:04:57s.
+08:23:02.756 INFO  LoggingUtils - Thread 1 processed 530000 variants, elapsed time: 00:05:00s.
+08:23:04.241 INFO  LoggingUtils - 6:29682641-29683308 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:04.304 INFO  LoggingUtils - 6:29717691-29720303 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:04.573 INFO  LoggingUtils - 6:29931990-29933749 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:05.427 INFO  LoggingUtils - Thread 2 processed 510000 variants, elapsed time: 00:05:02s.
+08:23:05.746 INFO  LoggingUtils - 6:31041444-31042315 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:05.925 INFO  LoggingUtils - Thread 1 processed 540000 variants, elapsed time: 00:05:03s.
+08:23:05.999 INFO  LoggingUtils - 6:31243838-31245339 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:06.135 INFO  LoggingUtils - 6:31308192-31311644 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:06.188 INFO  LoggingUtils - 6:31324397-31326130 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:06.192 INFO  LoggingUtils - Thread 0 processed 500000 variants, elapsed time: 00:05:03s.
+08:23:06.398 INFO  LoggingUtils - 6:31453719-31456609 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:06.515 INFO  LoggingUtils - Thread 3 processed 510000 variants, elapsed time: 00:05:03s.
+08:23:07.230 INFO  LoggingUtils - 6:32410109-32410876 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.440 INFO  LoggingUtils - 6:32486308-32487436 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.584 INFO  LoggingUtils - Thread 1 processed 550000 variants, elapsed time: 00:05:05s.
+08:23:07.701 INFO  LoggingUtils - 6:32648269-32651191 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.705 INFO  LoggingUtils - 6:32651275-32652351 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.714 INFO  LoggingUtils - 6:32655746-32656847 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.715 INFO  LoggingUtils - 6:32657116-32658081 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:07.932 INFO  LoggingUtils - 6:32810976-32812043 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:08.173 INFO  LoggingUtils - 6:33058940-33060823 is not processed since exceeding the max length of variant, use option --maxVariantLength to reset the length.
+08:23:10.496 INFO  LoggingUtils - Thread 1 processed 560000 variants, elapsed time: 00:05:07s.
+08:23:11.338 INFO  LoggingUtils - Thread 2 processed 520000 variants, elapsed time: 00:05:08s.
+08:23:12.774 INFO  LoggingUtils - Thread 0 processed 510000 variants, elapsed time: 00:05:10s.
+08:23:13.359 INFO  LoggingUtils - Thread 3 processed 520000 variants, elapsed time: 00:05:10s.
+08:23:17.389 INFO  LoggingUtils - Thread 2 processed 530000 variants, elapsed time: 00:05:14s.
+08:23:17.775 INFO  LoggingUtils - Thread 1 processed 570000 variants, elapsed time: 00:05:15s.
+08:23:19.005 INFO  LoggingUtils - Thread 0 processed 520000 variants, elapsed time: 00:05:16s.
+08:23:21.872 INFO  LoggingUtils - Thread 3 processed 530000 variants, elapsed time: 00:05:19s.
+08:23:23.198 INFO  LoggingUtils - Thread 2 processed 540000 variants, elapsed time: 00:05:20s.
+08:23:23.987 INFO  LoggingUtils - Thread 1 processed 580000 variants, elapsed time: 00:05:21s.
+08:23:26.089 INFO  LoggingUtils - Thread 0 processed 530000 variants, elapsed time: 00:05:23s.
+08:23:28.943 INFO  LoggingUtils - Thread 2 processed 550000 variants, elapsed time: 00:05:26s.
+08:23:29.388 INFO  LoggingUtils - Thread 3 processed 540000 variants, elapsed time: 00:05:26s.
+08:23:30.925 INFO  LoggingUtils - Thread 1 processed 590000 variants, elapsed time: 00:05:28s.
+08:23:32.514 INFO  LoggingUtils - Thread 0 processed 540000 variants, elapsed time: 00:05:29s.
+08:23:35.215 INFO  LoggingUtils - Thread 2 processed 560000 variants, elapsed time: 00:05:32s.
+08:23:36.592 INFO  LoggingUtils - Thread 1 processed 600000 variants, elapsed time: 00:05:34s.
+08:23:36.719 INFO  LoggingUtils - Thread 3 processed 550000 variants, elapsed time: 00:05:34s.
+08:23:37.882 INFO  LoggingUtils - Thread 0 processed 550000 variants, elapsed time: 00:05:35s.
+08:23:39.163 INFO  LoggingUtils - Thread 2 processed 570000 variants, elapsed time: 00:05:36s.
+08:23:41.576 INFO  LoggingUtils - Thread 1 processed 610000 variants, elapsed time: 00:05:39s.
+08:23:42.823 INFO  LoggingUtils - Thread 3 processed 560000 variants, elapsed time: 00:05:40s.
+08:23:43.250 INFO  LoggingUtils - Thread 0 processed 560000 variants, elapsed time: 00:05:40s.
+08:23:43.600 INFO  LoggingUtils - Thread 2 processed 580000 variants, elapsed time: 00:05:41s.
+08:23:46.431 INFO  LoggingUtils - Thread 1 processed 620000 variants, elapsed time: 00:05:43s.
+08:23:48.345 INFO  LoggingUtils - Thread 3 processed 570000 variants, elapsed time: 00:05:45s.
+08:23:48.785 INFO  LoggingUtils - Thread 2 processed 590000 variants, elapsed time: 00:05:46s.
+08:23:49.025 INFO  LoggingUtils - Thread 0 processed 570000 variants, elapsed time: 00:05:46s.
+08:23:51.835 INFO  LoggingUtils - Thread 1 processed 630000 variants, elapsed time: 00:05:49s.
+08:23:53.077 INFO  LoggingUtils - Thread 2 processed 600000 variants, elapsed time: 00:05:50s.
+08:23:53.427 INFO  LoggingUtils - Thread 3 processed 580000 variants, elapsed time: 00:05:50s.
+08:23:55.088 INFO  LoggingUtils - Thread 0 processed 580000 variants, elapsed time: 00:05:52s.
+08:23:57.368 INFO  LoggingUtils - Thread 1 processed 640000 variants, elapsed time: 00:05:54s.
+08:23:57.944 INFO  LoggingUtils - Thread 2 processed 610000 variants, elapsed time: 00:05:55s.
+08:23:58.207 INFO  LoggingUtils - Thread 3 processed 590000 variants, elapsed time: 00:05:55s.
+08:24:00.505 INFO  LoggingUtils - Thread 0 processed 590000 variants, elapsed time: 00:05:57s.
+08:24:02.982 INFO  LoggingUtils - Thread 1 processed 650000 variants, elapsed time: 00:06:00s.
+08:24:03.066 INFO  LoggingUtils - Thread 3 processed 600000 variants, elapsed time: 00:06:00s.
+08:24:03.738 INFO  LoggingUtils - Thread 2 processed 620000 variants, elapsed time: 00:06:01s.
+08:24:05.513 INFO  LoggingUtils - Thread 0 processed 600000 variants, elapsed time: 00:06:02s.
+08:24:08.176 INFO  LoggingUtils - Thread 3 processed 610000 variants, elapsed time: 00:06:05s.
+08:24:08.259 INFO  LoggingUtils - Thread 1 processed 660000 variants, elapsed time: 00:06:05s.
+08:24:08.311 INFO  LoggingUtils - Thread 2 processed 630000 variants, elapsed time: 00:06:05s.
+08:24:11.428 INFO  LoggingUtils - Thread 0 processed 610000 variants, elapsed time: 00:06:08s.
+08:24:14.044 INFO  LoggingUtils - Thread 3 processed 620000 variants, elapsed time: 00:06:11s.
+08:24:15.033 INFO  LoggingUtils - Thread 2 processed 640000 variants, elapsed time: 00:06:12s.
+08:24:15.280 INFO  LoggingUtils - Thread 1 processed 670000 variants, elapsed time: 00:06:12s.
+08:24:16.869 INFO  LoggingUtils - Thread 0 processed 620000 variants, elapsed time: 00:06:14s.
+08:24:20.365 INFO  LoggingUtils - Thread 3 processed 630000 variants, elapsed time: 00:06:17s.
+08:24:20.862 INFO  LoggingUtils - Thread 1 processed 680000 variants, elapsed time: 00:06:18s.
+08:24:22.219 INFO  LoggingUtils - Thread 2 processed 650000 variants, elapsed time: 00:06:19s.
+08:24:22.981 INFO  LoggingUtils - Thread 0 processed 630000 variants, elapsed time: 00:06:20s.
+08:24:26.538 INFO  LoggingUtils - Thread 3 processed 640000 variants, elapsed time: 00:06:23s.
+08:24:26.872 INFO  LoggingUtils - Thread 1 processed 690000 variants, elapsed time: 00:06:24s.
+08:24:28.412 INFO  LoggingUtils - Thread 2 processed 660000 variants, elapsed time: 00:06:25s.
+08:24:28.800 INFO  LoggingUtils - Thread 0 processed 640000 variants, elapsed time: 00:06:26s.
+08:24:32.874 INFO  LoggingUtils - Thread 3 processed 650000 variants, elapsed time: 00:06:30s.
+08:24:33.202 INFO  LoggingUtils - Thread 1 processed 700000 variants, elapsed time: 00:06:30s.
+08:24:34.321 INFO  LoggingUtils - Thread 0 processed 650000 variants, elapsed time: 00:06:31s.
+08:24:35.938 INFO  LoggingUtils - Thread 2 processed 670000 variants, elapsed time: 00:06:33s.
+08:24:38.605 INFO  LoggingUtils - Thread 3 processed 660000 variants, elapsed time: 00:06:36s.
+08:24:39.666 INFO  LoggingUtils - Thread 0 processed 660000 variants, elapsed time: 00:06:37s.
+08:24:39.947 INFO  LoggingUtils - Thread 1 processed 710000 variants, elapsed time: 00:06:37s.
+08:24:42.045 INFO  LoggingUtils - Thread 2 processed 680000 variants, elapsed time: 00:06:39s.
+08:24:44.225 INFO  LoggingUtils - Thread 3 processed 670000 variants, elapsed time: 00:06:41s.
+08:24:45.815 INFO  LoggingUtils - Thread 0 processed 670000 variants, elapsed time: 00:06:43s.
+08:24:46.856 INFO  LoggingUtils - Thread 1 processed 720000 variants, elapsed time: 00:06:44s.
+08:24:47.805 INFO  LoggingUtils - Thread 2 processed 690000 variants, elapsed time: 00:06:45s.
+08:24:49.284 INFO  LoggingUtils - Thread 3 processed 680000 variants, elapsed time: 00:06:46s.
+08:24:51.767 INFO  LoggingUtils - Thread 0 processed 680000 variants, elapsed time: 00:06:49s.
+08:24:52.610 INFO  LoggingUtils - Thread 1 processed 730000 variants, elapsed time: 00:06:50s.
+08:24:53.197 INFO  LoggingUtils - Thread 2 processed 700000 variants, elapsed time: 00:06:50s.
+08:24:54.005 INFO  LoggingUtils - Thread 3 processed 690000 variants, elapsed time: 00:06:51s.
+08:24:57.647 INFO  LoggingUtils - Thread 1 processed 740000 variants, elapsed time: 00:06:55s.
+08:24:57.688 INFO  LoggingUtils - Thread 0 processed 690000 variants, elapsed time: 00:06:55s.
+08:24:58.176 INFO  LoggingUtils - Thread 2 processed 710000 variants, elapsed time: 00:06:55s.
+08:24:59.559 INFO  LoggingUtils - Thread 3 processed 700000 variants, elapsed time: 00:06:56s.
+08:25:02.412 INFO  LoggingUtils - Thread 1 processed 750000 variants, elapsed time: 00:06:59s.
+08:25:03.735 INFO  LoggingUtils - Thread 0 processed 700000 variants, elapsed time: 00:07:01s.
+08:25:04.689 INFO  LoggingUtils - Thread 2 processed 720000 variants, elapsed time: 00:07:02s.
+08:25:07.220 INFO  LoggingUtils - Thread 3 processed 710000 variants, elapsed time: 00:07:04s.
+08:25:09.258 INFO  LoggingUtils - Thread 1 processed 760000 variants, elapsed time: 00:07:06s.
+08:25:10.807 INFO  LoggingUtils - Thread 2 processed 730000 variants, elapsed time: 00:07:08s.
+08:25:10.948 INFO  LoggingUtils - Thread 0 processed 710000 variants, elapsed time: 00:07:08s.
+08:25:14.649 INFO  LoggingUtils - Thread 3 processed 720000 variants, elapsed time: 00:07:12s.
+08:25:15.602 INFO  LoggingUtils - Thread 1 processed 770000 variants, elapsed time: 00:07:13s.
+08:25:16.291 INFO  LoggingUtils - Thread 2 processed 740000 variants, elapsed time: 00:07:13s.
+08:25:18.880 INFO  LoggingUtils - Thread 0 processed 720000 variants, elapsed time: 00:07:16s.
+08:25:20.582 INFO  LoggingUtils - Thread 3 processed 730000 variants, elapsed time: 00:07:18s.
+08:25:21.038 INFO  LoggingUtils - Thread 1 processed 780000 variants, elapsed time: 00:07:18s.
+08:25:21.614 INFO  LoggingUtils - Thread 2 processed 750000 variants, elapsed time: 00:07:19s.
+08:25:23.831 INFO  LoggingUtils - Thread 0 processed 730000 variants, elapsed time: 00:07:21s.
+08:25:25.087 INFO  LoggingUtils - Thread 3 processed 740000 variants, elapsed time: 00:07:22s.
+08:25:26.696 INFO  LoggingUtils - Thread 1 processed 790000 variants, elapsed time: 00:07:24s.
+08:25:26.816 INFO  LoggingUtils - Thread 2 processed 760000 variants, elapsed time: 00:07:24s.
+08:25:28.809 INFO  LoggingUtils - Thread 0 processed 740000 variants, elapsed time: 00:07:26s.
+08:25:30.749 INFO  LoggingUtils - Thread 3 processed 750000 variants, elapsed time: 00:07:28s.
+08:25:31.848 INFO  LoggingUtils - Thread 2 processed 770000 variants, elapsed time: 00:07:29s.
+08:25:32.156 INFO  LoggingUtils - Thread 1 processed 800000 variants, elapsed time: 00:07:29s.
+08:25:34.526 INFO  LoggingUtils - Thread 0 processed 750000 variants, elapsed time: 00:07:31s.
+08:25:37.069 INFO  LoggingUtils - Thread 2 processed 780000 variants, elapsed time: 00:07:34s.
+08:25:37.927 INFO  LoggingUtils - Thread 1 processed 810000 variants, elapsed time: 00:07:35s.
+08:25:38.324 INFO  LoggingUtils - Thread 3 processed 760000 variants, elapsed time: 00:07:35s.
+08:25:40.525 INFO  LoggingUtils - Thread 0 processed 760000 variants, elapsed time: 00:07:37s.
+08:25:42.372 INFO  LoggingUtils - Thread 2 processed 790000 variants, elapsed time: 00:07:39s.
+08:25:44.045 INFO  LoggingUtils - Thread 1 processed 820000 variants, elapsed time: 00:07:41s.
+08:25:45.044 INFO  LoggingUtils - Thread 3 processed 770000 variants, elapsed time: 00:07:42s.
+08:25:46.655 INFO  LoggingUtils - Thread 0 processed 770000 variants, elapsed time: 00:07:44s.
+08:25:47.663 INFO  LoggingUtils - Thread 2 processed 800000 variants, elapsed time: 00:07:45s.
+08:25:49.236 INFO  LoggingUtils - Thread 1 processed 830000 variants, elapsed time: 00:07:46s.
+08:25:50.604 INFO  LoggingUtils - Thread 3 processed 780000 variants, elapsed time: 00:07:48s.
+08:25:53.121 INFO  LoggingUtils - Thread 2 processed 810000 variants, elapsed time: 00:07:50s.
+08:25:53.852 INFO  LoggingUtils - Thread 0 processed 780000 variants, elapsed time: 00:07:51s.
+08:25:53.925 INFO  LoggingUtils - Thread 1 processed 840000 variants, elapsed time: 00:07:51s.
+08:25:55.820 INFO  LoggingUtils - Thread 3 processed 790000 variants, elapsed time: 00:07:53s.
+08:25:58.420 INFO  LoggingUtils - Thread 2 processed 820000 variants, elapsed time: 00:07:55s.
+08:25:59.140 INFO  LoggingUtils - Thread 0 processed 790000 variants, elapsed time: 00:07:56s.
+08:26:00.328 INFO  LoggingUtils - Thread 1 processed 850000 variants, elapsed time: 00:07:57s.
+08:26:00.890 INFO  LoggingUtils - Thread 3 processed 800000 variants, elapsed time: 00:07:58s.
+08:26:04.618 INFO  LoggingUtils - Thread 0 processed 800000 variants, elapsed time: 00:08:02s.
+08:26:05.522 INFO  LoggingUtils - Thread 2 processed 830000 variants, elapsed time: 00:08:02s.
+08:26:06.685 INFO  LoggingUtils - Thread 3 processed 810000 variants, elapsed time: 00:08:04s.
+08:26:07.347 INFO  LoggingUtils - Thread 1 processed 860000 variants, elapsed time: 00:08:04s.
+08:26:11.441 INFO  LoggingUtils - Thread 0 processed 810000 variants, elapsed time: 00:08:08s.
+08:26:12.446 INFO  LoggingUtils - Thread 2 processed 840000 variants, elapsed time: 00:08:09s.
+08:26:12.508 INFO  LoggingUtils - Thread 3 processed 820000 variants, elapsed time: 00:08:09s.
+08:26:14.060 INFO  LoggingUtils - Thread 1 processed 870000 variants, elapsed time: 00:08:11s.
+08:26:17.933 INFO  LoggingUtils - Thread 0 processed 820000 variants, elapsed time: 00:08:15s.
+08:26:18.841 INFO  LoggingUtils - Thread 2 processed 850000 variants, elapsed time: 00:08:16s.
+08:26:19.457 INFO  LoggingUtils - Thread 1 processed 880000 variants, elapsed time: 00:08:16s.
+08:26:20.462 INFO  LoggingUtils - Thread 3 processed 830000 variants, elapsed time: 00:08:17s.
+08:26:23.458 INFO  LoggingUtils - Thread 0 processed 830000 variants, elapsed time: 00:08:20s.
+08:26:24.808 INFO  LoggingUtils - Thread 2 processed 860000 variants, elapsed time: 00:08:22s.
+08:26:25.735 INFO  LoggingUtils - Thread 1 processed 890000 variants, elapsed time: 00:08:23s.
+08:26:27.116 INFO  LoggingUtils - Thread 3 processed 840000 variants, elapsed time: 00:08:24s.
+08:26:29.436 INFO  LoggingUtils - Thread 0 processed 840000 variants, elapsed time: 00:08:26s.
+08:26:31.258 INFO  LoggingUtils - Thread 2 processed 870000 variants, elapsed time: 00:08:28s.
+08:26:31.826 INFO  LoggingUtils - Thread 1 processed 900000 variants, elapsed time: 00:08:29s.
+08:26:33.180 INFO  LoggingUtils - Thread 3 processed 850000 variants, elapsed time: 00:08:30s.
+08:26:35.103 INFO  LoggingUtils - Thread 0 processed 850000 variants, elapsed time: 00:08:32s.
+08:26:37.132 INFO  LoggingUtils - Thread 2 processed 880000 variants, elapsed time: 00:08:34s.
+08:26:37.456 INFO  LoggingUtils - Thread 1 processed 910000 variants, elapsed time: 00:08:34s.
+08:26:38.379 INFO  LoggingUtils - Thread 3 processed 860000 variants, elapsed time: 00:08:35s.
+08:26:41.043 INFO  LoggingUtils - Thread 0 processed 860000 variants, elapsed time: 00:08:38s.
+08:26:42.649 INFO  LoggingUtils - Thread 2 processed 890000 variants, elapsed time: 00:08:40s.
+08:26:44.505 INFO  LoggingUtils - Thread 3 processed 870000 variants, elapsed time: 00:08:41s.
+08:26:45.140 INFO  LoggingUtils - Thread 1 processed 920000 variants, elapsed time: 00:08:42s.
+08:26:46.530 INFO  LoggingUtils - Thread 0 processed 870000 variants, elapsed time: 00:08:43s.
+08:26:48.522 INFO  LoggingUtils - Thread 2 processed 900000 variants, elapsed time: 00:08:45s.
+08:26:48.917 INFO  LoggingUtils - Thread 3 processed 880000 variants, elapsed time: 00:08:46s.
+08:26:50.298 INFO  LoggingUtils - Thread 1 processed 930000 variants, elapsed time: 00:08:47s.
+08:26:51.900 INFO  LoggingUtils - Thread 0 processed 880000 variants, elapsed time: 00:08:49s.
+08:26:53.330 INFO  LoggingUtils - Thread 3 processed 890000 variants, elapsed time: 00:08:50s.
+08:26:55.196 INFO  LoggingUtils - Thread 1 processed 940000 variants, elapsed time: 00:08:52s.
+08:26:55.537 INFO  LoggingUtils - Thread 2 processed 910000 variants, elapsed time: 00:08:52s.
+08:26:58.670 INFO  LoggingUtils - Thread 3 processed 900000 variants, elapsed time: 00:08:56s.
+08:26:58.788 INFO  LoggingUtils - Thread 0 processed 890000 variants, elapsed time: 00:08:56s.
+08:27:01.435 INFO  LoggingUtils - Thread 2 processed 920000 variants, elapsed time: 00:08:58s.
+08:27:01.710 INFO  LoggingUtils - Thread 1 processed 950000 variants, elapsed time: 00:08:59s.
+08:27:04.201 INFO  LoggingUtils - Thread 3 processed 910000 variants, elapsed time: 00:09:01s.
+08:27:05.117 INFO  LoggingUtils - Thread 0 processed 900000 variants, elapsed time: 00:09:02s.
+08:27:06.952 INFO  LoggingUtils - Thread 1 processed 960000 variants, elapsed time: 00:09:04s.
+08:27:07.156 INFO  LoggingUtils - Thread 2 processed 930000 variants, elapsed time: 00:09:04s.
+08:27:08.735 INFO  LoggingUtils - Thread 3 processed 920000 variants, elapsed time: 00:09:06s.
+08:27:09.386 INFO  LoggingUtils - Thread 0 processed 910000 variants, elapsed time: 00:09:06s.
+08:27:11.350 INFO  LoggingUtils - Thread 2 processed 940000 variants, elapsed time: 00:09:08s.
+08:27:12.042 INFO  LoggingUtils - Thread 1 processed 970000 variants, elapsed time: 00:09:09s.
+08:27:15.309 INFO  LoggingUtils - Thread 3 processed 930000 variants, elapsed time: 00:09:12s.
+08:27:16.157 INFO  LoggingUtils - Thread 2 processed 950000 variants, elapsed time: 00:09:13s.
+08:27:16.575 INFO  LoggingUtils - Thread 0 processed 920000 variants, elapsed time: 00:09:14s.
+08:27:18.554 INFO  LoggingUtils - Thread 1 processed 980000 variants, elapsed time: 00:09:15s.
+08:27:20.271 INFO  LoggingUtils - Thread 2 processed 960000 variants, elapsed time: 00:09:17s.
+08:27:21.298 INFO  LoggingUtils - Thread 0 processed 930000 variants, elapsed time: 00:09:18s.
+08:27:21.422 INFO  LoggingUtils - Thread 3 processed 940000 variants, elapsed time: 00:09:18s.
+08:27:22.379 INFO  LoggingUtils - Thread 1 processed 990000 variants, elapsed time: 00:09:19s.
+08:27:24.663 INFO  LoggingUtils - Thread 2 processed 970000 variants, elapsed time: 00:09:22s.
+08:27:26.390 INFO  LoggingUtils - Thread 0 processed 940000 variants, elapsed time: 00:09:23s.
+08:27:26.842 INFO  LoggingUtils - Thread 3 processed 950000 variants, elapsed time: 00:09:24s.
+08:27:27.181 INFO  LoggingUtils - Thread 1 processed 1000000 variants, elapsed time: 00:09:24s.
+08:27:29.069 INFO  LoggingUtils - Thread 1 processed 1003351 variants, elapsed time: 00:09:26s.
+08:27:29.070 INFO  LoggingUtils - Thread 1 skipped 16 large variants.
+08:27:29.383 INFO  LoggingUtils - Thread 2 processed 979393 variants, elapsed time: 00:09:26s.
+08:27:30.583 INFO  LoggingUtils - Thread 0 processed 950000 variants, elapsed time: 00:09:28s.
+08:27:31.162 INFO  LoggingUtils - Thread 3 processed 960000 variants, elapsed time: 00:09:28s.
+08:27:33.389 INFO  LoggingUtils - Thread 0 processed 960000 variants, elapsed time: 00:09:30s.
+08:27:34.102 INFO  LoggingUtils - Thread 3 processed 970000 variants, elapsed time: 00:09:31s.
+08:27:35.086 INFO  LoggingUtils - Thread 3 processed 973932 variants, elapsed time: 00:09:32s.
+08:27:35.773 INFO  LoggingUtils - Thread 0 processed 970000 variants, elapsed time: 00:09:33s.
+08:27:37.020 INFO  LoggingUtils - Thread 0 processed 978713 variants, elapsed time: 00:09:34s.
+08:27:37.061 INFO  LoggingUtils - 
+
+----------------------------------------------------         MERGE RESULT         ----------------------------------------------------
+08:27:55.947 ERROR LoggingUtils - Delete directory /work/compare/null/temp
+08:27:55.947 INFO  LoggingUtils - 
+
+----------------------------------------------------            OUTPUT            ----------------------------------------------------
+08:27:55.947 INFO  LoggingUtils - Output Path: varnote.anno.vcf.gz
+08:27:55.947 INFO  LoggingUtils - Is LOJ: true
+08:27:55.948 INFO  LoggingUtils - Is GZIP: true
+08:27:55.948 INFO  LoggingUtils - Output Mode: BOTH
+	Command being timed: "varnote Annotation --query-file HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz --d-files:db,tag=gnomAD,mode=1 /data/gnomad/gnomad.v3.1.2.concat.vcf.gz --out-format VCF -loj true --allowLargeVariants --maxVariantLength 500 --thread 4 --force-overlap true -A annoc --out-file varnote.anno.vcf.gz"
+	User time (seconds): 653.97
+	System time (seconds): 27.11
+	Percent of CPU this job got: 114%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:57.32
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 264432
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 701
+	Minor (reclaiming a frame) page faults: 78453
+	Voluntary context switches: 139520
+	Involuntary context switches: 156540
+	Swaps: 0
+	File system inputs: 40586344
+	File system outputs: 1362120
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+#SIZE: 20792	total
