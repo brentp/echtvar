@@ -134,6 +134,8 @@ All fields in an `echtvar` file will be added (with the given alias) to any VCF 
 
 Other examples are available [here](https://github.com/brentp/echtvar/tree/main/examples)
 
+And full examples are in the [wiki](https://github.com/brentp/echtvar/wiki)
+
 #### Expressions
 
 An optional expression will determine which variants are written. It can utilize any (and only) integer or float fields present in the
