@@ -98,7 +98,7 @@ fn bit_test(set: u128, bit: usize) -> bool {
 }
 
 #[inline]
-pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
+pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> u32 {
     let mut v: Var32 = Var32::default();
     v.set_position(pos);
 
@@ -113,7 +113,8 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
     let mut ra: u32 = 0;
 
     for a in ref_allele.iter() {
-        if !bit_test(DNA_BITS, *a as usize) {
+        if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
+			*warn += 1;
             eprintln!(
                 "[warning] found non ACGT REF character '{}', encoding as 'T' for position: {}",
                 *a as char, pos
@@ -124,7 +125,8 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8]) -> u32 {
     }
 
     for a in alt_allele.iter() {
-        if !bit_test(DNA_BITS, *a as usize) {
+        if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
+			*warn += 1;
             eprintln!(
                 "[warning] found non ACGT ALT character '{}', encoding as 'T' for position: {}",
                 *a as char, pos
@@ -168,7 +170,8 @@ mod tests {
     use super::*;
     #[test]
     fn test_encode() {
-        let e = encode(423432, b"A", b"ACA");
+		let mut w = 0;
+        let e = encode(423432, b"A", b"ACA", &mut w);
         assert_eq!(e, 1734379268);
     }
 

@@ -264,6 +264,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             vcf.set_threads(2).ok();
         }
         eprintln!("[echtvar] adding VCF:{}", vpath);
+		let mut warn = 0;
 
         for r in vcf.records() {
             let rec = r.expect("error getting record");
@@ -393,7 +394,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         .collect::<Vec<_>>()
                 );
             }
-            var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1]));
+            var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1], &mut warn));
 
             if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
                 long_vars.push(var32::LongVariant {

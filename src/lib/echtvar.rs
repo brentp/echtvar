@@ -45,6 +45,8 @@ pub struct EchtVars {
     pub fields: Vec<fields::Field>,
     buffer: Vec<u8>,
 
+	warn: i32,
+
     // lookup for categorical fields.
     // these will be empty for non-categorical.
     pub strings: Vec<Vec<std::string::String>>,
@@ -117,6 +119,7 @@ impl EchtVars {
             fields: vec![],
             buffer: vec![],
             strings: vec![],
+			warn: 0,
         };
 
         {
@@ -349,7 +352,7 @@ impl EchtVars {
             );
         }
         let eidx = if alleles[0].len() + alleles[1].len() <= crate::var32::MAX_COMBINED_LEN {
-            let enc = var32::encode(pos, alleles[0], alleles[1]);
+            let enc = var32::encode(pos, alleles[0], alleles[1], &mut self.warn);
             self.var32s.binary_search(&enc)
         } else {
             let l = var32::LongVariant {
