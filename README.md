@@ -1,9 +1,9 @@
 ## Echtvar: Really, truly rapid variant annotation and filtering 
 [![Rust](https://github.com/brentp/echtvar/actions/workflows/ci.yml/badge.svg)](https://github.com/brentp/echtvar/actions/workflows/ci.yml)
 
-Echtvar enables rapid annotation of variants with huge pupulation datasets and
-it supports filtering on those values. It chunks the genome into 1<<20 (~1 million
-) bases, [encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
+Echtvar enables rapid variant annotation and filtering with huge pupulation datasets
+It chunks the genome into 1<<20 (~1 million) bases,
+[encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
 for those that can't fit due to large REF and/or ALT alleles). It uses the zip format, [delta
 encoding](https://en.wikipedia.org/wiki/Delta_encoding)
 and [integer compression
@@ -11,13 +11,9 @@ and [integer compression
 to create a compact and searchable format of any integer, float, or low-cardinality string columns
 selected from the population file.
 
-Once created, an echtvar (zip) file can be used to annotate variants in a VCF (or
+An echtvar (zip) file can be used to annotate and filter variants in a VCF (or
 BCF) file at a rate of >1 million variants per second (most of the time is spent
 reading and writing VCF/BCF, so this number depends on the particular file).
-
-A filter expression can be applied so that only variants that meet the
-expression are written. Since `echtvar` is so fast, writing the output is a bottleneck
-so filtering can actually *increase* the speed.
 
 read more at the [why of echtvar](https://github.com/brentp/echtvar/wiki/why)
 
