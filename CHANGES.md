@@ -1,5 +1,5 @@
-v0.1.6 (dev)
-============
+v0.1.6
+======
 + change VCF header (#19)
 + output fewer warnings for '*' and other alternate alleles (#22)
 
