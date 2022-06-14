@@ -1,7 +1,7 @@
 ## Echtvar: Really, truly rapid variant annotation and filtering 
 [![Rust](https://github.com/brentp/echtvar/actions/workflows/ci.yml/badge.svg)](https://github.com/brentp/echtvar/actions/workflows/ci.yml)
 
-Echtvar enables rapid variant annotation and filtering with huge pupulation datasets
+Echtvar efficiently encodes variant allele frequency and other information from huge pupulation datasets to enable rapid (1M variants/second) annotation of genetic variants.
 It chunks the genome into 1<<20 (~1 million) bases,
 [encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
 for those that can't fit due to large REF and/or ALT alleles). It uses the zip format, [delta
@@ -11,10 +11,6 @@ and [integer compression
 to create a compact and searchable format of any integer, float, or low-cardinality string columns
 selected from the population file.
 
-An echtvar (zip) file can be used to annotate and filter variants in a VCF (or
-BCF) file at a rate of >1 million variants per second (most of the time is spent
-reading and writing VCF/BCF, so this number depends on the particular file).
-
 read more at the [why of echtvar](https://github.com/brentp/echtvar/wiki/why)
 
 ### Getting started.
@@ -23,7 +19,7 @@ Get a static binary and pre-encoded echtvar files for gnomad v3.1.2 (hg38) here:
 That page contains exact instructions to get started with the static binary.
 
 <details>
-  <summary>:arrow_down:Download instructions for linux</summary>
+  <summary>:arrow_down:Download or Build instructions for linux</summary>
 
 The linux binary is available via:
 
