@@ -18,6 +18,7 @@ pub struct Field {
 
     #[serde(default)]
     pub zigzag: bool,
+
     #[serde(default = "default_multiplier")]
     pub multiplier: u32,
     #[serde(default)]
@@ -63,8 +64,9 @@ impl Default for FieldType {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn test_read() {
+    fn test_read_field() {
         let fields: Vec<Field> = json5::from_str(r#"
         [
          {"field": "AC", "alias": "gnomad_AC"},
@@ -73,7 +75,7 @@ mod tests {
              alias: "gnomad_AN",
              missing_value: -2147483648,
              multiplier: 1, // this is useful for float fields as internally, everythign is stored as integer.
-             zigzag: false, // set this to true if the field can contain negative numbers.
+             zigzag: true, // set this to true if the field can contain negative numbers.
              ftype: "Integer", // this is discovered by echtvar and should not be set.
         }
          ]
@@ -84,6 +86,7 @@ mod tests {
         assert_eq!(fields[1].alias, "gnomad_AN");
         assert_eq!(fields[0].missing_value, -1);
         assert_eq!(fields[1].missing_value, -2147483648);
+        assert_eq!(fields[1].zigzag, true);
         assert_eq!(fields[1].ftype, FieldType::Integer);
 
         eprintln!("{}", json5::to_string(&fields[0]).unwrap());
