@@ -385,7 +385,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
                 let chrom = bstrip_chr(str::from_utf8(n).unwrap());
                 panic!(
-                    "[echtvar] variants must be decomposed before running {}:{} {:?}",
+                    "[echtvar] variants must be decomposed before running {}:{} {:?}. see: https://github.com/brentp/echtvar/wiki/decompose",
                     chrom,
                     rec.pos(),
                     rec.alleles()

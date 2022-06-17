@@ -46,7 +46,7 @@ cargo build --release --target x86_64-unknown-linux-gnu
 
 make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
 and then the file can be re-used for the annotation (`echtvar anno`) step with each new query file.
-Note that input VCFs must be decomposed.
+Note that input VCFs must be [decomposed](https://github.com/brentp/echtvar/wiki/decompose).
 
 ```
 echtvar \
@@ -63,7 +63,7 @@ pulled from the population VCF.
 
 ##### annotate 
 
-annotate a **decomposed** (and normalized) VCF with an echtvar file and only output variants where `gnomad_af`
+annotate a [**decomposed** (and normalized)](https://github.com/brentp/echtvar/wiki/decompose) VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01. Note that multiple echtvar files can be specified
 and the `-i` expression is optional and can be elided to output all variants.
 

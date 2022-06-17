@@ -344,7 +344,7 @@ impl EchtVars {
         let alleles = variant.alleles();
         if alleles.len() != 2 {
             panic!(
-                "[echtvar] variants must be decomposed before running. got variant with {} alleles at {}:{} ({:?})",
+                "[echtvar] variants must be decomposed before running. got variant with {} alleles at {}:{} ({:?}). see: https://github.com/brentp/echtvar/wiki/decompose",
                 alleles.len() - 1,
                 variant.chrom(),
                 variant.position() + 1,

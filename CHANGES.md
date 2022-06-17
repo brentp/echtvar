@@ -1,3 +1,7 @@
+v0.1.7 (dev)
+============
++ add wiki page and more information about decomposing variants
+
 v0.1.6
 ======
 + change VCF header (#19)
