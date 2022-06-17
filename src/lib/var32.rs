@@ -116,8 +116,8 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> 
         if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
 			*warn += 1;
             eprintln!(
-                "[warning] found non ACGT REF character '{}', encoding as 'T' for position: {}",
-                *a as char, pos
+                "[warning] found non ACGT REF character '{}', encoding as 'T' for (1-based) position: {}",
+                *a as char, pos + 1
             );
         }
         ra *= 4;
@@ -128,8 +128,8 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> 
         if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
 			*warn += 1;
             eprintln!(
-                "[warning] found non ACGT ALT character '{}', encoding as 'T' for position: {}",
-                *a as char, pos
+                "[warning] found non ACGT ALT character '{}', encoding as 'T' for (1-based) position: {}",
+                *a as char, pos + 1
             );
         }
         ra *= 4;
