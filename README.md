@@ -111,6 +111,8 @@ as not to collide with fields already in the query VCF.
            // higher values give better precision and worse compression.
            // upon annotation, the score is divided by multiplier to give a number close to the original float.
            multiplier: 2000000,
+           // set zigzag to true if your data has negative values
+           zigzag: true,
    }
     // echtvar will save strings as integers along with a lookup. this can work for fields with a low cardinality.
     {"field": "string_field", "alias":, gnomad_string_field", missing_string: "UNKNOWN"},
