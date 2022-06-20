@@ -84,9 +84,9 @@ pub fn annotate_main(
     let oheader_view = ovcf.header().clone();
 
     let start = time::Instant::now();
-    let mut n = 0;
-    let mut n_written = 0;
-    let mut modu = 10000;
+    let mut n = 0u64;
+    let mut n_written = 0u64;
+    let mut modu = 10000u64;
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
@@ -105,7 +105,7 @@ pub fn annotate_main(
                 chrom,
                 record.pos(),
                 n,
-                1000 * n / mili,
+                1000 * (n as u128) / mili,
                 n_written,
             );
         }
@@ -158,7 +158,7 @@ pub fn annotate_main(
     eprintln!(
         "[echtvar] evaluated {} variants ({} / second). wrote {} variants.",
         n,
-        1000 * n / mili,
+        1000 * (n as u128) / mili,
         n_written,
     );
 
