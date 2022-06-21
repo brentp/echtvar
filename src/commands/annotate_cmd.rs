@@ -99,7 +99,9 @@ pub fn annotate_main(
             if n >= 3 * modu && modu < 1000000 {
                 modu *= 10;
             }
-
+            if n >= 100 * modu && modu < 300000000 {
+                modu *= 10;
+            }
             eprintln!(
                 "[echtvar] {}:{} evaluated {} variants ({} / second). wrote {} variants.",
                 chrom,
