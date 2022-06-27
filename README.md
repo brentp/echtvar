@@ -26,7 +26,7 @@ The linux binary is available via:
 ```
 wget -O ~/bin/echtvar https://github.com/brentp/echtvar/releases/latest/download/echtvar \
     && chmod +x ~/bin/echtvar \
-    && ~/bin/echtvar
+    && ~/bin/echtvar # show help
  ```
 
 Users can make their own *echtvar* archives with `echtvar encode`, and pre-made archives for
@@ -39,6 +39,18 @@ cargo build --release --target x86_64-unknown-linux-gnu
 ```
 
 </details>
+
+To run echtvar with an existing archive (we have several available in [releases](https://github.com/brentp/echtvar/releases/latest)) is as simple as
+```
+echtvar anno -e gnomad.echtvar.zip -e other.echtvar.zip input.vcf output.annotated.bcf
+```
+
+an optional filter that utilizes fields available any of the zip files can be added like:
+```
+-i "gnomad_popmax_af < 0.01"
+```
+
+echtvar can also accept input from stdin using "-" or "/dev/stdin" for the input argument.
 
 ### usage
 
