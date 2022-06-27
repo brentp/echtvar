@@ -28,3 +28,7 @@ DONE
         -O b -o cadd.v1.6.bcftanno.bcf \
         cadd.v1.6.bcf) | tee cadd-self.bcftools.timing.txt
 
+
+## timing annotation and filtering of SNPs and indels with cadd: /hpc/compgen/users/bpedersen/echtvar-data/cadd
+/usr/bin/time -o cadd-wgs-timing.txt -v echtvar anno -i 'cadd_phred > 15' -e cadd.v1.6.hg38.zip -e cadd.v1.6.hg38.indels.zip HG001_GRCh38_1_22_v4.2.1_benchmark.bcf HG001.cadd-anno.bcf
+

@@ -1,3 +1,4 @@
+#/media/brentp/transcend/data/gnomad
 cd /work
 mkdir -p compare
 cd compare
