@@ -191,29 +191,6 @@ impl EchtVars {
         }
     }
 
-    /*
-    pub fn fill(self: &EchtVars, fi: &mut EchtVar<u32>, path: String) -> io::Result<()> {
-        //eprintln!("path:{}", path);
-        let mut iz = self.zip.by_name(&path)?;
-        let n = iz.read_u32::<LittleEndian>()? as usize;
-        //eprintln!("n:{}", n);
-        self.buffer
-            .resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
-        iz.read_exact(&mut self.buffer)?;
-        fi.values.resize(n, 0x0);
-        // TODO: use skip to first position.
-        let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut fi.values);
-
-        if bytes_decoded != self.buffer.len() {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "didn't read expected number of values from zip",
-            ));
-        }
-        Ok(())
-    }
-    */
-
     #[inline(always)]
     pub fn set_position(
         self: &mut EchtVars,
@@ -232,12 +209,10 @@ impl EchtVars {
         for fi in self.fields.iter_mut() {
             // RUST-TODO: use .fill function. problems with double borrow.
             let path = format!("{}/{}.bin", base_path, fi.alias);
-            //self.fill(fi, path)?;
             let rzip = self.zip.by_name(&path);
             match rzip {
                 Ok(mut iz) => {
                     let n = iz.read_u32::<LittleEndian>()? as usize;
-                    //eprintln!("n:{}", n);
                     self.buffer
                         .resize(iz.size() as usize - std::mem::size_of::<u32>(), 0x0);
                     iz.read_exact(&mut self.buffer)?;

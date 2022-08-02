@@ -247,7 +247,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let mut long_vars: Vec<var32::LongVariant> = Vec::new();
     let mut var32s: Vec<u32> = Vec::new();
     let mut n_long_vars = 0;
-    let mut n_vars = 0;
+    let mut n_vars = 0u64;
 
     let mut values_vv: Vec<Vec<u32>> = fields.iter().map(|_| Vec::new()).collect();
 
@@ -464,7 +464,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     }
 
     zipf.finish().expect("error closing zip file");
-    let pct = 100.0 * (n_long_vars as f32) / (n_vars as f32);
+    let pct = 100.0 * (n_long_vars as f64) / (n_vars as f64);
     eprintln!(
         "[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)"
     );

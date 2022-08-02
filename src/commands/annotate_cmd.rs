@@ -50,6 +50,23 @@ pub fn annotate_main(
                 slab.ps
                     .add_unsafe_var(fld.alias.clone(), &expr_values[i][j])
             }
+            // this sets, e.g missense = 1
+            // so user can do: impact == missense or any numerical operation.
+            if e.strings[j].len() > 0 {
+                if e.strings[j].len() > 256 {
+                    eprintln!("[echtvar] not exposing field '{}' for expressions as it has cardinality > 256", fld.alias)
+                } else {
+                    for (k, s) in e.strings[j].iter().enumerate() {
+                        // TODO: use another method, don't need unsafe_var here as these will be
+                        // constants.
+                        unsafe {
+                            slab.ps
+                               .add_unsafe_var(s.clone(), &(k as f64))
+                        }
+
+                    }
+                }
+            }
         }
     }
     let mut is_compiled = false;

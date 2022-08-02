@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 ARG varnote_version=1.2.0
-ARG echtvar_version=0.1.3
+ARG echtvar_version=0.1.6
 ARG slivar_version=0.2.7
 ARG htslib_version=1.14
 
