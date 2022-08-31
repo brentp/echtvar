@@ -106,9 +106,9 @@ impl Variant for bcf::record::Record {
 impl EchtVars {
     pub fn open(path: &str) -> Self {
         let ep = std::path::Path::new(&*path);
-        let file = fs::File::open(ep).expect("error accessing zip file");
+        let file = fs::File::open(ep).unwrap_or_else(|e| panic!("error accessing zip file: \"{}\" ({})", path, e));
         let mut result = EchtVars {
-            zip: zip::ZipArchive::new(file).expect("error opening zip file"),
+            zip: zip::ZipArchive::new(file).unwrap_or_else(|e| panic!("error opening: \"{}\" as zip file ({})", path, e)),
             chrom: "".to_string(),
             last_rid: -1,
             start: u32::MAX,

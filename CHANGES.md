@@ -2,6 +2,7 @@ v0.1.7 (dev)
 ============
 + add wiki page and more information about decomposing variants
 + clarify warning on non ACGT (#23)
++ better error messages on missing/bad zip file
 
 v0.1.6
 ======
