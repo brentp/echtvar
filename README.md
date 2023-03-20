@@ -1,7 +1,7 @@
 ## Echtvar: Really, truly rapid variant annotation and filtering 
 [![Rust](https://github.com/brentp/echtvar/actions/workflows/ci.yml/badge.svg)](https://github.com/brentp/echtvar/actions/workflows/ci.yml)
 
-Echtvar efficiently encodes variant allele frequency and other information from huge pupulation datasets to enable rapid (1M variants/second) annotation of genetic variants.
+Echtvar efficiently encodes variant allele frequency and other information from huge population datasets to enable rapid (1M variants/second) annotation of genetic variants.
 It chunks the genome into 1<<20 (~1 million) bases,
 [encodes each variant into a 32 bit integer](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L9-L21) (with a [supplemental table](https://github.com/brentp/echtvar/blob/02774b8d1cd3703b65bd2c8d7aab93af05b7940f/src/lib/var32.rs#L33-L38)
 for those that can't fit due to large REF and/or ALT alleles). It uses the zip format, [delta
@@ -56,7 +56,7 @@ echtvar can also accept input from stdin using "-" or "/dev/stdin" for the input
 
 ##### encode 
 
-make (`encode`) a new echtvar file. this is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
+make (`encode`) a new echtvar file. This is usually done once  (or download from those provided in the [Release pages](https://github.com/brentp/echtvar/releases/latest)) 
 and then the file can be re-used for the annotation (`echtvar anno`) step with each new query file.
 Note that input VCFs must be [decomposed](https://github.com/brentp/echtvar/wiki/decompose).
 
@@ -75,7 +75,7 @@ pulled from the population VCF.
 
 ##### annotate 
 
-annotate a [**decomposed** (and normalized)](https://github.com/brentp/echtvar/wiki/decompose) VCF with an echtvar file and only output variants where `gnomad_af`
+Annotate a [**decomposed** (and normalized)](https://github.com/brentp/echtvar/wiki/decompose) VCF with an echtvar file and only output variants where `gnomad_af`
 from the echtvar file is < 0.01. Note that multiple echtvar files can be specified
 and the `-i` expression is optional and can be elided to output all variants.
 
