@@ -12,7 +12,7 @@ def main(precision, path):
 ##INFO=<ID=phred,Number=1,Type=Float,Description="phred-scaled cadd score">
 {contigs}
 ##CADDCOMMENT=<ID=comment,comment="{comment}">
-#CHROM  POS ID  REF ALT QUAL    FILTER  INFO"""
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"""
 
     contigs = []
     for i in range(1, 23):
