@@ -14,13 +14,13 @@ with these `cadd2vcf.py` from this directory and contents for `cadd.json`:
         "alias": "cadd_raw",
         multiplier: 100,
         zigzag: true,
-        missing: -2,
+        missing_value: -2,
 }, {
         field: "phred",
         alias: "cadd_phred",
         multiplier: 100,
         zigzag: true,
-        missing: -2,
+        missing_value: -2,
 }]
 ```
 
