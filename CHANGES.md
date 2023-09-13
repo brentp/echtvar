@@ -1,8 +1,9 @@
-v0.1.8 (dev)
+v0.1.8
 ======
 + better help message indicating how to output bcf/vcf.gz (thanks @dvg-p4)
 + fix missing value in cadd example (thanks @dvg-p4)
 + doc types (thanks @enormandeau)
++ handle big files (#30)
 
 v0.1.7 
 ======
