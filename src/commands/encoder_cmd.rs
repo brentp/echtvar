@@ -8,8 +8,7 @@ use stream_vbyte::{encode::encode, x86::Sse41};
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
-use std::io::Write;
+use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::str;
@@ -229,6 +228,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
+        .large_file(true)
         .unix_permissions(0o755);
 
     zipf.start_file("echtvar/config.json", options)
@@ -264,7 +264,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             vcf.set_threads(2).ok();
         }
         eprintln!("[echtvar] adding VCF:{}", vpath);
-		let mut warn = 0;
+        let mut warn = 0;
 
         for r in vcf.records() {
             let rec = r.expect("error getting record");
@@ -394,7 +394,12 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         .collect::<Vec<_>>()
                 );
             }
-            var32s.push(var32::encode(rec.pos() as u32, alleles[0], alleles[1], &mut warn));
+            var32s.push(var32::encode(
+                rec.pos() as u32,
+                alleles[0],
+                alleles[1],
+                &mut warn,
+            ));
 
             if alleles[0].len() + alleles[1].len() > var32::MAX_COMBINED_LEN {
                 long_vars.push(var32::LongVariant {

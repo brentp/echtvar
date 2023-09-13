@@ -74,6 +74,7 @@ mod tests {
              field: "AN",
              alias: "gnomad_AN",
              missing_value: -2147483648,
+             missing: -2,
              multiplier: 1, // this is useful for float fields as internally, everythign is stored as integer.
              zigzag: true, // set this to true if the field can contain negative numbers.
              ftype: "Integer", // this is discovered by echtvar and should not be set.
