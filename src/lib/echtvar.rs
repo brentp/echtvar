@@ -12,6 +12,8 @@ use std::io::BufReader;
 
 use stream_vbyte::{decode::decode, x86::Ssse3};
 
+use ieee754::Ieee754;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Value {
     Int(i32),
@@ -294,7 +296,7 @@ impl EchtVars {
     fn get_float_value(self: &EchtVars, fld: &fields::Field, idx: usize) -> f32 {
         let v: u32 = self.values[fld.values_i][idx];
         return if v == u32::MAX {
-            fld.missing_value as f32
+            if fld.missing_value == 0x7F800001 { Ieee754::from_bits(0x7F800001) } else { fld.missing_value as f32 }
         } else {
             if fld.zigzag {
                 (zigzag::decode(v) as f32) / (fld.multiplier as f32)
@@ -369,7 +371,7 @@ impl EchtVars {
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64
                     } else if fld.ftype == fields::FieldType::Float {
-                        let val = fld.missing_value as f32;
+                        let val = if fld.missing_value == 0x7F800001 { Ieee754::from_bits(0x7F800001) } else { fld.missing_value as f32 };
                         self.evalues[fld.values_i] = Value::Float(val);
                         expr_values[fld.values_i] = val as f64
                     }

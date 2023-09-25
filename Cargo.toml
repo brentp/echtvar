@@ -32,6 +32,8 @@ fasteval = { version = "0.2.4", features = ["unsafe-vars"] }
 bincode = { version = "1.3.3" }
 json5 = "0.4.1"
 
+ieee754 = "0.2"
+
 [profile.release]
 lto = "fat"
 codegen-units = 1
