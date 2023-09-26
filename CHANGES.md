@@ -1,3 +1,7 @@
+v0.1.9
+======
++ report missing float as . (thanks @dmiller15 #32)
+
 v0.1.8
 ======
 + better help message indicating how to output bcf/vcf.gz (thanks @dvg-p4)
