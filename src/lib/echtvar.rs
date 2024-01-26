@@ -187,7 +187,11 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    e.description
+                    if &e.description.to_string() == "added by echtvar"{
+                        format!("added by echtvar from {}", path)
+                    } else {
+                        e.description.to_string()
+                    }
                 )
                 .as_bytes(),
             );
