@@ -61,7 +61,7 @@ impl Default for Field {
             zigzag: false,
             multiplier: 1,
             ftype: FieldType::Integer,
-            number: "Number=.".to_string(),
+            number: ".".to_string(),
             values_i: usize::MAX,
         }
     }

@@ -177,7 +177,7 @@ impl EchtVars {
         for e in &self.fields {
             header.push_record(
                 format!(
-                    "##INFO=<ID={},{},Type={},Description=\"{}\">",
+                    "##INFO=<ID={},Number={},Type={},Description=\"{}\">",
                     e.alias,
                     e.number,
                     if e.ftype == fields::FieldType::Integer {

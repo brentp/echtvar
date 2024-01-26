@@ -218,12 +218,11 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             ),
         };
         match _tl {
-            TagLength::Fixed(value) => f.number = format!("Number={}", value),
-            TagLength::AltAlleles => f.number = "Number=A".to_string(),
-            TagLength::Alleles => f.number = "Number=R".to_string(),
-            TagLength::Genotypes => f.number = "Number=G".to_string(),
-            TagLength::Variable => f.number = "Number=.".to_string(),
-            _ => println!("Kill me"),
+            TagLength::Fixed(value) => f.number = value.to_string(),
+            TagLength::AltAlleles => f.number = "A".to_string(),
+            TagLength::Alleles => f.number = "R".to_string(),
+            TagLength::Genotypes => f.number = "G".to_string(),
+            TagLength::Variable => f.number = ".".to_string(),
         }
     }
 
