@@ -15,6 +15,8 @@ pub struct Field {
     pub missing_value: i32,
     #[serde(default = "default_missing_string")]
     pub missing_string: std::string::String,
+    #[serde(default = "default_description_string")]
+    pub description: std::string::String,
 
     #[serde(default)]
     pub zigzag: bool,
@@ -23,6 +25,11 @@ pub struct Field {
     pub multiplier: u32,
     #[serde(default)]
     pub ftype: FieldType,
+    #[serde(default)]
+    pub number: std::string::String,
+
+
+
     #[serde(default = "default_values_i", skip_serializing)]
     pub values_i: usize,
 }
@@ -32,6 +39,9 @@ fn default_missing_value() -> i32 {
 }
 fn default_missing_string() -> std::string::String {
     "MISSING".to_string()
+}
+fn default_description_string() -> std::string::String {
+    "added by echtvar".to_string()
 }
 fn default_multiplier() -> u32 {
     1
@@ -47,9 +57,11 @@ impl Default for Field {
             alias: "name".to_string(),
             missing_value: -1,
             missing_string: "MISSING".to_string(),
+            description: "added by echtvar".to_string(),
             zigzag: false,
             multiplier: 1,
             ftype: FieldType::Integer,
+            number: "Number=.".to_string(),
             values_i: usize::MAX,
         }
     }

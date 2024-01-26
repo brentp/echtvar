@@ -177,8 +177,9 @@ impl EchtVars {
         for e in &self.fields {
             header.push_record(
                 format!(
-                    "##INFO=<ID={},Number=1,Type={},Description=\"{}\">",
+                    "##INFO=<ID={},{},Type={},Description=\"{}\">",
                     e.alias,
+                    e.number,
                     if e.ftype == fields::FieldType::Integer {
                         "Integer"
                     } else if e.ftype == fields::FieldType::Categorical {
@@ -186,7 +187,7 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    format!("added by echtvar from {}", path)
+                    e.description
                 )
                 .as_bytes(),
             );
