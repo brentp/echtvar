@@ -176,7 +176,7 @@ fn hdr_info_id2description(
         HeaderRecord::Info {key: _, values: v} => if v.contains_key("Description") { &v["Description"] } else { default },
         _ => default,
     };
-    return description.to_string();
+    return description.trim_matches('"').to_string();
 }
 
 pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
@@ -247,9 +247,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 tl, f.field
             ),
         };
-        let hdr_des = hdr_info_id2description(header.header_records(), &f.field, &f.description);
         if f.description == fields::default_description_string() {
-            f.description = hdr_des;
+            f.description = hdr_info_id2description(header.header_records(), &f.field, &f.description);
         };
     }
 
