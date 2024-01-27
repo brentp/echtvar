@@ -177,7 +177,7 @@ impl EchtVars {
         for e in &self.fields {
             header.push_record(
                 format!(
-                    "##INFO=<ID={},Number={},Type={},Description=\"{}\">",
+                    "##INFO=<ID={},Number={},Type={},Description={}>",
                     e.alias,
                     if vec!["A", "R", "G"].iter().any(|n| n == &e.number) {
                         "1"
@@ -191,8 +191,8 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    if &e.description.to_string() == "added by echtvar" {
-                        format!("added by echtvar from {}", path)
+                    if &e.description.to_string() == "added by echtvar"{
+                        format!("\"added by echtvar from {}\"", path)
                     } else {
                         format!("added by echtvar {}", e.description.to_string())
                     }
