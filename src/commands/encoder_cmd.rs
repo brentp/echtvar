@@ -247,9 +247,10 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 tl, f.field
             ),
         };
-        println!("Old description for field {}: {}", f.field, f.description);
-        f.description = hdr_info_id2description(header.header_records(), &f.field, &f.description);
-        println!("New description for field {}: {}", f.field, f.description);
+        let hdr_des = hdr_info_id2description(header.header_records(), &f.field, &f.description);
+        if f.description == fields::default_description_string() {
+            f.description = hdr_des;
+        };
     }
 
     let zfile = std::fs::File::create(&zpath).unwrap();
