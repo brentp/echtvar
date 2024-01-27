@@ -61,7 +61,7 @@ for mod in 2 3 4 5; do
 
 
 done
-rm generated-all.vcf generated-subset0.vcf anno.vcf.gz test.echtvar0 test.echtvar1
+# rm generated-all.vcf generated-subset0.vcf anno.vcf.gz test.echtvar0 test.echtvar1
 bash string.sh
 echo "SUCCESS"
 
