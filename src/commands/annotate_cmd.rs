@@ -34,6 +34,7 @@ pub fn annotate_main(
             e
         })
         .collect();
+    EchtVars::add_cmd_header(&mut header, &ipath, &opath, &include_expr, epaths);
 
     let parser = fasteval::Parser::new();
     let mut slab = fasteval::Slab::new();

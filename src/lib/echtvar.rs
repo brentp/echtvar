@@ -197,6 +197,17 @@ impl EchtVars {
             );
         }
     }
+    pub fn add_cmd_header(header: &mut bcf::header::Header, vpath: &str, opath: &str, include_expr: &Option<&str>, epaths: Vec<&str>) {
+        header.push_record(
+            format!(
+                "##echtvar_anno_Command=anno -i {:?} {} {} -e {:?}",
+                include_expr,
+                vpath,
+                opath,
+                epaths
+            ).as_bytes(),
+        );
+    }
 
     #[inline(always)]
     pub fn set_position(
