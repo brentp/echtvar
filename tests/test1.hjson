@@ -1,3 +1,4 @@
 [
-  {"field": "val1", "alias": "aval1"}
+  {"field": "val1", "alias": "aval1"},
+  {"field": "str", "alias": "external_str"}
 ]

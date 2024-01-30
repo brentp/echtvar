@@ -17,7 +17,9 @@ for mod in 2 3 4 5; do
 	# check that some variants remain unannotated
 	python3 check.py anno.vcf.gz $mod
 	# check custom INFO Description used from config
-	python3 check-string-for-issue33.py anno.vcf.gz aval "added by echtvar TEST description field"
+	python3 check-string-for-issue33.py anno.vcf.gz aval 1 "TEST description field"
+	# check A/R/G converted to 1 for number
+	python3 check-string-for-issue33.py anno.vcf.gz external_AC 1 "Theoretical AC from another source"
 
 
         if [[ "mod" -ne "1" ]]; then
@@ -27,7 +29,9 @@ for mod in 2 3 4 5; do
 	    $echtvar anno generated-all.vcf -e test.echtvar0 -e test.echtvar1 anno.vcf.gz
   	    python3 check.py anno.vcf.gz 1
 		# check default Description used
-		python3 check-string-for-issue33.py anno.vcf.gz aval1 "added by echtvar from test.echtvar1"
+		python3 check-string-for-issue33.py anno.vcf.gz aval1 1 "added by echtvar from test.echtvar1"
+		# check value . is left alone
+		python3 check-string-for-issue33.py anno.vcf.gz external_str . "added by echtvar from test.echtvar1"
         fi
 
 

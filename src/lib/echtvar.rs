@@ -179,7 +179,11 @@ impl EchtVars {
                 format!(
                     "##INFO=<ID={},Number={},Type={},Description=\"{}\">",
                     e.alias,
-                    e.number,
+                    if vec!["A", "R", "G"].iter().any(|n| n == &e.number) {
+                        "1"
+                    } else {
+                        &e.number
+                    },
                     if e.ftype == fields::FieldType::Integer {
                         "Integer"
                     } else if e.ftype == fields::FieldType::Categorical {
@@ -187,10 +191,10 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    if &e.description.to_string() == "added by echtvar"{
+                    if &e.description.to_string() == "added by echtvar" {
                         format!("added by echtvar from {}", path)
                     } else {
-                        format!("added by echtvar {}", e.description.to_string())
+                        e.description.to_string()
                     }
                 )
                 .as_bytes(),
@@ -200,11 +204,11 @@ impl EchtVars {
     pub fn add_cmd_header(header: &mut bcf::header::Header, vpath: &str, opath: &str, include_expr: &Option<&str>, epaths: Vec<&str>) {
         header.push_record(
             format!(
-                "##echtvar_anno_Command=anno -i {:?} {} {} -e {:?}",
+                "##echtvar_annoCommand=anno -i {:?} {} {} -e {:?}",
                 include_expr,
                 vpath,
                 opath,
-                epaths
+                epaths.join(" -e ")
             ).as_bytes(),
         );
     }
