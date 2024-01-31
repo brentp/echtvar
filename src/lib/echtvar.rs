@@ -47,7 +47,7 @@ pub struct EchtVars {
     pub fields: Vec<fields::Field>,
     buffer: Vec<u8>,
 
-	warn: i32,
+    warn: i32,
 
     // lookup for categorical fields.
     // these will be empty for non-categorical.
@@ -70,7 +70,7 @@ pub fn strip_chr(chrom: std::string::String) -> std::string::String {
     if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
         return chrom[3..].to_string();
     }
-    return chrom;
+    chrom
 }
 
 #[inline]
@@ -82,13 +82,13 @@ pub fn bstrip_chr(chrom: &str) -> &str {
     if bchrom[0] as char == 'c' && bchrom[1] as char == 'h' && bchrom[2] as char == 'r' {
         return &chrom[3..];
     }
-    return chrom;
+    chrom
 }
 
 impl Variant for bcf::record::Record {
     fn chrom(&self) -> std::string::String {
         let rid = self.rid().unwrap();
-        let n: &[u8] = self.header().rid2name(rid as u32).unwrap();
+        let n: &[u8] = self.header().rid2name(rid).unwrap();
         str::from_utf8(n).unwrap().to_string()
     }
 
@@ -107,10 +107,12 @@ impl Variant for bcf::record::Record {
 
 impl EchtVars {
     pub fn open(path: &str) -> Self {
-        let ep = std::path::Path::new(&*path);
-        let file = fs::File::open(ep).unwrap_or_else(|e| panic!("error accessing zip file: \"{}\" ({})", path, e));
+        let ep = std::path::Path::new(path);
+        let file = fs::File::open(ep)
+            .unwrap_or_else(|e| panic!("error accessing zip file: \"{}\" ({})", path, e));
         let mut result = EchtVars {
-            zip: zip::ZipArchive::new(file).unwrap_or_else(|e| panic!("error opening: \"{}\" as zip file ({})", path, e)),
+            zip: zip::ZipArchive::new(file)
+                .unwrap_or_else(|e| panic!("error opening: \"{}\" as zip file ({})", path, e)),
             chrom: "".to_string(),
             last_rid: -1,
             start: u32::MAX,
@@ -121,7 +123,7 @@ impl EchtVars {
             fields: vec![],
             buffer: vec![],
             strings: vec![],
-			warn: 0,
+            warn: 0,
         };
 
         {
@@ -146,7 +148,7 @@ impl EchtVars {
                     result.strings.push(
                         BufReader::new(fh)
                             .lines()
-                            .map(|l| l.unwrap().replace(";", ","))
+                            .map(|l| l.unwrap().replace(';', ","))
                             .collect(),
                     );
                     // update missing value to be the index of the missing_string
@@ -201,7 +203,13 @@ impl EchtVars {
             );
         }
     }
-    pub fn add_cmd_header(header: &mut bcf::header::Header, vpath: &str, opath: &str, include_expr: &Option<&str>, epaths: Vec<&str>) {
+    pub fn add_cmd_header(
+        header: &mut bcf::header::Header,
+        vpath: &str,
+        opath: &str,
+        include_expr: &Option<&str>,
+        epaths: Vec<&str>,
+    ) {
         header.push_record(
             format!(
                 "##echtvar_annoCommand=anno -i {:?} {} {} -e {:?}",
@@ -209,7 +217,8 @@ impl EchtVars {
                 vpath,
                 opath,
                 epaths.join(" -e ")
-            ).as_bytes(),
+            )
+            .as_bytes(),
         );
     }
 
@@ -258,7 +267,7 @@ impl EchtVars {
             }
         }
 
-        if self.values[0].len() > 0 {
+        if !self.values[0].is_empty() {
             let path = format!("{}/var32.bin", base_path);
             let mut iz = self.zip.by_name(&path)?;
             let n = iz.read_u32::<LittleEndian>()? as usize;
@@ -283,7 +292,7 @@ impl EchtVars {
             }
         }
 
-        if self.var32s.len() > 0 {
+        if !self.var32s.is_empty() {
             let long_path = format!("{}/too-long-for-var32.enc", base_path);
             let mut iz = self.zip.by_name(&long_path)?;
             self.buffer.clear();
@@ -301,35 +310,35 @@ impl EchtVars {
     #[inline]
     fn get_int_value(self: &EchtVars, fld: &fields::Field, idx: usize) -> i32 {
         let v: u32 = self.values[fld.values_i][idx];
-        return if v == u32::MAX {
-            fld.missing_value as i32
+        if v == u32::MAX {
+            fld.missing_value
+        } else if fld.zigzag {
+            zigzag::decode(v)
         } else {
-            if fld.zigzag {
-                zigzag::decode(v) as i32
-            } else {
-                v as i32
-            }
-        };
+            v as i32
+        }
     }
 
     #[inline]
     fn get_float_value(self: &EchtVars, fld: &fields::Field, idx: usize) -> f32 {
         let v: u32 = self.values[fld.values_i][idx];
-        return if v == u32::MAX {
-            if fld.missing_value == 0x7F800001 { Ieee754::from_bits(0x7F800001) } else { fld.missing_value as f32 }
-        } else {
-            if fld.zigzag {
-                (zigzag::decode(v) as f32) / (fld.multiplier as f32)
+        if v == u32::MAX {
+            if fld.missing_value == 0x7F800001 {
+                Ieee754::from_bits(0x7F800001)
             } else {
-                (v as f32) / (fld.multiplier as f32)
+                fld.missing_value as f32
             }
-        };
+        } else if fld.zigzag {
+            (zigzag::decode(v) as f32) / (fld.multiplier as f32)
+        } else {
+            (v as f32) / (fld.multiplier as f32)
+        }
     }
 
     pub fn update_expr_values<T: Variant>(
         self: &mut EchtVars,
         variant: &mut T,
-        expr_values: &mut Vec<f64>,
+        expr_values: &mut [f64],
     ) {
         let pos = variant.position();
         let rid = variant.rid();
@@ -387,11 +396,15 @@ impl EchtVars {
                         || fld.ftype == fields::FieldType::Categorical
                     {
                         // for Categorical missing_value has been set to the index of missing_string
-                        let val = fld.missing_value as i32;
+                        let val = fld.missing_value;
                         self.evalues[fld.values_i] = Value::Int(val);
                         expr_values[fld.values_i] = val as f64
                     } else if fld.ftype == fields::FieldType::Float {
-                        let val = if fld.missing_value == 0x7F800001 { Ieee754::from_bits(0x7F800001) } else { fld.missing_value as f32 };
+                        let val = if fld.missing_value == 0x7F800001 {
+                            Ieee754::from_bits(0x7F800001)
+                        } else {
+                            fld.missing_value as f32
+                        };
                         self.evalues[fld.values_i] = Value::Float(val);
                         expr_values[fld.values_i] = val as f64
                     }

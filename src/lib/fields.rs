@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize}; // 1.0.101
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+#[derive(Default)]
 pub enum FieldType {
+    #[default]
     Integer,
     Float,
     Categorical,
@@ -67,11 +69,7 @@ impl Default for Field {
     }
 }
 
-impl Default for FieldType {
-    fn default() -> FieldType {
-        FieldType::Integer
-    }
-}
+
 
 #[cfg(test)]
 mod tests {

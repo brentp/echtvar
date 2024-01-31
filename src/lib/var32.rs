@@ -21,7 +21,7 @@ pub struct Var32 {
 }
 
 const fn init_bitset() -> u128 {
-    0u128 | (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize)
+    (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize)
 }
 
 // use a bitset to check if incoming letters are ACGT and issue warning if not.
@@ -58,13 +58,13 @@ impl PartialOrd for LongVariant {
         if self.position != other.position {
             return self.position.partial_cmp(&other.position);
         }
-        return self.sequence.partial_cmp(&other.sequence);
+        self.sequence.partial_cmp(&other.sequence)
     }
 }
 
 impl Ord for LongVariant {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(&other).unwrap()
+        self.partial_cmp(other).unwrap()
     }
 }
 
@@ -138,7 +138,7 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> 
 
     v.set_enc(ra);
 
-    return u32::from(v);
+    u32::from(v)
 }
 
 #[inline]

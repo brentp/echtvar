@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )?;
     } else {
         app.print_help().ok();
-        print!("\n");
+        println!();
     }
     Ok(())
 }

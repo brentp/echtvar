@@ -20,21 +20,21 @@ pub fn annotate_main(
     if ipath == "-" || ipath == "stdin" {
         ipath = "/dev/stdin";
     }
-    let mut vcf = Reader::from_path(ipath).ok().expect("Error opening vcf.");
+    let mut vcf = Reader::from_path(ipath).expect("Error opening vcf.");
     vcf.set_threads(2).expect("error setting threads");
     let header_view = vcf.header();
-    let mut header = Header::from_template(&header_view);
+    let mut header = Header::from_template(header_view);
 
     // each given echtvar file updates the header.
     let mut echts: Vec<EchtVars> = epaths
         .iter()
         .map(|p| {
-            let mut e = EchtVars::open(&*p);
-            e.update_header(&mut header, &*p);
+            let mut e = EchtVars::open(p);
+            e.update_header(&mut header, p);
             e
         })
         .collect();
-    EchtVars::add_cmd_header(&mut header, &ipath, &opath, &include_expr, epaths);
+    EchtVars::add_cmd_header(&mut header, ipath, opath, &include_expr, epaths);
 
     let parser = fasteval::Parser::new();
     let mut slab = fasteval::Slab::new();
@@ -46,25 +46,21 @@ pub fn annotate_main(
         expr_values.push(Vec::with_capacity(e.fields.len()));
         // handle the expression stuff.
         for (j, fld) in e.fields.iter().enumerate() {
-            expr_values[i].push(0.0 as f64);
+            expr_values[i].push(0.0_f64);
             unsafe {
                 slab.ps
                     .add_unsafe_var(fld.alias.clone(), &expr_values[i][j])
             }
             // this sets, e.g missense = 1
             // so user can do: impact == missense or any numerical operation.
-            if e.strings[j].len() > 0 {
+            if !e.strings[j].is_empty() {
                 if e.strings[j].len() > 256 {
                     eprintln!("[echtvar] not exposing field '{}' for expressions as it has cardinality > 256", fld.alias)
                 } else {
                     for (k, s) in e.strings[j].iter().enumerate() {
                         // TODO: use another method, don't need unsafe_var here as these will be
                         // constants.
-                        unsafe {
-                            slab.ps
-                               .add_unsafe_var(s.clone(), &(k as f64))
-                        }
-
+                        unsafe { slab.ps.add_unsafe_var(s.clone(), &(k as f64)) }
                     }
                 }
             }
@@ -96,7 +92,6 @@ pub fn annotate_main(
             Format::Vcf
         },
     )
-    .ok()
     .expect("error opening bcf for output");
     ovcf.set_threads(2).expect("error setting threads");
     let oheader_view = ovcf.header().clone();
@@ -135,10 +130,8 @@ pub fn annotate_main(
             e.update_expr_values(&mut record, &mut expr_values[i]);
         }
 
-        if is_compiled {
-            if fasteval::eval_compiled!(compiled, &slab, &mut ns) == 0.0 {
-                continue;
-            }
+        if is_compiled && fasteval::eval_compiled!(compiled, &slab, &mut ns) == 0.0 {
+            continue;
         }
         n_written += 1;
 
@@ -152,22 +145,28 @@ pub fn annotate_main(
                             // categorical missing_value must be set to the index of the missing_string
                             assert!(i >= 0, "can't have missing value for categorical!");
                             let val = [e.strings[fld.values_i][i as usize].as_bytes()];
-                            record.push_info_string(fld.alias.as_bytes(), &val).expect(
-                                &format!("error adding string for {}", fld.alias).to_string(),
-                            );
+                            record
+                                .push_info_string(fld.alias.as_bytes(), &val)
+                                .unwrap_or_else(|_| {
+                                    panic!("{}", format!("error adding string for {}", fld.alias))
+                                });
                         }
                         _ => {
                             let val = [i];
                             record
                                 .push_info_integer(fld.alias.as_bytes(), &val)
-                                .expect(&format!("error adding integer {}", fld.alias).to_string());
+                                .unwrap_or_else(|_| {
+                                    panic!("{}", format!("error adding integer {}", fld.alias))
+                                });
                         }
                     },
                     Value::Float(f) => {
                         let val = [f];
                         record
                             .push_info_float(fld.alias.as_bytes(), &val)
-                            .expect(&format!("error adding float {}", fld.alias).to_string());
+                            .unwrap_or_else(|_| {
+                                panic!("{}", format!("error adding float {}", fld.alias))
+                            });
                     }
                 }
             }

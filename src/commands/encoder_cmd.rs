@@ -63,7 +63,7 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
             .map(|f| unsafe { String::from_utf8_unchecked(hdr.id_to_name(f)) })
             .collect::<Vec<String>>()
             .join(";");
-        if f.len() == 0 {
+        if f.is_empty() {
             default.clone()
         } else {
             f
@@ -111,17 +111,17 @@ fn write_bits(
     if sorted {
         // delta coding
         let mut last = values[0];
-        for i in 1..values.len() {
-            if values[i] < last {
+        for (i, v) in values.iter_mut().enumerate().skip(1) {
+            if *v < last {
                 panic!("variants out of order at index: {}", i);
             }
-            let tmp = values[i];
-            values[i] -= last;
+            let tmp = *v;
+            *v -= last;
             last = tmp;
         }
     }
 
-    let encoded_len = encode::<Sse41>(&values, compressed);
+    let encoded_len = encode::<Sse41>(values, compressed);
     zipf.write_all(&compressed[..encoded_len]).ok();
 }
 
@@ -157,7 +157,7 @@ fn is_sorted<T: std::cmp::PartialOrd>(data: &Vec<T>) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
@@ -173,11 +173,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         json5::from_str(&json).expect("error reading json into fields");
 
     let mut vcf = if !(*vpaths[0]).eq("/dev/stdin") && !(*vpaths[0]).eq("-") {
-        Reader::from_path(vpaths[0])
-            .ok()
-            .expect("Error opening vcf.")
+        Reader::from_path(vpaths[0]).expect("Error opening vcf.")
     } else {
-        Reader::from_stdin().ok().expect("Error opening stdin vcf.")
+        Reader::from_stdin().expect("Error opening stdin vcf.")
     };
 
     vcf.set_threads(2).ok();
@@ -190,9 +188,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         let (tt, tl) = if f.field == "FILTER" {
             (TagType::String, TagLength::Variable)
         } else {
-            header
-                .info_type(&(f.field.as_bytes()))
-                .expect(&format!("unable to find header type for {}", f.field).to_string())
+            header.info_type(f.field.as_bytes()).unwrap_or_else(|_| {
+                panic!("{}", format!("unable to find header type for {}", f.field))
+            })
         };
         match tt {
             TagType::Integer => f.ftype = fields::FieldType::Integer,
@@ -223,14 +221,10 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             TagLength::Alleles => f.number = "R".to_string(),
             TagLength::Genotypes => f.number = "G".to_string(),
             TagLength::Variable => f.number = ".".to_string(),
-            _ => panic!(
-                "[echtvar] unsupported field length: {:?} for field {}",
-                tl, f.field
-            ),
         };
     }
 
-    let zfile = std::fs::File::create(&zpath).unwrap();
+    let zfile = std::fs::File::create(zpath).unwrap();
     let fbuffer = std::io::BufWriter::with_capacity(65536, zfile);
     let mut zipf = zip::ZipWriter::new(fbuffer);
 
@@ -265,7 +259,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     for (i, vpath) in vpaths.iter().enumerate() {
         if i > 0 {
             vcf = if !(*vpath).eq("/dev/stdin") && !(*vpath).eq("-") {
-                Reader::from_path(vpath).ok().expect("Error opening vcf.")
+                Reader::from_path(vpath).expect("Error opening vcf.")
             } else {
                 match Reader::from_stdin() {
                     Ok(file) => file,
@@ -282,49 +276,46 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             n_vars += 1;
             // if we hit a new chrom or a new chunk we write the last chunk and start a new one.
             if rec.rid().expect("no rid found") as i32 != last_rid || rec.pos() >> 20 != last_mod {
-                if last_rid != -1 {
-                    if values_vv[0].len() != 0 {
-                        let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
-                        let chrom = bstrip_chr(str::from_utf8(n).unwrap());
+                if last_rid != -1 && !values_vv[0].is_empty() {
+                    let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+                    let chrom = bstrip_chr(str::from_utf8(n).unwrap());
 
-                        // we just assume it's unsorted and apply the permutation
-                        let indexes = argsort(&var32s);
+                    // we just assume it's unsorted and apply the permutation
+                    let indexes = argsort(&var32s);
 
-                        for (i, values) in values_vv.iter_mut().enumerate() {
-                            let fname =
-                                format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
-                            zipf.start_file(fname, options)
-                                .expect("error starting file");
-                            sort_by_indices(values, indexes.clone());
-                            if compressed.len() < 5 * values.len() {
-                                eprintln!(
-                                    "[echtvar] resizing compressed array to: {}",
-                                    5 * values.len()
-                                );
-                                compressed.resize(5 * values.len(), 0x0);
-                            }
-                            write_bits(values, false, &mut zipf, &mut compressed);
-                            values.clear();
-                        }
-
-                        let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
-                        zipf.start_file(fname, options)
-                            .expect("error starting file");
-                        sort_by_indices(&mut var32s, indexes.clone());
-                        if !is_sorted(&var32s) {
-                            eprintln!("BAD\nBAD\nBAD\nBAD");
-                        }
-                        write_bits(&mut var32s, true, &mut zipf, &mut compressed);
-                        var32s.clear();
-
+                    for (i, values) in values_vv.iter_mut().enumerate() {
                         let fname =
-                            format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
+                            format!("echtvar/{}/{}/{}.bin", chrom, last_mod, fields[i].alias);
                         zipf.start_file(fname, options)
                             .expect("error starting file");
-                        write_long(&mut zipf, &mut long_vars, indexes);
-                        n_long_vars += long_vars.len();
-                        long_vars.clear();
+                        sort_by_indices(values, indexes.clone());
+                        if compressed.len() < 5 * values.len() {
+                            eprintln!(
+                                "[echtvar] resizing compressed array to: {}",
+                                5 * values.len()
+                            );
+                            compressed.resize(5 * values.len(), 0x0);
+                        }
+                        write_bits(values, false, &mut zipf, &mut compressed);
+                        values.clear();
                     }
+
+                    let fname = format!("echtvar/{}/{}/var32.bin", chrom, last_mod);
+                    zipf.start_file(fname, options)
+                        .expect("error starting file");
+                    sort_by_indices(&mut var32s, indexes.clone());
+                    if !is_sorted(&var32s) {
+                        eprintln!("BAD\nBAD\nBAD\nBAD");
+                    }
+                    write_bits(&mut var32s, true, &mut zipf, &mut compressed);
+                    var32s.clear();
+
+                    let fname = format!("echtvar/{}/{}/too-long-for-var32.enc", chrom, last_mod);
+                    zipf.start_file(fname, options)
+                        .expect("error starting file");
+                    write_long(&mut zipf, &mut long_vars, indexes);
+                    n_long_vars += long_vars.len();
+                    long_vars.clear();
                 }
                 if last_rid != rec.rid().unwrap() as i32 {
                     last_rid = rec.rid().unwrap() as i32;
@@ -347,12 +338,10 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         );
                         if val == fld.missing_value {
                             u32::MAX
+                        } else if fld.zigzag {
+                            zigzag::encode(val)
                         } else {
-                            if fld.zigzag {
-                                zigzag::encode(val)
-                            } else {
-                                val as u32
-                            }
+                            val as u32
                         }
                     }
                     fields::FieldType::Float => {
@@ -390,7 +379,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
             let mut alleles = rec.alleles();
             if alleles.len() == 1 {
-                alleles.push(&alleles[0]);
+                alleles.push(alleles[0]);
             } else if alleles.len() != 2 {
                 last_rid = rec.rid().unwrap() as i32;
                 let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
@@ -420,7 +409,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 });
             }
         }
-        if values_vv[0].len() != 0 {
+        if !values_vv[0].is_empty() {
             let indexes = argsort(&var32s);
             let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
             let chrom = bstrip_chr(str::from_utf8(n).unwrap());
@@ -474,8 +463,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         // when decoding, we can index into this array to get the string value from
         // the encoded integer.
         for v in arr.iter() {
-            zipf.write(v.as_bytes()).expect("error writing to zip file");
-            zipf.write(b"\n").expect("error writing to zip file");
+            zipf.write_all(v.as_bytes())
+                .expect("error writing to zip file");
+            zipf.write_all(b"\n").expect("error writing to zip file");
         }
     }
 
