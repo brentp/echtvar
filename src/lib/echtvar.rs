@@ -194,7 +194,7 @@ impl EchtVars {
                     if &e.description.to_string() == "added by echtvar" {
                         format!("added by echtvar from {}", path)
                     } else {
-                        e.description.to_string()
+                        format!("added by echtvar {}", e.description.to_string())
                     }
                 )
                 .as_bytes(),

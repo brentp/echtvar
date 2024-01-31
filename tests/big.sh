@@ -17,9 +17,9 @@ for mod in 2 3 4 5; do
 	# check that some variants remain unannotated
 	python3 check.py anno.vcf.gz $mod
 	# check custom INFO Description used from config
-	python3 check-string-for-issue33.py anno.vcf.gz aval 1 "TEST description field"
+	python3 check-string-for-issue33.py anno.vcf.gz aval 1 "added by echtvar TEST description field"
 	# check A/R/G converted to 1 for number
-	python3 check-string-for-issue33.py anno.vcf.gz external_AC 1 "Theoretical AC from another source"
+	python3 check-string-for-issue33.py anno.vcf.gz external_AC 1 "added by echtvar Theoretical AC from another source"
 
 
         if [[ "mod" -ne "1" ]]; then
