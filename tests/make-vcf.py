@@ -27,7 +27,7 @@ print(header % 0, file=subset0_fh)
 print(header % 1, file=subset1_fh)
 
 nvar = 0
-
+str_vals = ["YES", "NO", "MAYBE"]
 for switch in [1, 2, 3, 4, 5, 1132, 1133, 1134]:
     switch = switch<<20
 
@@ -38,13 +38,14 @@ for switch in [1, 2, 3, 4, 5, 1132, 1133, 1134]:
                 for alen in range(0, 5):
                     for balt in itertools.permutations("ACGT", alen):
                         val = random.randint(0, 10000000)
+                        ac = random.randint(1, 3)
                         alt = ref[0] + "".join(balt)
-                        print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar}", file=all_fh)
+                        print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval={val};nvar={nvar};AC={ac};str={str_vals[(ac-1)]}", file=all_fh)
 
                         if nvar % mod == 0:
-                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval0={val};nvar={nvar}", file=subset0_fh)
+                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval0={val};nvar={nvar};AC={ac};str={str_vals[(ac-1)]}", file=subset0_fh)
                         else:
-                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval1={val};nvar={nvar}", file=subset1_fh)
+                            print(f"chr1\t{i}\t.\t{ref}\t{alt}\t1\tPASS\tval1={val};nvar={nvar};AC={ac};str={str_vals[(ac-1)]}", file=subset1_fh)
                         nvar += 1
 
         for ref in ["ACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",

@@ -1,3 +1,4 @@
 [
-  {"field": "val0", "alias": "aval"}
+  {"field": "val0", "alias": "aval", "description": "TEST description field"},
+  {"field": "AC", "alias": "external_AC", "description": "Theoretical AC from another source"}
 ]

@@ -187,7 +187,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let mut lookups = HashMap::new();
 
     for f in fields.iter_mut() {
-        let (tt, _tl) = if f.field == "FILTER" {
+        let (tt, tl) = if f.field == "FILTER" {
             (TagType::String, TagLength::Variable)
         } else {
             header
@@ -216,7 +216,18 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                 "[echtvar] unsupported field type: {:?} for field {}",
                 tt, f.field
             ),
-        }
+        };
+        match tl {
+            TagLength::Fixed(value) => f.number = value.to_string(),
+            TagLength::AltAlleles => f.number = "A".to_string(),
+            TagLength::Alleles => f.number = "R".to_string(),
+            TagLength::Genotypes => f.number = "G".to_string(),
+            TagLength::Variable => f.number = ".".to_string(),
+            _ => panic!(
+                "[echtvar] unsupported field length: {:?} for field {}",
+                tl, f.field
+            ),
+        };
     }
 
     let zfile = std::fs::File::create(&zpath).unwrap();
