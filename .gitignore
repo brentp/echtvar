@@ -3,7 +3,8 @@ Cargo.lock
 ec.zip
 echtvar/
 sl.zip
-
+tests/*.vcf*
+tests/test.echtvar*
 
 # Added by cargo
 #

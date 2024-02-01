@@ -21,7 +21,7 @@ pub struct Var32 {
 }
 
 const fn init_bitset() -> u128 {
-    (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize)
+    (1 << 'A' as usize) | (1 << 'C' as usize) | (1 << 'G' as usize) | (1 << 'T' as usize) | (1 << '*' as usize)
 }
 
 // use a bitset to check if incoming letters are ACGT and issue warning if not.
@@ -72,12 +72,12 @@ pub const MAX_COMBINED_LEN: usize = 4;
 
 pub(crate) const LOOKUP: [u32; 128] = [
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 0, 3, 1, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 ];
 
-pub(crate) const RLOOKUP: [char; 4] = ['A', 'C', 'G', 'T'];
+pub(crate) const RLOOKUP: [char; 5] = ['A', 'C', 'G', 'T', '*'];
 
 impl From<u32> for Var32 {
     #[inline]
@@ -116,7 +116,7 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> 
         if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
 			*warn += 1;
             eprintln!(
-                "[warning] found non ACGT REF character '{}', encoding as 'T' for (1-based) position: {}",
+                "[warning] found non ACGT* REF character '{}', encoding as 'T' for (1-based) position: {}",
                 *a as char, pos + 1
             );
         }
@@ -128,7 +128,7 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn:&mut i32) -> 
         if !bit_test(DNA_BITS, *a as usize) && *warn < 10 {
 			*warn += 1;
             eprintln!(
-                "[warning] found non ACGT ALT character '{}', encoding as 'T' for (1-based) position: {}",
+                "[warning] found non ACGT* ALT character '{}', encoding as 'T' for (1-based) position: {}",
                 *a as char, pos + 1
             );
         }
