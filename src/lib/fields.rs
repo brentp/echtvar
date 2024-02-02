@@ -42,7 +42,7 @@ fn default_missing_value() -> i32 {
 fn default_missing_string() -> std::string::String {
     "MISSING".to_string()
 }
-fn default_description_string() -> std::string::String {
+pub fn default_description_string() -> std::string::String {
     "added by echtvar".to_string()
 }
 fn default_multiplier() -> u32 {

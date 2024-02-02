@@ -1,6 +1,6 @@
 use bincode::Options;
 use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
-use rust_htslib::bcf::header::{TagLength, TagType};
+use rust_htslib::bcf::header::{TagLength, TagType, HeaderRecord};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -160,6 +160,25 @@ fn is_sorted<T: std::cmp::PartialOrd>(data: &Vec<T>) -> bool {
     true
 }
 
+fn hdr_info_id2description(
+    mut hrecs: Vec<HeaderRecord>,
+    id: &String,
+    default: &std::string::String,
+) -> std::string::String {
+    hrecs.retain(|rec| match rec {
+        HeaderRecord::Info {key: _, values: v} => &v["ID"] == id,
+        _ => false}
+    );
+    if hrecs.len() != 1 {
+        panic!("Field {} is either not present in the header or present multiple times!", id);
+    };
+    let description = match hrecs.first().unwrap() {
+        HeaderRecord::Info {key: _, values: v} => if v.contains_key("Description") { &v["Description"] } else { default },
+        _ => default,
+    };
+    return description.trim_matches('"').to_string();
+}
+
 pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
     let zpath = std::path::Path::new(opath);
     let jpath = std::path::Path::new(jpath);
@@ -221,6 +240,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             TagLength::Alleles => f.number = "R".to_string(),
             TagLength::Genotypes => f.number = "G".to_string(),
             TagLength::Variable => f.number = ".".to_string(),
+        };
+        if f.description == fields::default_description_string() {
+            f.description = hdr_info_id2description(header.header_records(), &f.field, &f.description);
         };
     }
 
