@@ -1,6 +1,4 @@
 anno.vcf.gz
-generated-all.vcf
-generated-exclude.vcf
-test.echtvar
-test.echtvar.before
+generated-*
+test.echtvar*
 sl.zip

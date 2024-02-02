@@ -125,7 +125,17 @@ pub fn annotate_main(
             );
         }
         n += 1;
+        // First check if the variant is *, skip those
+        if String::from_utf8_lossy(record.alleles()[1]) == "*" {
+            eprintln!(
+                "alt has * value, skipping annotation for {:?}",
+                &record
+            );
+            ovcf.write(&record).expect("failed to write record");
+            continue;
+        }
         // this updates evalues and fills expr values
+
         for (i, e) in echts.iter_mut().enumerate() {
             e.update_expr_values(&mut record, &mut expr_values[i]);
         }
