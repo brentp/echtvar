@@ -125,7 +125,20 @@ pub fn annotate_main(
             );
         }
         n += 1;
+        // First check if the variant is *, skip those
+        if String::from_utf8_lossy(record.alleles()[1]) == "*" {
+            let rid = record.rid().unwrap();
+            let chrom = std::str::from_utf8(oheader_view.rid2name(rid).unwrap()).unwrap();
+            eprintln!(
+                "contig {} pos {} alt has * value, skipping annotation, outputting entry as-is",
+                &chrom,
+                record.pos() + 1
+            );
+            ovcf.write(&record).expect("failed to write record");
+            continue;
+        }
         // this updates evalues and fills expr values
+
         for (i, e) in echts.iter_mut().enumerate() {
             e.update_expr_values(&mut record, &mut expr_values[i]);
         }
