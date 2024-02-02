@@ -181,7 +181,7 @@ impl EchtVars {
                 format!(
                     "##INFO=<ID={},Number={},Type={},Description=\"{}\">",
                     e.alias,
-                    if vec!["A", "R", "G"].contains(&e.number) {
+                    if ["A", "R", "G"].contains(&e.number.as_str()) {
                         "1"
                     } else {
                         &e.number
