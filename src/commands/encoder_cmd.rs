@@ -241,7 +241,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             TagLength::Genotypes => f.number = "G".to_string(),
             TagLength::Variable => f.number = ".".to_string(),
         };
-        if f.description == fields::default_description_string() {
+        if f.field != "FILTER" && f.description == fields::default_description_string() {
             f.description = hdr_info_id2description(header.header_records(), &f.field, &f.description);
         };
     }

@@ -23,15 +23,17 @@ for mod in 2 3 4 5; do
 
 
         if [[ "mod" -ne "1" ]]; then
-            # now annotate with both and all values shouldl be annotated.
-            echo "two echtvars check"
-	    $echtvar encode test.echtvar1 test1.hjson generated-subset1.vcf
-	    $echtvar anno generated-all.vcf -e test.echtvar0 -e test.echtvar1 anno.vcf.gz
-  	    python3 check.py anno.vcf.gz 1
-		# check default Description used
-		python3 check-string-for-issue33.py anno.vcf.gz aval1 1 "added by echtvar from test.echtvar1"
-		# check value . is left alone
-		python3 check-string-for-issue33.py anno.vcf.gz external_str . "added by echtvar from test.echtvar1"
+                # now annotate with both and all values should be annotated.
+                echo "two echtvars check"
+                $echtvar encode test.echtvar1 test1.hjson generated-subset1.vcf
+                $echtvar anno generated-all.vcf -e test.echtvar0 -e test.echtvar1 anno.vcf.gz
+                python3 check.py anno.vcf.gz 1
+                # check that the default Description is used when no JSON value or encode Description
+                python3 check-string-for-issue33.py anno.vcf.gz no_description 1 "added by echtvar from test.echtvar1"
+                # check that the encode Description is used when no JSON value
+                python3 check-string-for-issue33.py anno.vcf.gz aval1 1 "added by echtvar random value"
+                # check value . is left alone
+                python3 check-string-for-issue33.py anno.vcf.gz external_str . "added by echtvar string value"
         fi
 
 
