@@ -137,8 +137,8 @@ pub fn annotate_main(
                     &chrom,
                     record.pos() + 1
                 );
+                if skip_warn == 9 { eprintln!("not reporting further warnings") }
             }
-            if skip_warn == 9 { eprintln!("not reporting further warnings") }
             skip_warn += 1;
             ovcf.write(&record).expect("failed to write record");
             continue;
