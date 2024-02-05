@@ -100,6 +100,7 @@ pub fn annotate_main(
     let mut n = 0u64;
     let mut n_written = 0u64;
     let mut modu = 10000u64;
+    let mut skip_warn = 0;
 
     for r in vcf.records() {
         let mut record = r.expect("error reading record");
@@ -126,14 +127,18 @@ pub fn annotate_main(
         }
         n += 1;
         // First check if the variant is *, skip those
-        if String::from_utf8_lossy(record.alleles()[1]) == "*" {
+        if record.alleles()[1][0] == b'*' {
             let rid = record.rid().unwrap();
             let chrom = std::str::from_utf8(oheader_view.rid2name(rid).unwrap()).unwrap();
-            eprintln!(
-                "contig {} pos {} alt has * value, skipping annotation, outputting entry as-is",
-                &chrom,
-                record.pos() + 1
-            );
+            // Only warn up to 10 times, just keep count in general
+            if skip_warn < 10 {
+                eprintln!(
+                    "contig {} pos {} alt has * value, skipping annotation, outputting entry as-is",
+                    &chrom,
+                    record.pos() + 1
+                );
+            }
+            skip_warn += 1;
             ovcf.write(&record).expect("failed to write record");
             continue;
         }
@@ -192,6 +197,10 @@ pub fn annotate_main(
         n,
         1000 * (n as u128) / mili,
         n_written,
+    );
+    eprintln!(
+        "Skipped {} variants with * alt.",
+        skip_warn,
     );
 
     /*
