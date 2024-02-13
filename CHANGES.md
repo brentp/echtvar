@@ -1,3 +1,8 @@
+v0.2.0
+======
++ skip non ACGT alts (@migbro #39)
++ grab description from input vcf and propagate to annotated VCFs (@dmiller15, @migbro #34, #35)
+
 v0.1.9
 ======
 + report missing float as . (thanks @dmiller15 #32)
