@@ -1,3 +1,7 @@
+v0.2.1 (dev)
+============
++ bump stream-vbyte for performance annotating
+
 v0.2.0
 ======
 + skip non ACGT alts (@migbro #39)
