@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize}; // 1.0.101
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
-#[derive(Default)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone, Default)]
 pub enum FieldType {
     #[default]
     Integer,
@@ -27,10 +26,8 @@ pub struct Field {
     pub multiplier: u32,
     #[serde(default)]
     pub ftype: FieldType,
-    #[serde(default)]
+    #[serde(default = "default_number")]
     pub number: std::string::String,
-
-
 
     #[serde(default = "default_values_i", skip_serializing)]
     pub values_i: usize,
@@ -38,6 +35,10 @@ pub struct Field {
 
 fn default_missing_value() -> i32 {
     -1
+}
+
+fn default_number() -> std::string::String {
+    "1".to_string()
 }
 fn default_missing_string() -> std::string::String {
     "MISSING".to_string()
@@ -68,8 +69,6 @@ impl Default for Field {
         }
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,8 @@
-v0.2.1 (dev)
-============
+
+v0.2.1
+======
 + bump stream-vbyte for performance annotating
++ fix #43 where output vcf would have Number=, unless number was specified in config.json
 
 v0.2.0
 ======
