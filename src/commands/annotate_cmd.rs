@@ -127,17 +127,19 @@ pub fn annotate_main(
         }
         n += 1;
         // First check if the variant is *, skip those
-        if record.alleles()[1][0] == b'*' {
+        if record.alleles().len() < 2 || record.alleles()[1][0] == b'*' {
             let rid = record.rid().unwrap();
             let chrom = std::str::from_utf8(oheader_view.rid2name(rid).unwrap()).unwrap();
             // Only warn up to 10 times, just keep count in general
             if skip_warn < 10 {
                 eprintln!(
-                    "contig {} pos {} alt has * value, skipping annotation, outputting entry as-is",
+                    "{}:{} alt missing or has * value, skipping annotation, outputting entry as-is",
                     &chrom,
                     record.pos() + 1
                 );
-                if skip_warn == 9 { eprintln!("not reporting further warnings") }
+                if skip_warn == 9 {
+                    eprintln!("not reporting further warnings")
+                }
             }
             skip_warn += 1;
             ovcf.write(&record).expect("failed to write record");
@@ -199,10 +201,7 @@ pub fn annotate_main(
         1000 * (n as u128) / mili,
         n_written,
     );
-    eprintln!(
-        "Skipped {} variants with * alt.",
-        skip_warn,
-    );
+    eprintln!("Skipped {} variants with * alt.", skip_warn,);
 
     /*
     //let ep = std::path::Path::new(&*epaths[0]);

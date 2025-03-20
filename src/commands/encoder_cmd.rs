@@ -1,6 +1,6 @@
 use bincode::Options;
 use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
-use rust_htslib::bcf::header::{TagLength, TagType, HeaderRecord};
+use rust_htslib::bcf::header::{HeaderRecord, TagLength, TagType};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use stream_vbyte::{encode::encode, x86::Sse41};
@@ -74,7 +74,11 @@ fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
             .string()
             .unwrap_or(None)
         {
-            Some(v) => unsafe { String::from_utf8_unchecked(v[0].to_vec()) },
+            Some(v) => v
+                .iter()
+                .map(|s| unsafe { String::from_utf8_unchecked(s.to_vec()) })
+                .collect::<Vec<String>>()
+                .join(","),
             None => default.to_string(),
         }
     };
@@ -166,14 +170,23 @@ fn hdr_info_id2description(
     default: &std::string::String,
 ) -> std::string::String {
     hrecs.retain(|rec| match rec {
-        HeaderRecord::Info {key: _, values: v} => &v["ID"] == id,
-        _ => false}
-    );
+        HeaderRecord::Info { key: _, values: v } => &v["ID"] == id,
+        _ => false,
+    });
     if hrecs.len() != 1 {
-        panic!("Field {} is either not present in the header or present multiple times!", id);
+        panic!(
+            "Field {} is either not present in the header or present multiple times!",
+            id
+        );
     };
     let description = match hrecs.first().unwrap() {
-        HeaderRecord::Info {key: _, values: v} => if v.contains_key("Description") { &v["Description"] } else { default },
+        HeaderRecord::Info { key: _, values: v } => {
+            if v.contains_key("Description") {
+                &v["Description"]
+            } else {
+                default
+            }
+        }
         _ => default,
     };
     return description.trim_matches('"').to_string();
@@ -185,11 +198,11 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
     let mut json = String::new();
     File::open(jpath)
-        .expect("error opening json file")
+        .unwrap_or_else(|_| panic!("error opening json file {:?}", jpath))
         .read_to_string(&mut json)
-        .expect("error parsing json file");
+        .unwrap_or_else(|_| panic!("error parsing json file {:?}", jpath));
     let mut fields: Vec<fields::Field> =
-        json5::from_str(&json).expect("error reading json into fields");
+        json5::from_str(&json).unwrap_or_else(|_| panic!("error reading json into fields {:?}", jpath));
 
     let mut vcf = if !(*vpaths[0]).eq("/dev/stdin") && !(*vpaths[0]).eq("-") {
         Reader::from_path(vpaths[0]).expect("Error opening vcf.")
@@ -242,7 +255,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
             TagLength::Variable => f.number = ".".to_string(),
         };
         if f.field != "FILTER" && f.description == fields::default_description_string() {
-            f.description = hdr_info_id2description(header.header_records(), &f.field, &f.description);
+            f.description =
+                hdr_info_id2description(header.header_records(), &f.field, &f.description);
         };
     }
 
@@ -401,7 +415,18 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
 
             let mut alleles = rec.alleles();
             if alleles.len() == 1 {
-                alleles.push(alleles[0]);
+                /*
+                let last_rid = rec.rid().unwrap() as i32;
+                let n: &[u8] = header.rid2name(last_rid as u32).unwrap();
+                let chrom = bstrip_chr(str::from_utf8(n).unwrap());
+                eprintln!(
+                    "[echtvar] variant {}:{} has only one allele, encoding as {}/T",
+                    chrom,
+                    rec.pos(),
+                    String::from_utf8_lossy(alleles[0])
+                );
+                */
+                alleles.push(b"T"); // NOTE: we always encode . to T here.
             } else if alleles.len() != 2 {
                 last_rid = rec.rid().unwrap() as i32;
                 let n: &[u8] = header.rid2name(last_rid as u32).unwrap();

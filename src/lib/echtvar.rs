@@ -193,7 +193,7 @@ impl EchtVars {
                     } else {
                         "Float"
                     },
-                    if e.description.to_string() == fields::default_description_string() {
+                    if e.description == fields::default_description_string() {
                         format!("added by echtvar from {}", path)
                     } else {
                         format!("added by echtvar {}", e.description.to_string())
