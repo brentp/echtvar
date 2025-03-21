@@ -1,3 +1,6 @@
+v0.2.2
+======
++ handle strings with commas by just saving the entire string (#49)
 
 v0.2.1
 ======
