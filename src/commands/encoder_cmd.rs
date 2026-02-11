@@ -49,6 +49,14 @@ fn get_float_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     };
 }
 
+#[inline]
+fn get_flag_field(rec: &Record, field: &[u8]) -> u32 {
+    match rec.info(field).flag() {
+        Ok(true) => 1,
+        _ => 0,
+    }
+}
+
 fn get_string_field<'a, B: BorrowMut<Buffer> + Borrow<Buffer> + 'a>(
     rec: &Record,
     field: &[u8],
@@ -237,10 +245,14 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                     eprintln!("\tLarger multipliers result in higher precision.");
                 }
             },
-            TagType::String /* TagType::Flag */ => {
+            TagType::String => {
               f.ftype = fields::FieldType::Categorical;
               // and a new table into lookups for this field
               lookups.entry(f.alias.clone()).or_insert(HashMap::new());
+            },
+            TagType::Flag => {
+                f.ftype = fields::FieldType::Flag;
+                f.missing_value = 0;
             },
             _ => panic!(
                 "[echtvar] unsupported field type: {:?} for field {}",
@@ -407,6 +419,9 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                             lookups.get_mut(&fld.alias).unwrap(),
                         );
                         val
+                    }
+                    fields::FieldType::Flag => {
+                        get_flag_field(&rec, fld.field.as_bytes())
                     }
                 };
 

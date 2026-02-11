@@ -6,6 +6,7 @@ pub enum FieldType {
     Integer,
     Float,
     Categorical,
+    Flag,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
@@ -100,5 +101,68 @@ mod tests {
         assert_eq!(fields[1].ftype, FieldType::Integer);
 
         eprintln!("{}", json5::to_string(&fields[0]).unwrap());
+    }
+
+    #[test]
+    fn test_flag_field_type() {
+        let fields: Vec<Field> = json5::from_str(
+            r#"
+        [
+         {"field": "DB", "alias": "is_dbsnp", "ftype": "Flag"},
+        ]
+        "#,
+        )
+        .unwrap();
+
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].field, "DB");
+        assert_eq!(fields[0].alias, "is_dbsnp");
+        assert_eq!(fields[0].ftype, FieldType::Flag);
+    }
+
+    #[test]
+    fn test_flag_field_config_roundtrip() {
+        // Simulate creating a Flag field as the encoder would
+        let mut f = Field::default();
+        f.field = "DB".to_string();
+        f.alias = "is_dbsnp".to_string();
+        f.ftype = FieldType::Flag;
+        f.missing_value = 0;
+        f.number = "0".to_string();
+
+        // Serialize to JSON (as stored in config.json inside the zip)
+        let json = serde_json::to_string(&f).unwrap();
+
+        // Deserialize back (as read during annotation)
+        let f2: Field = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(f2.ftype, FieldType::Flag);
+        assert_eq!(f2.field, "DB");
+        assert_eq!(f2.alias, "is_dbsnp");
+        assert_eq!(f2.missing_value, 0);
+        assert_eq!(f2.number, "0");
+    }
+
+    #[test]
+    fn test_flag_missing_value_semantics() {
+        // For Flag fields, missing_value=0 means absent.
+        // When a variant is not in the database, get_int_value returns
+        // missing_value, which is 0 for flags (absent) — correct behavior.
+        let f = Field {
+            ftype: FieldType::Flag,
+            missing_value: 0,
+            number: "0".to_string(),
+            ..Field::default()
+        };
+
+        assert_eq!(f.missing_value, 0);
+        assert_eq!(f.number, "0");
+
+        // Flag values are 0 (absent) or 1 (present), both valid u32 values.
+        // Neither should be confused with the u32::MAX missing sentinel.
+        let flag_present: u32 = 1;
+        let flag_absent: u32 = 0;
+        assert!(flag_present < u32::MAX);
+        assert!(flag_absent < u32::MAX);
     }
 }

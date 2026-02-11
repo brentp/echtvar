@@ -162,6 +162,15 @@ pub fn annotate_main(
 
                 match v {
                     Value::Int(i) => match fld.ftype {
+                        fields::FieldType::Flag => {
+                            if i == 1 {
+                                record
+                                    .push_info_flag(fld.alias.as_bytes())
+                                    .unwrap_or_else(|_| {
+                                        panic!("{}", format!("error adding flag for {}", fld.alias))
+                                    });
+                            }
+                        }
                         fields::FieldType::Categorical => {
                             // categorical missing_value must be set to the index of the missing_string
                             assert!(i >= 0, "can't have missing value for categorical!");
