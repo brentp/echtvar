@@ -424,6 +424,7 @@ impl EchtVars {
 mod tests {
     use super::*;
     //#[test]
+    #[allow(dead_code)]
     fn test_read() {
         let mut e = EchtVars::open("ec.zip");
         e.set_position(22, "chr21".to_string(), 5030088).ok();
@@ -436,6 +437,7 @@ mod tests {
     }
 
     //#[test]
+    #[allow(dead_code)]
     fn test_search() {
         let mut e = EchtVars::open("ec.zip");
         e.set_position(22, "chr21".to_string(), 5030088).ok();

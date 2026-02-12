@@ -209,8 +209,8 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         .unwrap_or_else(|_| panic!("error opening json file {:?}", jpath))
         .read_to_string(&mut json)
         .unwrap_or_else(|_| panic!("error parsing json file {:?}", jpath));
-    let mut fields: Vec<fields::Field> =
-        json5::from_str(&json).unwrap_or_else(|_| panic!("error reading json into fields {:?}", jpath));
+    let mut fields: Vec<fields::Field> = json5::from_str(&json)
+        .unwrap_or_else(|_| panic!("error reading json into fields {:?}", jpath));
 
     let mut vcf = if !(*vpaths[0]).eq("/dev/stdin") && !(*vpaths[0]).eq("-") {
         Reader::from_path(vpaths[0]).expect("Error opening vcf.")
@@ -244,20 +244,16 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                     eprintln!("\tIf this field contains values less than 1, use a multiplier so the values can be stored as integers.");
                     eprintln!("\tLarger multipliers result in higher precision.");
                 }
-            },
+            }
             TagType::String => {
-              f.ftype = fields::FieldType::Categorical;
-              // and a new table into lookups for this field
-              lookups.entry(f.alias.clone()).or_insert(HashMap::new());
-            },
+                f.ftype = fields::FieldType::Categorical;
+                // and a new table into lookups for this field
+                lookups.entry(f.alias.clone()).or_insert(HashMap::new());
+            }
             TagType::Flag => {
                 f.ftype = fields::FieldType::Flag;
                 f.missing_value = 0;
-            },
-            _ => panic!(
-                "[echtvar] unsupported field type: {:?} for field {}",
-                tt, f.field
-            ),
+            }
         };
         match tl {
             TagLength::Fixed(value) => f.number = value.to_string(),
@@ -420,9 +416,7 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
                         );
                         val
                     }
-                    fields::FieldType::Flag => {
-                        get_flag_field(&rec, fld.field.as_bytes())
-                    }
+                    fields::FieldType::Flag => get_flag_field(&rec, fld.field.as_bytes()),
                 };
 
                 values_vv[i].push(v);
