@@ -1,57 +1,38 @@
-name: Rust static build macOS and Linux
+name: Rust static build Linux
 on:
   push:
     branches:
       - main
+permissions:
+  contents: write
 jobs:
   build:
-    name: build for all platforms
+    name: build Linux static binary
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
       BINARY_NAME: echtvar
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set build version
       id: version
       shell: bash
       run: |
-        VERSION="$(cat Cargo.toml | grep 'version =' -m 1 | sed 's@version =@@' | xargs)"
+        VERSION="$(grep 'version =' Cargo.toml -m 1 | sed 's@version =@@' | xargs)"
         echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
         echo "::notice::publish build version $VERSION"
-    - uses: actions/checkout@v2
-    - name: Build-musl macOS x86
-      uses: Shogan/rust-musl-action@v1.0.2
-      with:
-        args: cargo build --target x86_64-apple-darwin --release
-    - name: Build-musl Linux x86
-      uses: Shogan/rust-musl-action@v1.0.2
-      with:
-        args: cargo build --target x86_64-unknown-linux-musl --release
-
-    # - name: Upload macOS x86 binary to release
-    #   uses: Spikatrix/upload-release-action@b713c4b73f0a8ddda515820c124efc6538685492
-    #   with:
-    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-    #     file: target/x86_64-apple-darwin/release/${{ env.BINARY_NAME }}
-    #     asset_name: ${{ env.BINARY_NAME }}-macos-x86
-    #     target_commit: ${{ github.sha }}
-    #     tag: v${{ env.RELEASE_VERSION }}
-    #     release_name: v${{ env.RELEASE_VERSION }}
-    #     prerelease: false
-    #     overwrite: true
-    #     body: ${{ env.BINARY_NAME }} release
-
+    - name: Install musl tools
+      run: sudo apt-get update && sudo apt-get install -y musl-tools
+    - name: Add musl target
+      run: rustup target add x86_64-unknown-linux-musl
+    - name: Build Linux x86 static binary
+      run: cargo build --target x86_64-unknown-linux-musl --release
     - name: Upload linux binary to release
-      uses: Spikatrix/upload-release-action@b713c4b73f0a8ddda515820c124efc6538685492
+      uses: softprops/action-gh-release@v2
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
-        asset_name: ${{ env.BINARY_NAME }}
-        target_commit: ${{ github.sha }}
-        tag: v${{ env.RELEASE_VERSION }}
-        release_name: v${{ env.RELEASE_VERSION }}
-        prerelease: false
-        overwrite: true
-        body: ${{ env.BINARY_NAME }} release
-
+        tag_name: v${{ env.RELEASE_VERSION }}
+        name: v${{ env.RELEASE_VERSION }}
+        files: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
+        fail_on_unmatched_files: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,7 @@
+[build]
+# NOTE: keep host builds free of crt-static so proc-macros work on GNU.
+rustflags = []
+
+[target.x86_64-unknown-linux-musl]
+# Fully static binary when targeting musl.
+rustflags = ["-C", "target-feature=+crt-static"]
