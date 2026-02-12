@@ -181,12 +181,16 @@ impl EchtVars {
                 format!(
                     "##INFO=<ID={},Number={},Type={},Description=\"{}\">",
                     e.alias,
-                    if ["A", "R", "G"].contains(&e.number.as_str()) {
+                    if e.ftype == fields::FieldType::Flag {
+                        "0"
+                    } else if ["A", "R", "G"].contains(&e.number.as_str()) {
                         "1"
                     } else {
                         &e.number
                     },
-                    if e.ftype == fields::FieldType::Integer {
+                    if e.ftype == fields::FieldType::Flag {
+                        "Flag"
+                    } else if e.ftype == fields::FieldType::Integer {
                         "Integer"
                     } else if e.ftype == fields::FieldType::Categorical {
                         "String"
@@ -377,6 +381,7 @@ impl EchtVars {
                 for fld in &self.fields {
                     if fld.ftype == fields::FieldType::Integer
                         || fld.ftype == fields::FieldType::Categorical
+                        || fld.ftype == fields::FieldType::Flag
                     {
                         let val = self.get_int_value(fld, idx);
                         self.evalues[fld.values_i] = Value::Int(val);
@@ -394,6 +399,7 @@ impl EchtVars {
                 for fld in &self.fields {
                     if fld.ftype == fields::FieldType::Integer
                         || fld.ftype == fields::FieldType::Categorical
+                        || fld.ftype == fields::FieldType::Flag
                     {
                         // for Categorical missing_value has been set to the index of missing_string
                         let val = fld.missing_value;
