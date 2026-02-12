@@ -167,7 +167,7 @@ pub fn annotate_main(
                                 record
                                     .push_info_flag(fld.alias.as_bytes())
                                     .unwrap_or_else(|_| {
-                                        panic!("{}", format!("error adding flag for {}", fld.alias))
+                                        panic!("error adding flag for {}", fld.alias)
                                     });
                             }
                         }
