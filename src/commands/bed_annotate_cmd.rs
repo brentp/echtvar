@@ -190,12 +190,22 @@ pub fn bed_annotate_main(
         if !header_written {
             write!(writer, "#chrom\tstart\tend")?;
             if input_header_cols.len() > 3 {
+                // Re-use input column names
                 for col in &input_header_cols[3..] {
                     write!(writer, "\t{}", col)?;
                 }
             } else if fields_vec.len() > 3 {
+                // No input header: use "REF"/"ALT" for ref/alt columns (from options), "colN" for others
                 for i in 3..fields_vec.len() {
-                    write!(writer, "\tcol{}", i + 1)?;
+                    let col_1based = i + 1;
+                    let name: String = if allele_specific && col_1based == ref_col_idx {
+                        "REF".into()
+                    } else if allele_specific && col_1based == alt_col_idx {
+                        "ALT".into()
+                    } else {
+                        format!("col{}", col_1based)
+                    };
+                    write!(writer, "\t{}", name)?;
                 }
             }
             if !allele_specific {
