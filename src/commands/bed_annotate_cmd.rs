@@ -209,9 +209,16 @@ pub fn bed_annotate_main(
         }
 
         let chrom = fields_vec[0];
-        let start_pos: u32 = fields_vec[1]
-            .parse()
-            .expect("invalid start position in BED");
+        let start_pos: u32 = match fields_vec[1].parse() {
+            Ok(v) => v,
+            Err(_) => {
+                eprintln!(
+                    "[echtvar] skipping line with invalid start position: {}",
+                    line
+                );
+                continue;
+            }
+        };
 
         let extra_cols: Vec<&str> = if fields_vec.len() > 3 {
             fields_vec[3..].to_vec()

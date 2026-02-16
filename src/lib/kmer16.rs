@@ -20,9 +20,8 @@ pub fn decode_var(sequence: &[u32]) -> (Vec<u8>, Vec<u8>) {
         let code = (sequence[word_idx] >> shift) & 3;
         bases.push(RLOOKUP[code as usize]);
     }
-    let ref_allele = bases[..ref_len].to_vec();
-    let alt_allele = bases[ref_len..].to_vec();
-    (ref_allele, alt_allele)
+    let alt_allele = bases.split_off(ref_len);
+    (bases, alt_allele)
 }
 
 pub fn encode_var(ref_allele: &[u8], alt_allele: &[u8]) -> Vec<u32> {

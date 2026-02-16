@@ -374,12 +374,11 @@ impl EchtVars {
             i += 1;
         }
 
-        // Search long variants: position is stored as full position
-        for l in &self.longs {
-            if l.position == pos {
-                let (ref_allele, alt_allele) = kmer16::decode_var(&l.sequence);
-                results.push((ref_allele, alt_allele));
-            }
+        // Search long variants: sorted by position, so use binary search
+        let lo = self.longs.partition_point(|l| l.position < pos);
+        for l in self.longs[lo..].iter().take_while(|l| l.position == pos) {
+            let (ref_allele, alt_allele) = kmer16::decode_var(&l.sequence);
+            results.push((ref_allele, alt_allele));
         }
 
         results

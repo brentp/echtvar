@@ -35,13 +35,13 @@ fn detect_format(path: &str, format_override: Option<&str>) -> &'static str {
         }
     }
     let lower = path.to_lowercase();
-    #[cfg(feature = "bed")]
-    if lower.ends_with(".bed") || lower.ends_with(".bed.gz") {
-        return "bed";
-    }
     if lower.ends_with(".vcf") || lower.ends_with(".vcf.gz") || lower.ends_with(".bcf") {
         "vcf"
     } else if lower.ends_with(".bed") || lower.ends_with(".bed.gz") {
+        #[cfg(feature = "bed")]
+        {
+            "bed"
+        }
         #[cfg(not(feature = "bed"))]
         {
             eprintln!(
@@ -49,8 +49,6 @@ fn detect_format(path: &str, format_override: Option<&str>) -> &'static str {
             );
             std::process::exit(1);
         }
-        #[cfg(feature = "bed")]
-        "bed"
     } else {
         eprintln!(
             "error: cannot detect format from extension '{}'. Use -f to specify.",
@@ -102,12 +100,26 @@ fn main() -> Result<(), Box<dyn Error>> {
         let format_override = matches.value_of("format");
         let format = detect_format(input_path, format_override);
 
-        let ref_col = matches
-            .value_of("ref_col")
-            .map(|s| s.parse::<usize>().expect("--ref-col must be a positive integer"));
-        let alt_col = matches
-            .value_of("alt_col")
-            .map(|s| s.parse::<usize>().expect("--alt-col must be a positive integer"));
+        let ref_col = matches.value_of("ref_col").map(|s| {
+            let val = s
+                .parse::<usize>()
+                .expect("--ref-col must be a positive integer");
+            if val == 0 {
+                eprintln!("error: --ref-col must be >= 1 (1-based column index)");
+                std::process::exit(1);
+            }
+            val
+        });
+        let alt_col = matches.value_of("alt_col").map(|s| {
+            let val = s
+                .parse::<usize>()
+                .expect("--alt-col must be a positive integer");
+            if val == 0 {
+                eprintln!("error: --alt-col must be >= 1 (1-based column index)");
+                std::process::exit(1);
+            }
+            val
+        });
 
         // Validation
         if ref_col.is_some() != alt_col.is_some() {
