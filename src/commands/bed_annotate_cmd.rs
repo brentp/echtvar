@@ -49,7 +49,14 @@ fn format_value(e: &EchtVars, fld: &fields::Field) -> String {
                 }
             }
             fields::FieldType::Categorical => e.strings[fld.values_i][i as usize].clone(),
-            _ => i.to_string(),
+            _ => {
+                // BED convention: write '.' for missing integer values (e.g. -2147483648)
+                if i == fld.missing_value {
+                    ".".to_string()
+                } else {
+                    i.to_string()
+                }
+            }
         },
         Value::Float(f) => {
             if f.is_nan() || f.is_infinite() {
@@ -326,7 +333,7 @@ pub fn bed_annotate_main(
                             fields::FieldType::Float => ".".to_string(),
                             fields::FieldType::Flag => "false".to_string(),
                             fields::FieldType::Categorical => fld.missing_string.clone(),
-                            _ => fld.missing_value.to_string(),
+                            _ => ".".to_string(), // BED: integer missing (e.g. -2147483648) as '.'
                         };
                         write!(writer, "\t{}", missing)?;
                     }
