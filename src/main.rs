@@ -65,14 +65,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         (version: VERSION)
         (author: "Brent Pedersen <bpederse@gmail.com>")
         (about: "variant encoding and annotation")
+        (@setting DeriveDisplayOrder)
         (@subcommand encode =>
             (about: "create an echtvar file from a population VCF/BCF")
+            (@setting DeriveDisplayOrder)
             (@arg OUTPUT: +required "output zip file")
             (@arg JSON: +required "(human)-json conf file")
             (@arg VCFS: +required ... "population vcf(s) can be split by chrom")
         )
         (@subcommand anno =>
             (about: "annotate a VCF/BCF or BED file with one or more echtvar files")
+            (@setting DeriveDisplayOrder)
             (@arg echtvar: -e + takes_value number_of_values(1) ... "echtvar files to annotate with. can be specified many times")
             (@arg include: -i  +takes_value number_of_values(1) "expression that determines which variants to keep in output")
             (@arg format: -f --format +takes_value "input format: auto, vcf, or bed (default: auto)")
