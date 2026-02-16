@@ -10,12 +10,11 @@ use std::{fs, io, str};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::BufReader;
 
+use stream_vbyte::decode::decode;
 #[cfg(target_arch = "x86_64")]
 use stream_vbyte::x86::Ssse3;
-#[cfg(target_arch = "x86_64")]
-use stream_vbyte::decode::decode;
 #[cfg(not(target_arch = "x86_64"))]
-use stream_vbyte::{decode::decode, scalar::Scalar};
+use stream_vbyte::scalar::Scalar;
 
 #[cfg(target_arch = "x86_64")]
 type StreamVbyteDecoder = Ssse3;
