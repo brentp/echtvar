@@ -141,6 +141,28 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn: &mut i32) ->
     u32::from(v)
 }
 
+pub fn decode_to_alleles(enc: u32) -> Option<(Vec<u8>, Vec<u8>)> {
+    let v: Var32 = Var32::from(enc);
+    let rlen = v.rlen() as usize;
+    let alen = v.alen() as usize;
+    if rlen == 3 && alen == 3 {
+        return None;
+    } // sentinel for LongVariant
+
+    let mut e = v.enc();
+    let mut alt = vec![0u8; alen];
+    for i in (0..alen).rev() {
+        alt[i] = RLOOKUP[(e & 3) as usize] as u8;
+        e >>= 2;
+    }
+    let mut reference = vec![0u8; rlen];
+    for i in (0..rlen).rev() {
+        reference[i] = RLOOKUP[(e & 3) as usize] as u8;
+        e >>= 2;
+    }
+    Some((reference, alt))
+}
+
 #[inline]
 pub fn decode(enc: u32) -> PRA {
     let v: Var32 = unsafe { std::mem::transmute::<u32, Var32>(enc) };
@@ -220,6 +242,37 @@ mod tests {
 
         b.set_enc(a.enc() - 1);
         assert_eq!(true, a > b);
+    }
+
+    #[test]
+    fn test_decode_to_alleles_roundtrip() {
+        let mut w = 0;
+        let enc = encode(423432, b"A", b"ACA", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_some());
+        let (r, a) = result.unwrap();
+        assert_eq!(r, b"A");
+        assert_eq!(a, b"ACA");
+    }
+
+    #[test]
+    fn test_decode_to_alleles_snv() {
+        let mut w = 0;
+        let enc = encode(100, b"A", b"T", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_some());
+        let (r, a) = result.unwrap();
+        assert_eq!(r, b"A");
+        assert_eq!(a, b"T");
+    }
+
+    #[test]
+    fn test_decode_to_alleles_sentinel() {
+        let mut w = 0;
+        // Combined length > 4 triggers sentinel (rlen=3, alen=3)
+        let enc = encode(100, b"AAA", b"CCC", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_none());
     }
 
     #[test]

@@ -348,6 +348,43 @@ impl EchtVars {
         }
     }
 
+    pub fn set_position_by_name(&mut self, chrom: &str, position: u32) -> io::Result<()> {
+        let stripped = strip_chr(chrom.to_string());
+        if self.chrom == stripped && position >> 20 == self.start >> 20 {
+            return Ok(());
+        }
+        self.last_rid = i32::MIN;
+        self.set_position(i32::MIN + 1, chrom.to_string(), position)
+    }
+
+    pub fn variants_at_position(&self, pos: u32) -> Vec<(Vec<u8>, Vec<u8>)> {
+        let mut results = Vec::new();
+
+        // Search var32s: position is stored in lower 20 bits
+        let pos_in_chunk = pos & 0xFFFFF;
+        let min_val = pos_in_chunk << 12;
+        let max_val = min_val | 0xFFF;
+
+        let lo = self.var32s.partition_point(|&v| v < min_val);
+        let mut i = lo;
+        while i < self.var32s.len() && self.var32s[i] <= max_val {
+            if let Some(alleles) = var32::decode_to_alleles(self.var32s[i]) {
+                results.push(alleles);
+            }
+            i += 1;
+        }
+
+        // Search long variants: position is stored as full position
+        for l in &self.longs {
+            if l.position == pos {
+                let (ref_allele, alt_allele) = kmer16::decode_var(&l.sequence);
+                results.push((ref_allele, alt_allele));
+            }
+        }
+
+        results
+    }
+
     pub fn update_expr_values<T: Variant>(
         self: &mut EchtVars,
         variant: &mut T,
