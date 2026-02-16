@@ -10,7 +10,17 @@ use std::{fs, io, str};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::BufReader;
 
-use stream_vbyte::{decode::decode, x86::Ssse3};
+#[cfg(target_arch = "x86_64")]
+use stream_vbyte::x86::Ssse3;
+#[cfg(target_arch = "x86_64")]
+use stream_vbyte::decode::decode;
+#[cfg(not(target_arch = "x86_64"))]
+use stream_vbyte::{decode::decode, scalar::Scalar};
+
+#[cfg(target_arch = "x86_64")]
+type StreamVbyteDecoder = Ssse3;
+#[cfg(not(target_arch = "x86_64"))]
+type StreamVbyteDecoder = Scalar;
 
 use ieee754::Ieee754;
 
@@ -254,7 +264,7 @@ impl EchtVars {
                     self.values[fi.values_i].resize(n, 0x0);
                     // TODO: use skip to first position.
                     let bytes_decoded =
-                        decode::<Ssse3>(&self.buffer, n, &mut self.values[fi.values_i]);
+                        decode::<StreamVbyteDecoder>(&self.buffer, n, &mut self.values[fi.values_i]);
 
                     if bytes_decoded != self.buffer.len() {
                         return Err(std::io::Error::new(
@@ -281,7 +291,7 @@ impl EchtVars {
             iz.read_exact(&mut self.buffer)?;
 
             self.var32s.resize(n, 0x0);
-            let bytes_decoded = decode::<Ssse3>(&self.buffer, n, &mut self.var32s);
+            let bytes_decoded = decode::<StreamVbyteDecoder>(&self.buffer, n, &mut self.var32s);
             // cumsum https://users.rust-lang.org/t/inplace-cumulative-sum-using-iterator/56532/3
             self.var32s.iter_mut().fold(0, |acc, x| {
                 *x += acc;

@@ -230,7 +230,7 @@ pub fn annotate_main(
     let mut nums: Vec<u32> = Vec::new();
     nums.resize(n, 0);
 
-    let n_d = decode::<Ssse3>(&comr, n, &mut nums);
+    let n_d = decode::<Scalar>(&comr, n, &mut nums);
     eprintln!("{} {} {:?}", n_d, iz.size(), &nums[..1000]);
     */
 
