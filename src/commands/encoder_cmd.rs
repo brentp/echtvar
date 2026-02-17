@@ -548,7 +548,7 @@ mod tests {
     #[test]
     fn test_argsort_empty() {
         let data: Vec<i32> = vec![];
-        assert_eq!(argsort(&data), vec![]);
+        assert_eq!(argsort(&data), Vec::<usize>::new());
     }
 
     #[test]
@@ -572,8 +572,8 @@ mod tests {
     #[test]
     fn test_sort_by_indices_empty() {
         let mut data: Vec<i32> = vec![];
-        sort_by_indices(&mut data, vec![]);
-        assert_eq!(data, vec![]);
+        sort_by_indices(&mut data, Vec::new());
+        assert_eq!(data, Vec::<i32>::new());
     }
 
     #[test]
