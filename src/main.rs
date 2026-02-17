@@ -69,7 +69,7 @@ struct AnnoArgs {
 }
 
 #[cfg(any(feature = "bed", feature = "tab"))]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum Format {
     Vcf,
     #[cfg(feature = "bed")]
