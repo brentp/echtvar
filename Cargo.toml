@@ -4,8 +4,9 @@ version = "0.2.3"
 edition = "2021"
 
 [features]
-default = ["bed"]
+default = ["bed", "tab"]
 bed = ["dep:noodles", "dep:flate2"]
+tab = ["dep:flate2"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,7 +23,7 @@ path = "src/main.rs"
 rust-htslib = { version = "0.38.2", features = ["libdeflate", "static"] }
 #bitpacking = "0.8.4"
 stream-vbyte = "0.4.1"
-clap = { version = "~2.27.0", features = ["suggestions"] }
+clap = { version = "4", features = ["derive"] }
 c2rust-bitfields = "0.3.0"
 libc = "*"
 # TODO: try deflate-miniz, deflate-zlib, deflate
@@ -50,4 +51,4 @@ codegen-units = 1
 
 [lints.rust]
 # Allow dependency macros to use this feature cfg without warnings.
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(feature, values(\"unsafe-vars\", \"bed\"))"] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(feature, values(\"unsafe-vars\", \"bed\", \"tab\"))"] }

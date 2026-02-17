@@ -94,6 +94,38 @@ pub fn bstrip_chr(chrom: &str) -> &str {
     chrom
 }
 
+#[cfg(test)]
+mod chr_tests {
+    use super::{bstrip_chr, strip_chr};
+
+    #[test]
+    fn test_strip_chr_prefix() {
+        assert_eq!(strip_chr("chr1".to_string()), "1");
+        assert_eq!(strip_chr("chr22".to_string()), "22");
+        assert_eq!(strip_chr("chrX".to_string()), "X");
+    }
+
+    #[test]
+    fn test_strip_chr_no_prefix() {
+        assert_eq!(strip_chr("1".to_string()), "1");
+        assert_eq!(strip_chr("22".to_string()), "22");
+        assert_eq!(strip_chr("chr".to_string()), "chr"); // len < 4
+        assert_eq!(strip_chr("abc".to_string()), "abc");
+    }
+
+    #[test]
+    fn test_bstrip_chr_prefix() {
+        assert_eq!(bstrip_chr("chr1"), "1");
+        assert_eq!(bstrip_chr("chr22"), "22");
+    }
+
+    #[test]
+    fn test_bstrip_chr_no_prefix() {
+        assert_eq!(bstrip_chr("1"), "1");
+        assert_eq!(bstrip_chr("chr"), "chr");
+    }
+}
+
 impl Variant for bcf::record::Record {
     fn chrom(&self) -> std::string::String {
         let rid = self.rid().unwrap();

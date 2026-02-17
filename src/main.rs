@@ -1,156 +1,299 @@
 extern crate echtvar_lib;
 pub mod commands;
 
-#[macro_use]
-extern crate clap;
 extern crate fasteval;
 
+use clap::{Parser, Subcommand};
 use commands::{annotate_cmd, encoder_cmd};
-#[cfg(feature = "bed")]
-use commands::bed_annotate_cmd;
+#[cfg(any(feature = "bed", feature = "tab"))]
+use commands::tab_annotate_cmd;
 use std::error::Error;
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+#[derive(Parser)]
+#[command(name = "echtvar")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(author = "Brent Pedersen <bpederse@gmail.com>")]
+#[command(about = "variant encoding and annotation")]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
 
-fn detect_format(path: &str, format_override: Option<&str>) -> &'static str {
-    if let Some(fmt) = format_override {
-        match fmt.to_lowercase().as_str() {
-            "vcf" => return "vcf",
-            #[cfg(feature = "bed")]
-            "bed" => return "bed",
-            "auto" => {}
-            _ => {
-                #[cfg(feature = "bed")]
-                eprintln!(
-                    "error: unknown format '{}'. Use 'auto', 'vcf', or 'bed'.",
-                    fmt
-                );
-                #[cfg(not(feature = "bed"))]
-                eprintln!(
-                    "error: unknown format '{}'. Use 'auto' or 'vcf'.",
-                    fmt
-                );
-                std::process::exit(1);
-            }
-        }
-    }
+#[derive(Subcommand)]
+enum Commands {
+    /// Create an echtvar file from a population VCF/BCF
+    Encode(EncodeArgs),
+    /// Annotate a VCF/BCF, BED, or tabular file with one or more echtvar files
+    Anno(AnnoArgs),
+}
+
+#[derive(clap::Args)]
+struct EncodeArgs {
+    /// Output zip file
+    #[arg(required = true)]
+    output: String,
+    /// (Human)-readable JSON config file
+    #[arg(required = true)]
+    json: String,
+    /// Population VCF(s); can be split by chrom
+    #[arg(required = true, num_args = 1..)]
+    vcfs: Vec<String>,
+}
+
+#[derive(clap::Args)]
+struct AnnoArgs {
+    /// Echtvar files to annotate with (can be specified many times)
+    #[arg(short = 'e', long, num_args = 1.., required = true)]
+    echtvar: Vec<String>,
+    /// Expression that determines which variants to keep in output
+    #[arg(short = 'i', long)]
+    include: Option<String>,
+    /// Input format: auto, vcf, bed, or tab (default: auto)
+    #[arg(short = 'f', long = "format")]
+    #[cfg(any(feature = "bed", feature = "tab"))]
+    format: Option<String>,
+    /// 1-based column in BED for REF allele
+    #[arg(long = "ref-col")]
+    #[cfg(feature = "bed")]
+    ref_col: Option<usize>,
+    /// 1-based column in BED for ALT allele
+    #[arg(long = "alt-col")]
+    #[cfg(feature = "bed")]
+    alt_col: Option<usize>,
+    /// Input vcf/bcf/bed/tab file
+    #[arg(required = true)]
+    input: String,
+    /// Path to output file (format determined by extension)
+    #[arg(required = true)]
+    output: String,
+}
+
+#[cfg(any(feature = "bed", feature = "tab"))]
+#[derive(Clone, Copy, PartialEq)]
+enum Format {
+    Vcf,
+    #[cfg(feature = "bed")]
+    Bed,
+    #[cfg(feature = "tab")]
+    Tab,
+}
+
+#[cfg(any(feature = "bed", feature = "tab"))]
+fn detect_format(path: &str, format_override: Option<&str>) -> (Format, bool) {
     let lower = path.to_lowercase();
-    if lower.ends_with(".vcf") || lower.ends_with(".vcf.gz") || lower.ends_with(".bcf") {
-        "vcf"
-    } else if lower.ends_with(".bed") || lower.ends_with(".bed.gz") {
-        #[cfg(feature = "bed")]
-        {
-            "bed"
-        }
-        #[cfg(not(feature = "bed"))]
-        {
-            eprintln!(
-                "error: BED format not available (build with default features). Use -f vcf for VCF/BCF.",
-            );
-            std::process::exit(1);
-        }
-    } else {
-        eprintln!(
-            "error: cannot detect format from extension '{}'. Use -f to specify.",
-            path
-        );
-        std::process::exit(1);
+    let mut parts = lower.split('.').rev();
+    format_override
+        .and_then(|fmt| {
+            match fmt.to_lowercase().as_str() {
+                "vcf" => Some(Format::Vcf),
+                #[cfg(feature = "bed")]
+                "bed" => Some(Format::Bed),
+                #[cfg(feature = "tab")]
+                "tab" => Some(Format::Tab),
+                "auto" => None,
+                _ => {
+                    eprintln!("error: unknown format '{}'", fmt);
+                    std::process::exit(1);
+                }
+            }
+        })
+        .map(|fmt| (fmt, parts.next().unwrap_or("") == "gz"))
+        .unwrap_or_else(|| {
+            let ext = parts.next().unwrap_or("");
+            let (ext, compressed) = if ext == "gz" {
+                (parts.next().unwrap_or(""), true)
+            } else {
+                (ext, false)
+            };
+            let fmt = match ext {
+                "vcf" | "bcf" => Format::Vcf,
+                #[cfg(feature = "bed")]
+                "bed" => Format::Bed,
+                #[cfg(feature = "tab")]
+                "tsv" | "txt" => Format::Tab,
+                _ => {
+                    eprintln!(
+                        "error: Cannot detect format from extension '{}'. Use -f to specify.",
+                        ext
+                    );
+                    std::process::exit(1);
+                }
+            };
+            (fmt, compressed)
+        })
+}
+
+#[cfg(all(test, any(feature = "bed", feature = "tab")))]
+mod tests {
+    use super::detect_format;
+    use super::Format;
+
+    #[test]
+    fn test_detect_format_override_vcf() {
+        let (fmt, compressed) = detect_format("anything.xyz", Some("vcf"));
+        assert_eq!(fmt, Format::Vcf);
+        assert!(!compressed);
+    }
+
+    #[test]
+    fn test_detect_format_override_auto_uses_extension() {
+        let (fmt, _) = detect_format("file.vcf", Some("auto"));
+        assert_eq!(fmt, Format::Vcf);
+    }
+
+    #[test]
+    fn test_detect_format_extension_vcf() {
+        let (fmt, compressed) = detect_format("file.vcf", None);
+        assert_eq!(fmt, Format::Vcf);
+        assert!(!compressed);
+    }
+
+    #[test]
+    fn test_detect_format_extension_vcf_gz() {
+        let (fmt, compressed) = detect_format("file.vcf.gz", None);
+        assert_eq!(fmt, Format::Vcf);
+        assert!(compressed);
+    }
+
+    #[test]
+    fn test_detect_format_extension_bcf() {
+        let (fmt, _) = detect_format("file.bcf", None);
+        assert_eq!(fmt, Format::Vcf);
+    }
+
+    #[cfg(feature = "bed")]
+    #[test]
+    fn test_detect_format_override_bed() {
+        let (fmt, _) = detect_format("x", Some("bed"));
+        assert_eq!(fmt, Format::Bed);
+    }
+
+    #[cfg(feature = "bed")]
+    #[test]
+    fn test_detect_format_extension_bed() {
+        let (fmt, compressed) = detect_format("file.bed", None);
+        assert_eq!(fmt, Format::Bed);
+        assert!(!compressed);
+    }
+
+    #[cfg(feature = "bed")]
+    #[test]
+    fn test_detect_format_extension_bed_gz() {
+        let (fmt, compressed) = detect_format("file.bed.gz", None);
+        assert_eq!(fmt, Format::Bed);
+        assert!(compressed);
+    }
+
+    #[cfg(feature = "tab")]
+    #[test]
+    fn test_detect_format_override_tab() {
+        let (fmt, _) = detect_format("x", Some("tab"));
+        assert_eq!(fmt, Format::Tab);
+    }
+
+    #[cfg(feature = "tab")]
+    #[test]
+    fn test_detect_format_extension_tsv() {
+        let (fmt, _) = detect_format("file.tsv", None);
+        assert_eq!(fmt, Format::Tab);
+    }
+
+    #[cfg(feature = "tab")]
+    #[test]
+    fn test_detect_format_extension_txt_gz() {
+        let (fmt, compressed) = detect_format("file.txt.gz", None);
+        assert_eq!(fmt, Format::Tab);
+        assert!(compressed);
     }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut app = clap_app!(echtvar =>
-        (version: VERSION)
-        (author: "Brent Pedersen <bpederse@gmail.com>")
-        (about: "variant encoding and annotation")
-        (@setting DeriveDisplayOrder)
-        (@subcommand encode =>
-            (about: "create an echtvar file from a population VCF/BCF")
-            (@setting DeriveDisplayOrder)
-            (@arg OUTPUT: +required "output zip file")
-            (@arg JSON: +required "(human)-json conf file")
-            (@arg VCFS: +required ... "population vcf(s) can be split by chrom")
-        )
-        (@subcommand anno =>
-            (about: "annotate a VCF/BCF or BED file with one or more echtvar files")
-            (@setting DeriveDisplayOrder)
-            (@arg echtvar: -e + takes_value number_of_values(1) ... "echtvar files to annotate with. can be specified many times")
-            (@arg include: -i  +takes_value number_of_values(1) "expression that determines which variants to keep in output")
-            (@arg format: -f --format +takes_value "input format: auto, vcf, or bed (default: auto)")
-            (@arg ref_col: --("ref-col") +takes_value "1-based column in BED for REF allele")
-            (@arg alt_col: --("alt-col") +takes_value "1-based column in BED for ALT allele")
-            (@arg INPUT: +required "input vcf/bcf/bed file")
-            (@arg OUTPUT: +required "path to output file (format determined by extension)")
-        )
-    );
-    let matches = app.clone().get_matches();
+    let cli = Cli::parse();
 
-    if let Some(matches) = matches.subcommand_matches("encode") {
-        encoder_cmd::encoder_main(
-            matches.values_of("VCFS").unwrap().collect(),
-            matches.value_of("OUTPUT").unwrap(),
-            matches.value_of("JSON").unwrap(),
-        );
-    } else if let Some(matches) = matches.subcommand_matches("anno") {
-        let echt_files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
-        let expr = matches.value_of("include");
-        let input_path = matches.value_of("INPUT").unwrap();
-        let output_path = matches.value_of("OUTPUT").unwrap();
-
-        let format_override = matches.value_of("format");
-        let format = detect_format(input_path, format_override);
-
-        let ref_col = matches.value_of("ref_col").map(|s| {
-            let val = s
-                .parse::<usize>()
-                .expect("--ref-col must be a positive integer");
-            if val == 0 {
-                eprintln!("error: --ref-col must be >= 1 (1-based column index)");
-                std::process::exit(1);
-            }
-            val
-        });
-        let alt_col = matches.value_of("alt_col").map(|s| {
-            let val = s
-                .parse::<usize>()
-                .expect("--alt-col must be a positive integer");
-            if val == 0 {
-                eprintln!("error: --alt-col must be >= 1 (1-based column index)");
-                std::process::exit(1);
-            }
-            val
-        });
-
-        // Validation
-        if ref_col.is_some() != alt_col.is_some() {
-            eprintln!("error: --ref-col and --alt-col must be specified together or not at all");
-            std::process::exit(1);
+    match &cli.command {
+        Commands::Encode(args) => {
+            let vcfs: Vec<&str> = args.vcfs.iter().map(String::as_str).collect();
+            encoder_cmd::encoder_main(vcfs, &args.output, &args.json);
         }
-        if format == "vcf" && (ref_col.is_some() || alt_col.is_some()) {
-            eprintln!("error: --ref-col and --alt-col are only valid with BED input");
-            std::process::exit(1);
-        }
+        Commands::Anno(args) => {
+            let echt_files: Vec<&str> = args.echtvar.iter().map(String::as_str).collect();
+            let expr = args.include.as_deref();
+            let input_path = args.input.as_str();
+            let output_path = args.output.as_str();
 
-        match format {
+            #[cfg(any(feature = "bed", feature = "tab"))]
+            let format_override = args.format.as_deref();
+            #[cfg(any(feature = "bed", feature = "tab"))]
+            let (format, compressed) = detect_format(input_path, format_override);
+
             #[cfg(feature = "bed")]
-            "bed" => {
-                bed_annotate_cmd::bed_annotate_main(
+            let ref_col = args.ref_col;
+            #[cfg(feature = "bed")]
+            let alt_col = args.alt_col;
+
+            #[cfg(any(feature = "bed", feature = "tab"))]
+            {
+                #[cfg(feature = "bed")]
+                {
+                    if ref_col.is_some() != alt_col.is_some() {
+                        eprintln!("error: --ref-col and --alt-col must be specified together or not at all");
+                        std::process::exit(1);
+                    }
+                    if format == Format::Vcf && (ref_col.is_some() || alt_col.is_some()) {
+                        eprintln!("error: --ref-col and --alt-col are only valid with BED input");
+                        std::process::exit(1);
+                    }
+                }
+
+                match format {
+                    #[cfg(feature = "bed")]
+                    Format::Bed => {
+                        tab_annotate_cmd::tabular_annotate_main(
+                            input_path,
+                            compressed,
+                            output_path,
+                            expr,
+                            echt_files.clone(),
+                            tab_annotate_cmd::TabularFormat::Bed {
+                                ref_col,
+                                alt_col,
+                            },
+                        )?;
+                    }
+                    #[cfg(feature = "tab")]
+                    Format::Tab => {
+                        tab_annotate_cmd::tabular_annotate_main(
+                            input_path,
+                            compressed,
+                            output_path,
+                            expr,
+                            echt_files.clone(),
+                            tab_annotate_cmd::TabularFormat::Tab,
+                        )?;
+                    }
+                    Format::Vcf => {
+                        annotate_cmd::annotate_main(
+                            input_path,
+                            output_path,
+                            expr,
+                            echt_files,
+                        )?;
+                    }
+                    #[allow(unreachable_patterns)]
+                    _ => unreachable!(),
+                }
+            }
+
+            #[cfg(not(any(feature = "bed", feature = "tab")))]
+            {
+                annotate_cmd::annotate_main(
                     input_path,
                     output_path,
                     expr,
                     echt_files,
-                    ref_col,
-                    alt_col,
                 )?;
             }
-            "vcf" => {
-                annotate_cmd::annotate_main(input_path, output_path, expr, echt_files)?;
-            }
-            _ => unreachable!(),
         }
-    } else {
-        app.print_help().ok();
-        println!();
     }
     Ok(())
 }
