@@ -389,6 +389,11 @@ impl EchtVars {
         self.set_position(i32::MIN + 1, chrom.to_string(), position)
     }
 
+    /// Return all (ref, alt) allele pairs at the given 0-based position within the
+    /// currently loaded chunk. This is used by the BED/tab position-scan mode where
+    /// the input has no REF/ALT columns: we enumerate every variant the echtvar file
+    /// knows about at that position so each can be annotated as a separate output row.
+    /// The existing VCF path doesn't need this because the VCF itself provides the alleles.
     pub fn variants_at_position(&self, pos: u32) -> Vec<(Vec<u8>, Vec<u8>)> {
         let mut results = Vec::new();
 

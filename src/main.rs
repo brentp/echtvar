@@ -231,6 +231,22 @@ fn main() -> Result<(), Box<dyn Error>> {
             #[cfg(feature = "bed")]
             let alt_col = args.alt_col;
 
+            #[cfg(feature = "bed")]
+            {
+                if let Some(r) = ref_col {
+                    if r == 0 {
+                        eprintln!("error: --ref-col must be >= 1 (1-based column index)");
+                        std::process::exit(1);
+                    }
+                }
+                if let Some(a) = alt_col {
+                    if a == 0 {
+                        eprintln!("error: --alt-col must be >= 1 (1-based column index)");
+                        std::process::exit(1);
+                    }
+                }
+            }
+
             #[cfg(any(feature = "bed", feature = "tab"))]
             {
                 #[cfg(feature = "bed")]

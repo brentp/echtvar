@@ -7,6 +7,9 @@ const LOOKUP: [u32; 128] = [
 
 pub const RLOOKUP: [u8; 4] = [b'A', b'C', b'G', b'T'];
 
+/// Decode an encoded variant back into (ref_allele, alt_allele) byte vectors.
+/// This is the inverse of `encode_var` and is used by `EchtVars::variants_at_position`
+/// to recover allele sequences from long variants stored in the echtvar archive.
 pub fn decode_var(sequence: &[u32]) -> (Vec<u8>, Vec<u8>) {
     let ref_len = sequence[0] as usize;
     let alt_len = sequence[1] as usize;
