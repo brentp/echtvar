@@ -23,7 +23,7 @@ path = "src/main.rs"
 rust-htslib = { version = "0.38.2", features = ["libdeflate", "static"] }
 #bitpacking = "0.8.4"
 stream-vbyte = "0.4.1"
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive", "suggestions"] }
 c2rust-bitfields = "0.3.0"
 libc = "*"
 # TODO: try deflate-miniz, deflate-zlib, deflate
@@ -39,6 +39,10 @@ json5 = "0.4.1"
 
 ieee754 = "0.2"
 flate2 = { version = "1", optional = true }
+
+# x86 SIMD (Ssse3 decode, Sse41 encode) enabled only on x86_64; other arches use Scalar
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+stream-vbyte = { version = "0.4.1", features = ["x86_ssse3", "x86_sse41"] }
 
 # x86 SIMD (Ssse3 decode, Sse41 encode) enabled only on x86_64; other arches use Scalar
 [target.'cfg(target_arch = "x86_64")'.dependencies]
