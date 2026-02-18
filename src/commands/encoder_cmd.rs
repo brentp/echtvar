@@ -3,7 +3,16 @@ use echtvar_lib::{echtvar::bstrip_chr, fields, kmer16, var32, zigzag};
 use rust_htslib::bcf::header::{HeaderRecord, TagLength, TagType};
 use rust_htslib::bcf::record::{Buffer, Record};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
-use stream_vbyte::{encode::encode, x86::Sse41};
+use stream_vbyte::encode::encode;
+#[cfg(target_arch = "x86_64")]
+use stream_vbyte::x86::Sse41;
+#[cfg(not(target_arch = "x86_64"))]
+use stream_vbyte::scalar::Scalar;
+
+#[cfg(target_arch = "x86_64")]
+type StreamVbyteEncoder = Sse41;
+#[cfg(not(target_arch = "x86_64"))]
+type StreamVbyteEncoder = Scalar;
 
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
@@ -133,7 +142,7 @@ fn write_bits(
         }
     }
 
-    let encoded_len = encode::<Sse41>(values, compressed);
+    let encoded_len = encode::<StreamVbyteEncoder>(values, compressed);
     zipf.write_all(&compressed[..encoded_len]).ok();
 }
 
