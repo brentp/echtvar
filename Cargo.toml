@@ -44,10 +44,6 @@ flate2 = { version = "1", optional = true }
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 stream-vbyte = { version = "0.4.1", features = ["x86_ssse3", "x86_sse41"] }
 
-# x86 SIMD (Ssse3 decode, Sse41 encode) enabled only on x86_64; other arches use Scalar
-[target.'cfg(target_arch = "x86_64")'.dependencies]
-stream-vbyte = { version = "0.4.1", features = ["x86_ssse3", "x86_sse41"] }
-
 [profile.release]
 lto = "fat"
 codegen-units = 1
