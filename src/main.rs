@@ -1,7 +1,4 @@
-extern crate echtvar_lib;
 pub mod commands;
-
-extern crate fasteval;
 
 use clap::{Parser, Subcommand};
 use commands::{annotate_cmd, encoder_cmd};

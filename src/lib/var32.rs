@@ -141,6 +141,17 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn: &mut i32) ->
     u32::from(v)
 }
 
+/// Decodes a packed `Var32` encoding back into reference and alternate allele sequences.
+///
+/// The low 8 bits of the encoding store bases as 2 bits each (A=0, C=1, G=2, T=3), with
+/// reference bases first, then alternate bases. Reference and alternate lengths come from
+/// the `Var32` layout (2 bits each for `rlen` and `alen`).
+///
+/// Returns `None` when both lengths are 3, which is the sentinel used for variants that
+/// are too long to fit in 32 bits and are stored as [`LongVariant`] instead.
+///
+/// Returns `Some((reference, alt))` where each sequence is a `Vec<u8>` of ASCII bytes
+/// `b'A'`, `b'C'`, `b'G'`, or `b'T'`.
 pub fn decode_to_alleles(enc: u32) -> Option<(Vec<u8>, Vec<u8>)> {
     let v: Var32 = Var32::from(enc);
     let rlen = v.rlen() as usize;
