@@ -546,45 +546,30 @@ mod tests {
     use super::{argsort, sort_by_indices};
 
     #[test]
-    fn test_argsort_empty() {
+    fn test_argsort() {
         let data: Vec<i32> = vec![];
         assert_eq!(argsort(&data), Vec::<usize>::new());
-    }
-
-    #[test]
-    fn test_argsort_sorted() {
+    
         let data = vec![10, 20, 30];
         assert_eq!(argsort(&data), vec![0, 1, 2]);
-    }
-
-    #[test]
-    fn test_argsort_reverse() {
+    
         let data = vec![30, 20, 10];
         assert_eq!(argsort(&data), vec![2, 1, 0]);
-    }
-
-    #[test]
-    fn test_argsort_permuted() {
+    
         let data = vec![20, 10, 30];
         assert_eq!(argsort(&data), vec![1, 0, 2]);
     }
 
     #[test]
-    fn test_sort_by_indices_empty() {
+    fn test_sort_by_indices() {
         let mut data: Vec<i32> = vec![];
         sort_by_indices(&mut data, Vec::new());
         assert_eq!(data, Vec::<i32>::new());
-    }
-
-    #[test]
-    fn test_sort_by_indices_identity() {
+    
         let mut data = vec![10, 20, 30];
         sort_by_indices(&mut data, vec![0, 1, 2]);
         assert_eq!(data, vec![10, 20, 30]);
-    }
-
-    #[test]
-    fn test_sort_by_indices_reorder() {
+    
         let mut data = vec!['a', 'b', 'c'];
         sort_by_indices(&mut data, vec![2, 0, 1]);
         assert_eq!(data, vec!['c', 'a', 'b']);

@@ -474,23 +474,3 @@ pub fn tabular_annotate_main(
 
     Ok(())
 }
-
-/// BED annotation (kept for backward compatibility; calls tabular_annotate_main).
-pub fn bed_annotate_main(
-    input_path: &str,
-    compressed: bool,
-    output_path: &str,
-    include_expr: Option<&str>,
-    epaths: Vec<&str>,
-    ref_col: Option<usize>,
-    alt_col: Option<usize>,
-) -> Result<(), Box<dyn Error>> {
-    tabular_annotate_main(
-        input_path,
-        compressed,
-        output_path,
-        include_expr,
-        epaths,
-        TabularFormat::Bed { ref_col, alt_col },
-    )
-}
