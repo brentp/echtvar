@@ -49,14 +49,18 @@ struct AnnoArgs {
     #[arg(short = 'f', long = "format")]
     #[cfg(any(feature = "bed", feature = "tab"))]
     format: Option<String>,
-    /// 1-based column in BED for REF allele
+    /// 1-based column for REF allele (BED or tab format)
     #[arg(long = "ref-col")]
-    #[cfg(feature = "bed")]
+    #[cfg(any(feature = "bed", feature = "tab"))]
     ref_col: Option<usize>,
-    /// 1-based column in BED for ALT allele
+    /// 1-based column for ALT allele (BED or tab format)
     #[arg(long = "alt-col")]
-    #[cfg(feature = "bed")]
+    #[cfg(any(feature = "bed", feature = "tab"))]
     alt_col: Option<usize>,
+    /// Tab format: first line is a header; preserve it in the output (default: only lines starting with # are headers)
+    #[arg(long = "has-header")]
+    #[cfg(feature = "tab")]
+    has_header: bool,
     /// Input vcf/bcf/bed/tab file
     #[arg(required = true)]
     input: String,
@@ -246,14 +250,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             #[cfg(any(feature = "bed", feature = "tab"))]
             {
-                #[cfg(feature = "bed")]
+                #[cfg(any(feature = "bed", feature = "tab"))]
                 {
                     if ref_col.is_some() != alt_col.is_some() {
                         eprintln!("error: --ref-col and --alt-col must be specified together or not at all");
                         std::process::exit(1);
                     }
                     if format == Format::Vcf && (ref_col.is_some() || alt_col.is_some()) {
-                        eprintln!("error: --ref-col and --alt-col are only valid with BED input");
+                        eprintln!("error: --ref-col and --alt-col are only valid with BED or tab input");
                         std::process::exit(1);
                     }
                 }
@@ -267,10 +271,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                             output_path,
                             expr,
                             echt_files.clone(),
-                            tab_annotate_cmd::TabularFormat::Bed {
-                                ref_col,
-                                alt_col,
-                            },
+                            tab_annotate_cmd::TabularFormat::Bed,
+                            ref_col,
+                            alt_col,
                         )?;
                     }
                     #[cfg(feature = "tab")]
@@ -281,7 +284,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                             output_path,
                             expr,
                             echt_files.clone(),
-                            tab_annotate_cmd::TabularFormat::Tab,
+                            tab_annotate_cmd::TabularFormat::Tab {
+                                has_header: args.has_header,
+                            },
+                            ref_col,
+                            alt_col,
                         )?;
                     }
                     Format::Vcf => {

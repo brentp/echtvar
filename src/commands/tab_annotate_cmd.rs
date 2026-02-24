@@ -12,17 +12,13 @@ use fasteval::Compiler;
 use fasteval::Evaler;
 
 /// Tabular format: BED (chrom, start 0-based, end) or Tab (chrom, start 1-based, ref, alt).
+/// ref_col/alt_col are passed separately for both (see tabular_annotate_main).
 #[derive(Clone, Copy)]
 pub enum TabularFormat {
     /// BED: columns chrom, start (0-based), end (1-based exclusive).
-    /// Optional ref/alt via --ref-col/--alt-col.
-    Bed {
-        ref_col: Option<usize>,
-        alt_col: Option<usize>,
-    },
-    /// Tab: columns chrom, start (1-based), ref, alt.
-    /// End (1-based inclusive) = start + len(ref) - 1.
-    Tab,
+    Bed,
+    /// Tab: columns chrom, start (1-based), ref, alt. has_header: first line is header (preserved in output) even without # prefix.
+    Tab { has_header: bool },
 }
 
 struct TabularVariant {
@@ -93,6 +89,7 @@ fn set_evalues_missing(echts: &mut [EchtVars]) {
 }
 
 /// Single entry point for annotating BED or tab-format files.
+/// ref_col/alt_col (1-based) apply to both formats: tab default 3,4; BED allele-specific when both set.
 pub fn tabular_annotate_main(
     input_path: &str,
     compressed: bool,
@@ -100,16 +97,26 @@ pub fn tabular_annotate_main(
     include_expr: Option<&str>,
     epaths: Vec<&str>,
     format: TabularFormat,
+    ref_col: Option<usize>,
+    alt_col: Option<usize>,
 ) -> Result<(), Box<dyn Error>> {
-    let (is_tab, allele_specific, ref_col_idx, alt_col_idx) = match format {
-        TabularFormat::Tab => (true, true, 4, 4), // 1-based col indices for header naming only; data always cols 3,4
-        TabularFormat::Bed { ref_col, alt_col } => {
+    let (is_tab, allele_specific, ref_col_idx, alt_col_idx, tab_has_header) = match format {
+        TabularFormat::Tab { has_header } => {
+            let r = ref_col.unwrap_or(3);
+            let a = alt_col.unwrap_or(4);
+            (true, true, r, a, has_header)
+        }
+        TabularFormat::Bed => {
             let as_ = ref_col.is_some() && alt_col.is_some();
-            (false, as_, ref_col.unwrap_or(0), alt_col.unwrap_or(0))
+            (false, as_, ref_col.unwrap_or(0), alt_col.unwrap_or(0), false)
         }
     };
 
-    let min_cols = if is_tab { 4 } else { 3 };
+    let min_cols = if is_tab {
+        ref_col_idx.max(alt_col_idx)
+    } else {
+        3
+    };
 
     let mut echts: Vec<EchtVars> = epaths.iter().map(|p| EchtVars::open(p)).collect();
 
@@ -201,6 +208,13 @@ pub fn tabular_annotate_main(
             continue;
         }
 
+        // Tab with --has-header: first line (even without #) is the header, preserved in output
+        if is_tab && tab_has_header && input_header_cols.is_empty() && !line.starts_with('#') {
+            let cols: Vec<&str> = line.split('\t').collect();
+            input_header_cols = cols.iter().map(|s| s.to_string()).collect();
+            continue;
+        }
+
         if line.starts_with('#') {
             if !header_written {
                 let cols: Vec<&str> = line[1..].split('\t').collect();
@@ -220,7 +234,7 @@ pub fn tabular_annotate_main(
 
         let chrom = fields_vec[0];
         let (pos_0based, extra_cols, ref_allele, alt_allele, output_prefix): (u32, Vec<&str>, Vec<u8>, Vec<u8>, Vec<&str>) = if is_tab {
-            // Tab: chrom, start (1-based), ref, alt
+            // Tab: chrom, start (1-based), ref, alt (ref/alt at ref_col_idx, alt_col_idx 1-based)
             let start_1based: u32 = match fields_vec[1].parse() {
                 Ok(v) => v,
                 Err(_) => {
@@ -236,14 +250,31 @@ pub fn tabular_annotate_main(
                 continue;
             }
             let pos_0based = start_1based - 1;
-            let ref_allele = fields_vec[2].as_bytes().to_vec();
-            let alt_allele = fields_vec[3].as_bytes().to_vec();
-            let extra = if fields_vec.len() > 4 {
-                fields_vec[4..].to_vec()
-            } else {
-                Vec::new()
-            };
-            let prefix = fields_vec[..4].to_vec();
+            let ri = ref_col_idx - 1;
+            let ai = alt_col_idx - 1;
+            if ri >= fields_vec.len() || ai >= fields_vec.len() {
+                eprintln!(
+                    "[echtvar] --ref-col or --alt-col out of range for line {}",
+                    n + 1
+                );
+                continue;
+            }
+            let ref_allele = fields_vec[ri].as_bytes().to_vec();
+            let alt_allele = fields_vec[ai].as_bytes().to_vec();
+            // Output prefix: chrom, start, ref, alt. Extra = other columns in order (excluding chrom, start, ref, alt).
+            let prefix = vec![
+                fields_vec[0],
+                fields_vec[1],
+                fields_vec[ri],
+                fields_vec[ai],
+            ];
+            let mut extra = Vec::new();
+            for (i, &f) in fields_vec.iter().enumerate() {
+                let col_1based = i + 1;
+                if col_1based != 1 && col_1based != 2 && col_1based != ref_col_idx && col_1based != alt_col_idx {
+                    extra.push(f);
+                }
+            }
             (pos_0based, extra, ref_allele, alt_allele, prefix)
         } else {
             // BED: chrom, start (0-based), end
@@ -313,13 +344,20 @@ pub fn tabular_annotate_main(
             if !header_written {
                 if is_tab {
                     write!(writer, "#chrom\tstart\tref\talt")?;
-                    if input_header_cols.len() >= 4 {
-                        for col in &input_header_cols[4..] {
-                            write!(writer, "\t{}", col)?;
+                    // Extra columns: all except chrom(1), start(2), ref_col, alt_col
+                    if !input_header_cols.is_empty() && input_header_cols.len() >= fields_vec.len() {
+                        for (i, col) in input_header_cols.iter().enumerate() {
+                            let col_1based = i + 1;
+                            if col_1based != 1 && col_1based != 2 && col_1based != ref_col_idx && col_1based != alt_col_idx {
+                                write!(writer, "\t{}", col)?;
+                            }
                         }
                     } else if fields_vec.len() > 4 {
-                        for i in 4..fields_vec.len() {
-                            write!(writer, "\tcol{}", i + 1)?;
+                        for i in 0..fields_vec.len() {
+                            let col_1based = i + 1;
+                            if col_1based != 1 && col_1based != 2 && col_1based != ref_col_idx && col_1based != alt_col_idx {
+                                write!(writer, "\tcol{}", col_1based)?;
+                            }
                         }
                     }
                 } else {
