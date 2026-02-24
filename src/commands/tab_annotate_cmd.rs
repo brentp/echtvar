@@ -88,6 +88,49 @@ fn set_evalues_missing(echts: &mut [EchtVars]) {
     }
 }
 
+/// Resolved options from format + ref_col/alt_col. Used by tabular_annotate_main and tests.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct TabularOptions {
+    pub is_tab: bool,
+    pub allele_specific: bool,
+    pub ref_col_idx: usize,
+    pub alt_col_idx: usize,
+    pub tab_has_header: bool,
+    pub min_cols: usize,
+}
+
+/// Resolve format and optional ref/alt columns into indices and min column count.
+pub(crate) fn resolve_tabular_options(
+    format: TabularFormat,
+    ref_col: Option<usize>,
+    alt_col: Option<usize>,
+) -> TabularOptions {
+    let (is_tab, allele_specific, ref_col_idx, alt_col_idx, tab_has_header) = match format {
+        TabularFormat::Tab { has_header } => {
+            let r = ref_col.unwrap_or(3);
+            let a = alt_col.unwrap_or(4);
+            (true, true, r, a, has_header)
+        }
+        TabularFormat::Bed => {
+            let as_ = ref_col.is_some() && alt_col.is_some();
+            (false, as_, ref_col.unwrap_or(0), alt_col.unwrap_or(0), false)
+        }
+    };
+    let min_cols = if is_tab {
+        ref_col_idx.max(alt_col_idx)
+    } else {
+        3
+    };
+    TabularOptions {
+        is_tab,
+        allele_specific,
+        ref_col_idx,
+        alt_col_idx,
+        tab_has_header,
+        min_cols,
+    }
+}
+
 /// Single entry point for annotating BED or tab-format files.
 /// ref_col/alt_col (1-based) apply to both formats: tab default 3,4; BED allele-specific when both set.
 pub fn tabular_annotate_main(
@@ -100,23 +143,15 @@ pub fn tabular_annotate_main(
     ref_col: Option<usize>,
     alt_col: Option<usize>,
 ) -> Result<(), Box<dyn Error>> {
-    let (is_tab, allele_specific, ref_col_idx, alt_col_idx, tab_has_header) = match format {
-        TabularFormat::Tab { has_header } => {
-            let r = ref_col.unwrap_or(3);
-            let a = alt_col.unwrap_or(4);
-            (true, true, r, a, has_header)
-        }
-        TabularFormat::Bed => {
-            let as_ = ref_col.is_some() && alt_col.is_some();
-            (false, as_, ref_col.unwrap_or(0), alt_col.unwrap_or(0), false)
-        }
-    };
-
-    let min_cols = if is_tab {
-        ref_col_idx.max(alt_col_idx)
-    } else {
-        3
-    };
+    let opts = resolve_tabular_options(format, ref_col, alt_col);
+    let TabularOptions {
+        is_tab,
+        allele_specific,
+        ref_col_idx,
+        alt_col_idx,
+        tab_has_header,
+        min_cols,
+    } = opts;
 
     let mut echts: Vec<EchtVars> = epaths.iter().map(|p| EchtVars::open(p)).collect();
 
@@ -511,4 +546,69 @@ pub fn tabular_annotate_main(
     );
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{resolve_tabular_options, TabularFormat, TabularOptions};
+
+    #[test]
+    fn test_resolve_tab_default_ref_alt() {
+        let opts = resolve_tabular_options(TabularFormat::Tab { has_header: false }, None, None);
+        assert_eq!(
+            opts,
+            TabularOptions {
+                is_tab: true,
+                allele_specific: true,
+                ref_col_idx: 3,
+                alt_col_idx: 4,
+                tab_has_header: false,
+                min_cols: 4,
+            }
+        );
+    }
+
+    #[test]
+    fn test_resolve_tab_custom_ref_alt() {
+        let opts = resolve_tabular_options(
+            TabularFormat::Tab { has_header: false },
+            Some(6),
+            Some(7),
+        );
+        assert_eq!(opts.ref_col_idx, 6);
+        assert_eq!(opts.alt_col_idx, 7);
+        assert_eq!(opts.min_cols, 7);
+    }
+
+    #[test]
+    fn test_resolve_tab_has_header() {
+        let opts = resolve_tabular_options(TabularFormat::Tab { has_header: true }, None, None);
+        assert!(opts.tab_has_header);
+    }
+
+    #[test]
+    fn test_resolve_bed_no_ref_alt() {
+        let opts = resolve_tabular_options(TabularFormat::Bed, None, None);
+        assert_eq!(
+            opts,
+            TabularOptions {
+                is_tab: false,
+                allele_specific: false,
+                ref_col_idx: 0,
+                alt_col_idx: 0,
+                tab_has_header: false,
+                min_cols: 3,
+            }
+        );
+    }
+
+    #[test]
+    fn test_resolve_bed_with_ref_alt() {
+        let opts = resolve_tabular_options(TabularFormat::Bed, Some(4), Some(5));
+        assert!(!opts.is_tab);
+        assert!(opts.allele_specific);
+        assert_eq!(opts.ref_col_idx, 4);
+        assert_eq!(opts.alt_col_idx, 5);
+        assert_eq!(opts.min_cols, 3);
+    }
 }
