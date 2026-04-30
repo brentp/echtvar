@@ -141,6 +141,43 @@ pub fn encode(pos: u32, ref_allele: &[u8], alt_allele: &[u8], warn: &mut i32) ->
     u32::from(v)
 }
 
+/// Decodes a packed `Var32` encoding back into reference and alternate allele sequences.
+///
+/// Used by **BED/tab annotation**: when annotating BED or tabular input in position-scan
+/// mode (no REF/ALT columns), the annotation path calls this to turn stored Var32 entries
+/// into `(ref, alt)` pairs so it can enumerate and annotate every variant at each position.
+///
+/// The low 8 bits of the encoding store bases as 2 bits each (A=0, C=1, G=2, T=3), with
+/// reference bases first, then alternate bases. Reference and alternate lengths come from
+/// the `Var32` layout (2 bits each for `rlen` and `alen`).
+///
+/// Returns `None` when both lengths are 3, which is the sentinel used for variants that
+/// are too long to fit in 32 bits and are stored as [`LongVariant`] instead.
+///
+/// Returns `Some((reference, alt))` where each sequence is a `Vec<u8>` of ASCII bytes
+/// `b'A'`, `b'C'`, `b'G'`, or `b'T'`.
+pub fn decode_to_alleles(enc: u32) -> Option<(Vec<u8>, Vec<u8>)> {
+    let v: Var32 = Var32::from(enc);
+    let rlen = v.rlen() as usize;
+    let alen = v.alen() as usize;
+    if rlen == 3 && alen == 3 {
+        return None;
+    } // sentinel for LongVariant
+
+    let mut e = v.enc();
+    let mut alt = vec![0u8; alen];
+    for i in (0..alen).rev() {
+        alt[i] = RLOOKUP[(e & 3) as usize] as u8;
+        e >>= 2;
+    }
+    let mut reference = vec![0u8; rlen];
+    for i in (0..rlen).rev() {
+        reference[i] = RLOOKUP[(e & 3) as usize] as u8;
+        e >>= 2;
+    }
+    Some((reference, alt))
+}
+
 #[inline]
 pub fn decode(enc: u32) -> PRA {
     let v: Var32 = unsafe { std::mem::transmute::<u32, Var32>(enc) };
@@ -220,6 +257,37 @@ mod tests {
 
         b.set_enc(a.enc() - 1);
         assert_eq!(true, a > b);
+    }
+
+    #[test]
+    fn test_decode_to_alleles_roundtrip() {
+        let mut w = 0;
+        let enc = encode(423432, b"A", b"ACA", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_some());
+        let (r, a) = result.unwrap();
+        assert_eq!(r, b"A");
+        assert_eq!(a, b"ACA");
+    }
+
+    #[test]
+    fn test_decode_to_alleles_snv() {
+        let mut w = 0;
+        let enc = encode(100, b"A", b"T", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_some());
+        let (r, a) = result.unwrap();
+        assert_eq!(r, b"A");
+        assert_eq!(a, b"T");
+    }
+
+    #[test]
+    fn test_decode_to_alleles_sentinel() {
+        let mut w = 0;
+        // Combined length > 4 triggers sentinel (rlen=3, alen=3)
+        let enc = encode(100, b"AAA", b"CCC", &mut w);
+        let result = decode_to_alleles(enc);
+        assert!(result.is_none());
     }
 
     #[test]

@@ -3,6 +3,11 @@ name = "echtvar"
 version = "0.2.4"
 edition = "2021"
 
+[features]
+default = ["bed", "tab"]
+bed = ["dep:flate2"]
+tab = ["dep:flate2"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
@@ -18,7 +23,7 @@ path = "src/main.rs"
 rust-htslib = { version = "0.39.3", features = ["libdeflate", "static"] }
 #bitpacking = "0.8.4"
 stream-vbyte = "0.4.1"
-clap = { version = "~2.27.0", features = ["suggestions"] }
+clap = { version = "4", features = ["derive", "suggestions"] }
 c2rust-bitfields = "0.3.0"
 libc = "*"
 # TODO: try deflate-miniz, deflate-zlib, deflate
@@ -33,6 +38,7 @@ bincode = { version = "1.3.3" }
 json5 = "0.4.1"
 
 ieee754 = "0.2"
+flate2 = { version = "1", optional = true }
 
 # x86 SIMD (Ssse3 decode, Sse41 encode) enabled only on x86_64; other arches use Scalar
 [target.'cfg(target_arch = "x86_64")'.dependencies]
@@ -44,4 +50,4 @@ codegen-units = 1
 
 [lints.rust]
 # Allow dependency macros to use this feature cfg without warnings.
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(feature, values(\"unsafe-vars\"))"] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(feature, values(\"unsafe-vars\", \"bed\", \"tab\"))"] }

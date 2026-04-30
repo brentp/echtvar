@@ -75,8 +75,8 @@ pulled from the population VCF.
 
 ##### annotate 
 
-Annotate a [**decomposed** (and normalized)](https://github.com/brentp/echtvar/wiki/decompose) VCF with an echtvar file and only output variants where `gnomad_af`
-from the echtvar file is < 0.01. Note that multiple echtvar files can be specified
+Annotate a [**decomposed** (and normalized)](https://github.com/brentp/echtvar/wiki/decompose) VCF/BCF, or a BED or tab-delimited file, with one or more echtvar files. Example: only output variants where `gnomad_af`
+from the echtvar file is < 0.01. Multiple echtvar files can be specified
 and the `-i` expression is optional and can be elided to output all variants.
 
 ```
@@ -87,6 +87,31 @@ echtvar anno \
    $cohort.input.bcf \
    $cohort.echtvar-annotated.filtered.bcf
 ```
+
+##### BED and tabular (tab) input
+
+`echtvar anno` can annotate BED or tab-delimited files in addition to VCF/BCF. Format is auto-detected from the file extension (e.g. `.bed`, `.bed.gz`, `.tsv`, `.txt`, `.txt.gz`) or set explicitly with `-f`/`--format` (`vcf`, `bed`, `tab`, or `auto`).
+
+**Tab format** (e.g. TSV with a header): columns are **chrom**, **start** (1-based), **ref**, **alt**. At least 4 columns required. Annotation is allele-specific: each row is looked up by position and ref/alt.
+
+```
+echtvar anno -e gnomad.echtvar.zip -f tab -i 'gnomad_af < 0.01' variants.tsv annotated.tsv
+```
+
+**BED format**: columns are **chrom**, **start** (0-based), **end** (1-based exclusive). Two modes:
+
+- **Position-scan (default)** — No REF/ALT columns. Each BED row is treated as an interval; echtvar outputs one row per variant in the database that falls in that interval (so one BED row can become many output rows). Useful when you only have intervals and want to pull out all annotated variants in each interval.
+- **Allele-specific** — With `--ref-col` and `--alt-col` (1-based column indices), REF and ALT are read from the BED file and each row is annotated as a single variant, like tab format.
+
+```
+# position-scan: output all variants in the database overlapping each BED interval
+echtvar anno -e gnomad.echtvar.zip -f bed regions.bed regions.annotated.bed
+
+# allele-specific: BED has ref/alt in columns 4 and 5
+echtvar anno -e gnomad.echtvar.zip -f bed --ref-col 4 --alt-col 5 variants.bed annotated.bed
+```
+
+The optional `-i` expression and multiple `-e` files work the same as for VCF/BCF.
 
 #### Configuration File for Encode
 

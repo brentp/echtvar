@@ -94,6 +94,38 @@ pub fn bstrip_chr(chrom: &str) -> &str {
     chrom
 }
 
+#[cfg(test)]
+mod chr_tests {
+    use super::{bstrip_chr, strip_chr};
+
+    #[test]
+    fn test_strip_chr_prefix() {
+        assert_eq!(strip_chr("chr1".to_string()), "1");
+        assert_eq!(strip_chr("chr22".to_string()), "22");
+        assert_eq!(strip_chr("chrX".to_string()), "X");
+    }
+
+    #[test]
+    fn test_strip_chr_no_prefix() {
+        assert_eq!(strip_chr("1".to_string()), "1");
+        assert_eq!(strip_chr("22".to_string()), "22");
+        assert_eq!(strip_chr("chr".to_string()), "chr"); // len < 4
+        assert_eq!(strip_chr("abc".to_string()), "abc");
+    }
+
+    #[test]
+    fn test_bstrip_chr_prefix() {
+        assert_eq!(bstrip_chr("chr1"), "1");
+        assert_eq!(bstrip_chr("chr22"), "22");
+    }
+
+    #[test]
+    fn test_bstrip_chr_no_prefix() {
+        assert_eq!(bstrip_chr("1"), "1");
+        assert_eq!(bstrip_chr("chr"), "chr");
+    }
+}
+
 impl Variant for bcf::record::Record {
     fn chrom(&self) -> std::string::String {
         let rid = self.rid().unwrap();
@@ -346,6 +378,47 @@ impl EchtVars {
         } else {
             (v as f32) / (fld.multiplier as f32)
         }
+    }
+
+    pub fn set_position_by_name(&mut self, chrom: &str, position: u32) -> io::Result<()> {
+        let stripped = strip_chr(chrom.to_string());
+        if self.chrom == stripped && position >> 20 == self.start >> 20 {
+            return Ok(());
+        }
+        self.last_rid = i32::MIN;
+        self.set_position(i32::MIN + 1, chrom.to_string(), position)
+    }
+
+    /// Return all (ref, alt) allele pairs at the given 0-based position within the
+    /// currently loaded chunk. This is used by the BED/tab position-scan mode where
+    /// the input has no REF/ALT columns: we enumerate every variant the echtvar file
+    /// knows about at that position so each can be annotated as a separate output row.
+    /// The existing VCF path doesn't need this because the VCF itself provides the alleles.
+    pub fn variants_at_position(&self, pos: u32) -> Vec<(Vec<u8>, Vec<u8>)> {
+        let mut results = Vec::new();
+
+        // Search var32s: position is stored in lower 20 bits
+        let pos_in_chunk = pos & 0xFFFFF;
+        let min_val = pos_in_chunk << 12;
+        let max_val = min_val | 0xFFF;
+
+        let lo = self.var32s.partition_point(|&v| v < min_val);
+        let mut i = lo;
+        while i < self.var32s.len() && self.var32s[i] <= max_val {
+            if let Some(alleles) = var32::decode_to_alleles(self.var32s[i]) {
+                results.push(alleles);
+            }
+            i += 1;
+        }
+
+        // Search long variants: sorted by position, so use binary search
+        let lo = self.longs.partition_point(|l| l.position < pos);
+        for l in self.longs[lo..].iter().take_while(|l| l.position == pos) {
+            let (ref_allele, alt_allele) = kmer16::decode_var(&l.sequence);
+            results.push((ref_allele, alt_allele));
+        }
+
+        results
     }
 
     pub fn update_expr_values<T: Variant>(

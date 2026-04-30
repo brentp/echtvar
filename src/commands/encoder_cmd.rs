@@ -540,3 +540,47 @@ pub fn encoder_main(vpaths: Vec<&str>, opath: &str, jpath: &str) {
         "[echtvar] wrote {n_vars} total variants and {n_long_vars} long variants ({pct:.2}%)"
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{argsort, sort_by_indices};
+
+    #[test]
+    fn test_argsort() {
+        let data: Vec<i32> = vec![];
+        assert_eq!(argsort(&data), Vec::<usize>::new());
+    
+        let data = vec![10, 20, 30];
+        assert_eq!(argsort(&data), vec![0, 1, 2]);
+    
+        let data = vec![30, 20, 10];
+        assert_eq!(argsort(&data), vec![2, 1, 0]);
+    
+        let data = vec![20, 10, 30];
+        assert_eq!(argsort(&data), vec![1, 0, 2]);
+    }
+
+    #[test]
+    fn test_sort_by_indices() {
+        let mut data: Vec<i32> = vec![];
+        sort_by_indices(&mut data, Vec::new());
+        assert_eq!(data, Vec::<i32>::new());
+    
+        let mut data = vec![10, 20, 30];
+        sort_by_indices(&mut data, vec![0, 1, 2]);
+        assert_eq!(data, vec![10, 20, 30]);
+    
+        let mut data = vec!['a', 'b', 'c'];
+        sort_by_indices(&mut data, vec![2, 0, 1]);
+        assert_eq!(data, vec!['c', 'a', 'b']);
+    }
+
+    #[test]
+    fn test_argsort_sort_by_indices_roundtrip() {
+        let data = vec![30, 10, 20, 50, 40];
+        let indices = argsort(&data);
+        let mut sorted = data.clone();
+        sort_by_indices(&mut sorted, indices);
+        assert_eq!(sorted, vec![10, 20, 30, 40, 50]);
+    }
+}
