@@ -1,3 +1,7 @@
+v0.2.4
+======
++ bump rust-htslib (#55)
+
 v0.2.2
 ======
 + handle strings with commas by just saving the entire string (#49)

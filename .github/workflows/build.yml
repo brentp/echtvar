@@ -1,43 +1,70 @@
-name: Rust static build Linux
+name: Release static Linux binaries
+
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "*"
+
 permissions:
   contents: write
+
+env:
+  BINARY_NAME: echtvar
+  CARGO_TERM_COLOR: always
+
 jobs:
   build:
-    name: build Linux static binary
+    name: build ${{ matrix.target }}
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
-      BINARY_NAME: echtvar
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            image: x86_64-musl
+          - target: aarch64-unknown-linux-musl
+            image: aarch64-musl
     steps:
-    - uses: actions/checkout@v4
-    - name: Set build version
-      id: version
-      shell: bash
-      run: |
-        VERSION="$(grep 'version =' Cargo.toml -m 1 | sed 's@version =@@' | xargs)"
-        echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::notice::publish build version $VERSION"
-    - name: Install musl tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-tools musl-dev cmake
-    - name: Add musl target
-      run: rustup target add x86_64-unknown-linux-musl
-    - name: Build Linux x86 static binary
-      env:
-        CC: /usr/bin/x86_64-linux-musl-gcc
-        CXX: /usr/bin/x86_64-linux-musl-gcc
-      run: cargo build --target x86_64-unknown-linux-musl --release
-    - name: Upload linux binary to release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v${{ env.RELEASE_VERSION }}
-        name: v${{ env.RELEASE_VERSION }}
-        files: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
-        fail_on_unmatched_files: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Build static binary
+        run: |
+          docker run --rm \
+            -v "$PWD:/home/rust/src" \
+            -w /home/rust/src \
+            messense/rust-musl-cross:${{ matrix.image }} \
+            sh -lc 'rustup target add ${{ matrix.target }} && cargo build --target ${{ matrix.target }} --release'
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} \
+            dist/${{ env.BINARY_NAME }}-${{ github.ref_name }}-${{ matrix.target }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.target }}
+          path: dist/${{ env.BINARY_NAME }}-${{ github.ref_name }}-${{ matrix.target }}
+          if-no-files-found: error
+
+  release:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: dist/*
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
