@@ -32,10 +32,10 @@ enum Commands {
     /// Annotate a VCF/BCF with one or more echtvar files
     Anno {
         /// Echtvar files to annotate with (can be specified many times)
-        #[arg(short, required = true)]
+        #[arg(short, long, required = true)]
         echtvar: Vec<String>,
         /// Expression that determines which variants to keep in output
-        #[arg(short)]
+        #[arg(short, long)]
         include: Option<String>,
         /// Input vcf or bcf
         input_vcf: String,
