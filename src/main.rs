@@ -11,7 +11,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[command(name = "echtvar")]
 #[command(version = VERSION)]
 #[command(author = "Brent Pedersen <bpederse@gmail.com>")]
-#[command(about = "variant encoding and annotation", long_about = None)]
+#[command(about = "variant encoding and annotation")]
 struct Args {
     #[command(subcommand)]
     command: Commands,
