@@ -1,55 +1,70 @@
 extern crate echtvar_lib;
 pub mod commands;
 
-#[macro_use]
-extern crate clap;
-extern crate fasteval;
-
+use clap::{Parser, Subcommand};
 use commands::{annotate_cmd, encoder_cmd};
 use std::error::Error;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+#[derive(Parser)]
+#[command(name = "echtvar")]
+#[command(version = VERSION)]
+#[command(author = "Brent Pedersen <bpederse@gmail.com>")]
+#[command(about = "variant encoding and annotation")]
+struct Args {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Create an echtvar file from a population VCF/BCF
+    Encode {
+        /// Output zip file
+        output: String,
+        /// (human)-json conf file
+        json: String,
+        /// Population vcf(s) can be split by chrom
+        #[arg(required = true)]
+        vcfs: Vec<String>,
+    },
+    /// Annotate a VCF/BCF with one or more echtvar files
+    Anno {
+        /// Echtvar files to annotate with (can be specified many times)
+        #[arg(short, long, required = true)]
+        echtvar: Vec<String>,
+        /// Expression that determines which variants to keep in output
+        #[arg(short, long)]
+        include: Option<String>,
+        /// Input vcf or bcf
+        input_vcf: String,
+        /// Path to bcf/vcf.gz output file (determined by extension)
+        output_vcf: String,
+    },
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut app = clap_app!(echtvar =>
-        (version: VERSION)
-        (author: "Brent Pedersen <bpederse@gmail.com>")
-        (about: "variant encoding and annotation")
-        (@subcommand encode =>
-            (about: "create an echtvar file from a population VCF/BCF")
-            (@arg OUTPUT: +required "output zip file")
-            (@arg JSON: +required "(human)-json conf file")
-            (@arg VCFS: +required ... "population vcf(s) can be split by chrom")
-        )
-        (@subcommand anno =>
-            (about: "annotate a VCF/BCF with one or more echtvar files")
-            (@arg echtvar: -e + takes_value number_of_values(1) ... "echtvar files to annotate with. can be specified many times")
-            (@arg include: -i  +takes_value number_of_values(1) "expression that determines which variants to keep in output")
-            (@arg INPUT_VCF: +required "input vcf or bcf")
-            (@arg OUTPUT_VCF: +required "path to bcf/vcf.gz output file (determined by extension)")
-        )
-    );
-    let matches = app.clone().get_matches();
+    let args = Args::parse();
 
-    if let Some(matches) = matches.subcommand_matches("encode") {
-        encoder_cmd::encoder_main(
-            matches.values_of("VCFS").unwrap().collect(),
-            matches.value_of("OUTPUT").unwrap(),
-            matches.value_of("JSON").unwrap(),
-        );
-    } else if let Some(matches) = matches.subcommand_matches("anno") {
-        let echt_files: Vec<_> = matches.values_of("echtvar").unwrap().collect();
-        let expr = matches.value_of("include");
-
-        annotate_cmd::annotate_main(
-            matches.value_of("INPUT_VCF").unwrap(),
-            matches.value_of("OUTPUT_VCF").unwrap(),
-            expr,
-            echt_files,
-        )?;
-    } else {
-        app.print_help().ok();
-        println!();
+    match args.command {
+        Commands::Encode {
+            output,
+            json,
+            vcfs,
+        } => {
+            let vcfs_refs: Vec<&str> = vcfs.iter().map(|s| s.as_str()).collect();
+            encoder_cmd::encoder_main(vcfs_refs, &output, &json);
+        }
+        Commands::Anno {
+            echtvar,
+            include,
+            input_vcf,
+            output_vcf,
+        } => {
+            let echtvar_refs: Vec<&str> = echtvar.iter().map(|s| s.as_str()).collect();
+            annotate_cmd::annotate_main(&input_vcf, &output_vcf, include.as_deref(), echtvar_refs)?;
+        }
     }
     Ok(())
 }
